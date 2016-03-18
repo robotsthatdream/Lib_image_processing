@@ -103,6 +103,11 @@ public :
     bool empty(){return _supervoxels.empty() && _adjacency_map.empty();}
 
     /**
+     * @brief clear
+     */
+    void clear();
+
+    /**
      * @brief extractCloud : give the pointcloud in base of supervoxel
      * @param resultCloud : output
      */

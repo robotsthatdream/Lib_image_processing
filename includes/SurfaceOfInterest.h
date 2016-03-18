@@ -68,6 +68,7 @@ public:
 
 private :
     std::vector<uint32_t> _labels;
+    std::vector<uint32_t> _labels_no_soi;
     std::map<uint32_t,float> _weights;
     boost::random::mt19937 _gen;
 
