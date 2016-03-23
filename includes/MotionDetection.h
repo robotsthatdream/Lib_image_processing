@@ -2,13 +2,15 @@
 #define MOTION_DETECTION_H
 
 #include <opencv2/opencv.hpp>
+#include <fstream>
+#include <ctime>
 
 /**
  * @brief The MotionDetection class
  * This class provide tools for motion detection based on rgb video camera.
  *
  */
-class MotionDetection{
+class MotionDetection {
 
 public:
     /**
@@ -22,19 +24,32 @@ public:
      * @param vector of 2 successives frames
      * @param minimum size of detection
      */
-    MotionDetection(std::vector<cv::Mat> f, double min_area = 100) : _frames(f), minArea(min_area) {}
+    MotionDetection(std::vector<cv::Mat> f, double min_area = 100) : _frames(f), _minArea(min_area)
+    { }
 
     /**
+     * @deprecated replaced by detect_simple and detect_MOG
      * @brief detect
-     * @param image with the contours of mobiles elements
+     * @param image with the contours of mobiles _elements
      */
     void detect(cv::Mat &diff);
+
+    /**
+     * @brief Builds motion mask from current frame. Simple difference between background and current frame.
+     */
+    void detect_simple(cv::Mat &current_frame);
+
+    /**
+     *@brief Builds motion mask from current frame. Similar as detect_simple but use a powerful adaptive background method.
+     */
+    void detect_MOG(cv::Mat &current_frame);
 
     /**
      * @brief setInputFrames
      * @param vector of 2 successives frames
      */
-    void setInputFrames(std::vector<cv::Mat> f){_frames = f;}
+    void setInputFrames(const std::vector<cv::Mat> &f)
+    { _frames = f; }
 
     /**
      * @brief rect_clustering : Fonction for clustering the bound rectangle of detected object.
@@ -42,7 +57,7 @@ public:
      * @param rect_array
      *
      */
-    void rect_clustering(std::vector<cv::Rect> & rect_array);
+    void rect_clustering(std::vector<cv::Rect> &rect_array);
 
     /**
      * @brief save results into little image all detected element.
@@ -51,16 +66,23 @@ public:
     void save_results(const std::string &folder, int counter);
 
     /**
+     * @brief Extracts ROIs as cv::Rect from a given motion mask.
+     */
+    std::vector<cv::Rect> motion_to_ROIs(cv::Mat &motion_mask);
+
+    /**
      * @brief get the results in images
      * @return vector of cv::Mat
      */
-    std::vector<cv::Mat> getResults(){return _results;}
+    std::vector<cv::Mat> getResults()
+    { return _results; }
 
     /**
      * @brief get the results in rectangles form
      * @return vector cv::Rect
      */
-    std::vector<cv::Rect> getResultsRects(){return _resultsRects;}
+    std::vector<cv::Rect> getResultsRects()
+    { return _resultsRects; }
 
 
 private :
@@ -68,10 +90,27 @@ private :
     std::vector<cv::Mat> _results;
     std::vector<cv::Rect> _resultsRects;
 
-    //parameter
-    double minArea; //minimum size of contours;
+    std::array<int, 3> _kernels_size = {{1, 1, 1}};
+    std::array<int, 3> _thresholds = {{25, 25, 25}};
+    std::array<cv::Mat, 3> _elements;
 
+    cv::Mat _background_BGR;
+
+    cv::BackgroundSubtractorMOG2 _background_sub_MOG2;
+
+    //parameter
+    double _minArea; //minimum size of contours;
+
+    /**
+     * @brief Fills a vector of matrices by selecting ROIs in current frame.
+     */
     void extractResults(std::vector<cv::Rect> &rects);
+
+    /**
+     * @brief Used by detect_simple to progressively update the background frame by blending it with the current one.
+     */
+    void linear_background_blend(std::vector<cv::Mat> &background_channels,
+                                 std::vector<cv::Mat> &current_frame_channels);
 
 
 };
