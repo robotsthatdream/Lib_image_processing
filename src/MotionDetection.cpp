@@ -28,10 +28,6 @@ void MotionDetection::detect(cv::Mat &diff)
 
     _resultsRects = motion_to_ROIs(diff);
 
-//    cv::imshow("current",_frames[1]);
-//    cv::imshow("previous",_frames[0]);
-//    cv::waitKey(30);
-
     //clustering of the bounding boxes to assemble the parted objects
     rect_clustering(_resultsRects);
     extractResults(_resultsRects);
@@ -80,7 +76,7 @@ void MotionDetection::detect_simple(cv::Mat &current_frame_BGR)
                          cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size_<int>(15, 15)),
                          cv::Point_<int>(-1, -1), 3);
 
-        motion_to_ROIs(motion_mask_S_and_V);
+        _resultsRects = motion_to_ROIs(motion_mask_S_and_V);
         linear_background_blend(bg_HSV_channels, cf_HSV_channels);
 
         cv::merge(bg_HSV_channels, background_HSV);
@@ -99,7 +95,7 @@ void MotionDetection::detect_MOG(cv::Mat &current_frame_BGR)
 
     cv::morphologyEx(motion_mask, motion_mask, cv::MORPH_OPEN, element);
 
-    motion_to_ROIs(motion_mask);
+    _resultsRects = motion_to_ROIs(motion_mask);
 
     cv::waitKey(10);
 }
