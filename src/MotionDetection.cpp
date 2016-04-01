@@ -1,6 +1,6 @@
 #include <MotionDetection.h>
 
-void MotionDetection::detect(cv::Mat &diff)
+void MotionDetection::detect(cv::Mat& diff)
 {
     if (_frames.size() != 2) {
         std::cerr << "detect : need exactly 2 frames" << std::endl;
@@ -33,7 +33,7 @@ void MotionDetection::detect(cv::Mat &diff)
     extractResults(_resultsRects);
 }
 
-void MotionDetection::detect_simple(cv::Mat &current_frame_BGR)
+void MotionDetection::detect_simple(cv::Mat& current_frame_BGR)
 {
     std::vector<cv::Mat> cf_HSV_channels;
     std::vector<cv::Mat> bg_HSV_channels;
@@ -85,7 +85,7 @@ void MotionDetection::detect_simple(cv::Mat &current_frame_BGR)
     }
 }
 
-void MotionDetection::detect_MOG(cv::Mat &current_frame_BGR)
+void MotionDetection::detect_MOG(cv::Mat& current_frame_BGR)
 {
     cv::Mat motion_mask;
     cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size_<int>(3, 3));
@@ -100,7 +100,20 @@ void MotionDetection::detect_MOG(cv::Mat &current_frame_BGR)
     cv::waitKey(10);
 }
 
-void MotionDetection::save_results(const std::string &folder, int counter)
+void MotionDetection::detect_MOG_depth(cv::Mat& depth_frame_16UC1)
+{
+    cv::Mat motion_mask;
+
+    denoise_depth(depth_frame_16UC1);
+
+    _background_sub_MOG2.operator()(_background_depth_16UC1, motion_mask);
+
+    cv::threshold(motion_mask, motion_mask, 0, 255, CV_THRESH_BINARY);
+
+    _resultsRects = motion_to_ROIs(motion_mask);
+}
+
+void MotionDetection::save_results(const std::string& folder, int counter)
 {
     if (!_resultsRects.empty()) {
         std::stringstream stream;
@@ -133,7 +146,7 @@ void MotionDetection::save_results(const std::string &folder, int counter)
     }
 }
 
-void MotionDetection::rect_clustering(std::vector<cv::Rect> &rect_array)
+void MotionDetection::rect_clustering(std::vector<cv::Rect>& rect_array)
 {
     if (rect_array.size() > 1) {
         bool b = false;
@@ -158,14 +171,14 @@ void MotionDetection::rect_clustering(std::vector<cv::Rect> &rect_array)
     }
 }
 
-void MotionDetection::extractResults(std::vector<cv::Rect> &rects)
+void MotionDetection::extractResults(std::vector<cv::Rect>& rects)
 {
     for (int i = 0; i < rects.size(); i++) {
         _results.push_back(cv::Mat(_frames[1], rects[i]));
     }
 }
 
-std::vector<cv::Rect> MotionDetection::motion_to_ROIs(cv::Mat &motion_mask)
+std::vector<cv::Rect> MotionDetection::motion_to_ROIs(cv::Mat& motion_mask)
 {
     std::vector<cv::Mat> contours;
     std::vector<cv::Rect> ROIs;
@@ -183,8 +196,8 @@ std::vector<cv::Rect> MotionDetection::motion_to_ROIs(cv::Mat &motion_mask)
     return ROIs;
 }
 
-void MotionDetection::linear_background_blend(std::vector<cv::Mat> &background_channels,
-                                              std::vector<cv::Mat> &current_frame_channels)
+void MotionDetection::linear_background_blend(std::vector<cv::Mat>& background_channels,
+                                              std::vector<cv::Mat>& current_frame_channels)
 {
     double alpha = 0.75;
     double beta = 1.0 - alpha;
@@ -194,8 +207,20 @@ void MotionDetection::linear_background_blend(std::vector<cv::Mat> &background_c
     }
 }
 
+void MotionDetection::denoise_depth(cv::Mat& frame)
+{
+    cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE,
+                                                cv::Size_<int>(13, 13));
+    cv::morphologyEx(frame, frame, cv::MORPH_CLOSE, element, cv::Point(-1, -1), 1);
 
+    if (_background_depth_16UC1.empty()) {
+        frame.copyTo(_background_depth_16UC1);
+    }
+    else {
+        cv::addWeighted(_background_depth_16UC1, 0.70, frame, 0.30, 0.0, _background_depth_16UC1);
+    }
 
+}
 
 
 

@@ -29,26 +29,31 @@ public:
 
     /**
      * @deprecated replaced by detect_simple and detect_MOG
-     * @brief detect
+     * @brief detects motions as ROIs in a frame.
      * @param image with the contours of mobiles _elements
      */
-    void detect(cv::Mat &diff);
+    void detect(cv::Mat& diff);
 
     /**
      * @brief Builds motion mask from current frame. Simple difference between background and current frame.
      */
-    void detect_simple(cv::Mat &current_frame);
+    void detect_simple(cv::Mat& current_frame);
 
     /**
      *@brief Builds motion mask from current frame. Similar as detect_simple but use a powerful adaptive background method.
      */
-    void detect_MOG(cv::Mat &current_frame);
+    void detect_MOG(cv::Mat& current_frame);
+
+    /**
+     *@brief Builds motion mask from depth frame. Uses the MOG background subtraction algorithm, with some tuning to work with depth frames. One may need to use RGBD utils to subscribe to both Depth and RBG topics on ROS.
+     */
+    void detect_MOG_depth(cv::Mat& depth_frame_16UC1);
 
     /**
      * @brief setInputFrames
      * @param vector of 2 successives frames
      */
-    void setInputFrames(const std::vector<cv::Mat> &f)
+    void setInputFrames(const std::vector<cv::Mat>& f)
     { _frames = f; }
 
     /**
@@ -57,18 +62,18 @@ public:
      * @param rect_array
      *
      */
-    void rect_clustering(std::vector<cv::Rect> &rect_array);
+    void rect_clustering(std::vector<cv::Rect>& rect_array);
 
     /**
      * @brief save results into little image all detected element.
      * @param counter
      */
-    void save_results(const std::string &folder, int counter);
+    void save_results(const std::string& folder, int counter);
 
     /**
      * @brief Extracts ROIs as cv::Rect from a given motion mask.
      */
-    std::vector<cv::Rect> motion_to_ROIs(cv::Mat &motion_mask);
+    std::vector<cv::Rect> motion_to_ROIs(cv::Mat& motion_mask);
 
     /**
      * @brief get the results in images
@@ -95,6 +100,7 @@ private :
     std::array<cv::Mat, 3> _elements;
 
     cv::Mat _background_BGR;
+    cv::Mat _background_depth_16UC1;
 
     cv::BackgroundSubtractorMOG2 _background_sub_MOG2;
 
@@ -104,15 +110,18 @@ private :
     /**
      * @brief Fills a vector of matrices by selecting ROIs in current frame.
      */
-    void extractResults(std::vector<cv::Rect> &rects);
+    void extractResults(std::vector<cv::Rect>& rects);
 
     /**
      * @brief Used by detect_simple to progressively update the background frame by blending it with the current one.
      */
-    void linear_background_blend(std::vector<cv::Mat> &background_channels,
-                                 std::vector<cv::Mat> &current_frame_channels);
+    void linear_background_blend(std::vector<cv::Mat>& background_channels,
+                                 std::vector<cv::Mat>& current_frame_channels);
 
-
+    /**
+     * @brief Denoises depth frames by doing smoothing average over frames and using a closing morphological transformation.
+     */
+    void denoise_depth(cv::Mat& depth_frame_16UC1);
 };
 
 #endif //MOTION_DETECTION_H
