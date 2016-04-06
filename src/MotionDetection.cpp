@@ -80,8 +80,6 @@ void MotionDetection::detect_simple(cv::Mat& current_frame_BGR)
         linear_background_blend(bg_HSV_channels, cf_HSV_channels);
 
         cv::merge(bg_HSV_channels, background_HSV);
-
-        cv::waitKey(10);
     }
 }
 
@@ -96,8 +94,6 @@ void MotionDetection::detect_MOG(cv::Mat& current_frame_BGR)
     cv::morphologyEx(motion_mask, motion_mask, cv::MORPH_OPEN, element);
 
     _resultsRects = motion_to_ROIs(motion_mask);
-
-    cv::waitKey(10);
 }
 
 void MotionDetection::detect_MOG_depth(cv::Mat& depth_frame_16UC1)
