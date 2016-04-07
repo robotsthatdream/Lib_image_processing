@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(image_processing)
 
+set(SOURCE_FILES src/DescriptorExtraction.cpp src/MotionDetection.cpp src/SupervoxelSet.cpp src/SurfaceOfInterest.cpp)
+
 #Libraries
 find_package(Boost REQUIRED COMPONENTS system )
 find_package(OpenCV REQUIRED COMPONENTS features2d nonfree)
@@ -20,7 +22,7 @@ install(DIRECTORY includes/  DESTINATION /usr/local/include/${PROJECT_NAME})
 
 file(GLOB_RECURSE src_files src/* includes/*)
 
-add_library(image_processing ${src_files})
+add_library(image_processing ${SOURCE_FILES})
 target_link_libraries(image_processing ${PCL_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}

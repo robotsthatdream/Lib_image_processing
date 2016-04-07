@@ -17,7 +17,8 @@ public:
      * @brief MotionDetection
      * default constructor
      */
-    MotionDetection();
+    MotionDetection()
+    { }
 
     /**
      * @brief MotionDetection
