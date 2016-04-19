@@ -1,13 +1,17 @@
 #include <DescriptorExtraction.h>
+
 #include <opencv2/nonfree/nonfree.hpp>
 #include <opencv2/nonfree/features2d.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
+
+using namespace image_processing;
 
 DescriptorExtraction::DescriptorExtraction(const cv::Mat &input, const std::string &type)
   : _input_image(input),
     _type(type)
 {
-  if(_type.compare("SIFT") == 0){
+    init<parameters::camera>();
+    if(_type.compare("SIFT") == 0){
       _detector = new cv::SiftFeatureDetector();
       _extractor = new cv::SiftDescriptorExtractor();
     }else if(_type.compare("ORB") == 0){
@@ -79,8 +83,8 @@ void DescriptorExtraction::align(const PointCloudT &ptcl){
         PointT pt = ptcl.at((int) currentPt.pt.x+(int)currentPt.pt.y*ptcl.width);
 
         float depth_value = pt.z;
-        float x_value = (currentPt.pt.x-315.5)*depth_value/570.3422241210938;
-        float y_value = (currentPt.pt.y-235.5)*depth_value/570.3422241210938;
+        float x_value = (currentPt.pt.x-_param.rgb_princ_pt_x)*depth_value/_param.focal_length_x;
+        float y_value = (currentPt.pt.y-_param.rgb_princ_pt_y)*depth_value/_param.focal_length_y;
         if(!boost::math::isnan<float>(x_value) && !boost::math::isnan<float>(y_value) && !boost::math::isnan<float>(depth_value)){
             pcl::PointXYZ pt3d(x_value ,y_value,depth_value);
             Feature f;
@@ -104,8 +108,8 @@ DescriptorExtraction::KeyPointsXYZ DescriptorExtraction::pcl_key_points(const Po
       float x = pt.x;
       float y = pt.y;
       float depth_value = pt.z;
-      float x_value = (currentPt.pt.x-315.5)*depth_value/570.3422241210938;
-      float y_value = (currentPt.pt.y-235.5)*depth_value/570.3422241210938;
+      float x_value = (currentPt.pt.x-_param.rgb_princ_pt_x)*depth_value/_param.focal_length_x;
+      float y_value = (currentPt.pt.y-_param.rgb_princ_pt_y)*depth_value/_param.focal_length_y;
       double distance = sqrt((depth_value-0.85)*(depth_value-0.85) + (x_value-0.35)*(x_value-0.35) + (y_value-0.4)*(y_value-0.4));
       if(!boost::math::isnan<float>(x_value) && !boost::math::isnan<float>(y_value) && !boost::math::isnan<float>(depth_value)
          && distance < radius){

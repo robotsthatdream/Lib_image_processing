@@ -3,6 +3,9 @@
 
 #include <opencv2/opencv.hpp>
 #include <pcl_types.h>
+#include <default_parameters.hpp>
+
+namespace image_processing{
 
 /**
  * @brief The DescriptorExtraction class
@@ -23,8 +26,18 @@ public:
       cv::Mat descriptor; /**< a one dimensional vertical vector */
     };
 
-    DescriptorExtraction(){}
+    DescriptorExtraction(){init<parameters::camera>();}
     DescriptorExtraction(const cv::Mat& input,const std::string& type);
+
+    template <typename Param>
+    void init(){
+        _param.depth_princ_pt_x = Param::depth_princ_pt_x;
+        _param.depth_princ_pt_y = Param::depth_princ_pt_y;
+        _param.focal_length_x = Param::focal_length_x;
+        _param.focal_length_y = Param::focal_length_y;
+        _param.rgb_princ_pt_x = Param::rgb_princ_pt_x;
+        _param.rgb_princ_pt_y = Param::rgb_princ_pt_y;
+    }
 
     /**
      * @brief extract
@@ -145,6 +158,18 @@ private:
      PointCloudXYZ _3d_positions;
 
      std::vector<Feature> _features;
+
+     struct _param_t{
+         float depth_princ_pt_x;
+         float depth_princ_pt_y;
+         float rgb_princ_pt_x;
+         float rgb_princ_pt_y;
+         float focal_length_x;
+         float focal_length_y;
+     };
+     _param_t _param;
 };
+
+}
 
 #endif //DESCRIPTOR_EXTRACTION_H

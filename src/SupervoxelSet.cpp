@@ -12,20 +12,22 @@ void SupervoxelSet::computeSupervoxel(std::vector<float> area){
     if(!area.empty()){//if an area is given reduce the input cloud to the area.
         pcl::PassThrough<PointT> passFilter;
 
+
         passFilter.setInputCloud(_inputCloud);
-        passFilter.setFilterFieldName("z"); //x
+        passFilter.setFilterFieldName("x");
         passFilter.setFilterLimits(area[0],area[1]);
         passFilter.filter(*_inputCloud);
 
         passFilter.setInputCloud(_inputCloud);
-        passFilter.setFilterFieldName("x"); //y
+        passFilter.setFilterFieldName("y");
         passFilter.setFilterLimits(area[2],area[3]);
         passFilter.filter(*_inputCloud);
 
         passFilter.setInputCloud(_inputCloud);
-        passFilter.setFilterFieldName("y"); //z
+        passFilter.setFilterFieldName("z");
         passFilter.setFilterLimits(area[4],area[5]);
         passFilter.filter(*_inputCloud);
+
 
     }
 
@@ -38,9 +40,7 @@ void SupervoxelSet::computeSupervoxel(std::vector<float> area){
 
     //definition of super voxel clustering class
     _extractor->setInputCloud(_inputCloud);
-    _extractor->setColorImportance(parameters::color_importance);
-    _extractor->setSpatialImportance(parameters::spatial_importance);
-    _extractor->setNormalImportance(parameters::normal_importance);
+
     //--
 
     std::cout << "Extracting supervoxels!" << std::endl;
@@ -210,7 +210,7 @@ void SupervoxelSet::clear(){
     for(auto it = _supervoxels.begin();it != _supervoxels.end();it++){
         remove(it->first);
     }
-    _extractor.reset(new pcl::SupervoxelClustering<PointT>(parameters::voxel_resolution,parameters::seed_resolution,parameters::use_transform));
+    _extractor.reset(new pcl::SupervoxelClustering<PointT>(supervoxel::voxel_resolution,supervoxel::seed_resolution,supervoxel::use_transform));
 }
 
 void SupervoxelSet::extractCloud(PointCloudT& resultCloud){
@@ -280,7 +280,50 @@ SupervoxelSet SupervoxelSet::compare(SupervoxelSet &super,double threshold,doubl
 
 }
 
+Superpixels SupervoxelSet::to_superpixels(){
+    Superpixels result;
 
+    for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
+        std::vector<cv::Point2f> pts;
+        pcl::Supervoxel<PointT> current_sv = *(it_sv->second);
+        for(int i = 0; i < current_sv.voxels_->size(); i++){
+            PointT pt_vx = current_sv.voxels_->at(i);
+            float px = pt_vx.x;
+            float py = pt_vx.y;
+            float pz = pt_vx.z;
+            float x = camera::focal_length_x*pt_vx.x/pt_vx.z
+                    + camera::rgb_princ_pt_x;
+            float y = camera::focal_length_y*pt_vx.y/pt_vx.z
+                    + camera::rgb_princ_pt_y;
+
+            pts.push_back(cv::Point2f(x,y));
+        }
+        result.emplace(it_sv->first,pts);
+    }
+
+    return result;
+}
+
+PointCloudT SupervoxelSet::mean_color_cloud(){
+    PointCloudT ptcl;
+
+    for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
+        PointCloudT::Ptr current_sv = it_sv->second->voxels_;
+        PointT current_centroid = it_sv->second->centroid_;
+
+        for(auto pt : *current_sv){
+            PointT tmp_pt;
+            tmp_pt.x = pt.x;
+            tmp_pt.y = pt.y;
+            tmp_pt.z = pt.z;
+            tmp_pt.r = current_centroid.r;
+            tmp_pt.g = current_centroid.g;
+            tmp_pt.b = current_centroid.b;
+            ptcl.push_back(pt);
+        }
+    }
+    return ptcl;
+}
 
 void SupervoxelSet::substract(SupervoxelSet &cloud){
     SupervoxelArray cloud_sva = cloud.getSupervoxels();

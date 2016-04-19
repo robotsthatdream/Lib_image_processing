@@ -7,6 +7,9 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/distances.h>
 
+#include <opencv2/opencv.hpp>
+
+#include <default_parameters.hpp>
 #include <pcl_types.h>
 #include <string>
 #include <vector>
@@ -14,9 +17,10 @@
 #include <memory>
 
 
+
 namespace image_processing {
 
-
+using namespace  parameters;
 
 /**
  * @brief The SupervoxelSet class
@@ -27,32 +31,29 @@ class SupervoxelSet{
 
 public :
 
-    /**
-     * @brief constant parameter for super voxel clustering
-     */
-    struct parameters{
-        static constexpr bool use_transform = false;
-        static constexpr float voxel_resolution = 0.008f;
-        static constexpr float color_importance = 0.01f;
-        static constexpr float spatial_importance = 0.4f;
-        static constexpr float normal_importance = 0.4f;
-        static constexpr float seed_resolution = 0.05f;
-    };
 
     typedef std::shared_ptr<SupervoxelSet> Ptr;
     typedef const std::shared_ptr<SupervoxelSet> ConstPtr;
 
     SupervoxelSet(){
-        _extractor.reset(new pcl::SupervoxelClustering<PointT>(parameters::voxel_resolution,parameters::seed_resolution,parameters::use_transform));
+        init<supervoxel>();
     }
     SupervoxelSet(const PointCloudT::Ptr& cloud) : _inputCloud(cloud){
-        _extractor.reset(new pcl::SupervoxelClustering<PointT>(parameters::voxel_resolution,parameters::seed_resolution,parameters::use_transform));
+        init<supervoxel>();
     }
     SupervoxelSet(const SupervoxelSet& super) :
         _inputCloud(super._inputCloud),
         _supervoxels(super._supervoxels),
         _adjacency_map(super._adjacency_map),
         _extractor(_extractor){}
+
+    template <typename Param>
+    void init(){
+        _extractor.reset(new pcl::SupervoxelClustering<PointT>(Param::voxel_resolution,Param::seed_resolution,Param::use_transform));
+        _extractor->setColorImportance(Param::color_importance);
+        _extractor->setSpatialImportance(Param::spatial_importance);
+        _extractor->setNormalImportance(Param::normal_importance);
+    }
 
     //METHODES-------------------------------------------------
     /**
@@ -138,6 +139,13 @@ public :
      */
     SupervoxelSet compare(SupervoxelSet &super, double threshold, double position_importance = 1, double normal_importance = 1);
 
+    /**
+     * @brief convert supervoxel into a list of pixel coordinates associate to each supervoxel.
+     * @return a set of superpixels;
+     */
+    Superpixels to_superpixels();
+
+    PointCloudT mean_color_cloud();
 
     /**
      * @brief substract
