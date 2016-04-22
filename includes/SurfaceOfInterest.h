@@ -1,8 +1,8 @@
 #ifndef _SURFACE_OF_INTEREST_H
 #define _SURFACE_OF_INTEREST_H
 
-#include <SupervoxelSet.h>
-#include <TrainingData.hpp>
+#include "SupervoxelSet.h"
+#include "TrainingData.hpp"
 #include <boost/random.hpp>
 #include <ctime>
 

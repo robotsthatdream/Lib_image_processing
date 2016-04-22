@@ -1,10 +1,10 @@
 #include <MotionDetection.h>
 
-void MotionDetection::detect(cv::Mat& diff)
+bool MotionDetection::detect(cv::Mat& diff)
 {
     if (_frames.size() != 2) {
         std::cerr << "detect : need exactly 2 frames" << std::endl;
-        return;
+        return false;
     }
 
     cv::Mat current = _frames[1].clone();
@@ -31,6 +31,7 @@ void MotionDetection::detect(cv::Mat& diff)
     //clustering of the bounding boxes to assemble the parted objects
     rect_clustering(_resultsRects);
     extractResults(_resultsRects);
+    return !_resultsRects.empty();
 }
 
 void MotionDetection::detect_simple(cv::Mat& current_frame_BGR)

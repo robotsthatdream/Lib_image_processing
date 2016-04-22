@@ -90,6 +90,7 @@ void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint3
 }
 
 void SurfaceOfInterest::compute_weights(const TrainingData<pcl::Supervoxel<PointT>>& data){
+    init_weights();
 
     for(int i = 0; i < data.size(); i++){
 

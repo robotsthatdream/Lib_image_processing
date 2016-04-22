@@ -3,7 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <pcl_types.h>
-#include <default_parameters.hpp>
+#include "default_parameters.hpp"
 
 namespace image_processing{
 
