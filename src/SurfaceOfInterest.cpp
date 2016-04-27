@@ -74,8 +74,12 @@ void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint3
     //*build the distribution from weights
     std::map<float,uint32_t> soi_dist;
     float val = 0.f;
+    float total_w = 0.f;
+    for(auto it = _weights.begin(); it != _weights.end(); it++)
+        total_w += it->second;
+
     for(auto it = _weights.begin(); it != _weights.end(); it++){
-        val+=it->second/((float)_weights.size());
+        val+=it->second/(total_w);
         soi_dist.emplace(val,it->first);
     }
     //*/
