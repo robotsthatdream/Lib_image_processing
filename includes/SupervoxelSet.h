@@ -6,6 +6,7 @@
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/distances.h>
+#include <pcl/segmentation/supervoxel_clustering.h>
 
 #include <opencv2/opencv.hpp>
 
@@ -147,6 +148,8 @@ public :
 
     PointCloudT mean_color_cloud();
 
+    void supervoxel_to_mask(uint32_t lbl,cv::Mat& mask);
+
     /**
      * @brief substract
      * @param cloud
@@ -164,13 +167,13 @@ public :
     void getCentroidCloud(PointCloudT& centroids, std::map<int,uint32_t>& centroidsLabel, PointCloudN& centroid_normals);
     void getCentroidCloud(PointCloudT& centroids, std::map<int,uint32_t>& centroidsLabel);
 
-    /**
-     * @brief getColoredCloud
-     * @return a colored cloud to visualize supervoxel clustering
-     */
-    const PointCloudT& getColoredCloud(){
-        return *(_extractor->getColoredCloud());
-    }
+//    /**
+//     * @brief getColoredCloud DEPRECATED
+//     * @return a colored cloud to visualize supervoxel clustering
+//     */
+//    const PointCloudT& getColoredCloud(){
+//        return *(_extractor->getColoredCloud());
+//    }
 
     /**
      * @brief setInputCloud
@@ -214,7 +217,7 @@ public :
      *@param label : uint32_t
      *@return pcl::Supervoxel
      */
-    const pcl::Supervoxel<PointT>::Ptr& at(uint32_t label){return _supervoxels.at(label);}
+    const pcl::Supervoxel<PointT>::Ptr& at(uint32_t label) const {return _supervoxels.at(label);}
     //---------------------------------------------------------
 
 protected:

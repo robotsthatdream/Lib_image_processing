@@ -325,6 +325,28 @@ PointCloudT SupervoxelSet::mean_color_cloud(){
     return ptcl;
 }
 
+void SupervoxelSet::supervoxel_to_mask(uint32_t lbl, cv::Mat &mask){
+
+    //TODO replace hardcode values.
+
+    PointCloudT::Ptr sv = _supervoxels.at(lbl)->voxels_;
+    mask = cv::Mat::zeros(480,640,CV_8U);
+
+    for(int i = 0; i < sv->size(); i++){
+        PointT pt = sv->at(i);
+
+        int p_x = camera::focal_length_x*pt.x/pt.z
+                + camera::rgb_princ_pt_x;
+        int p_y = camera::focal_length_y*pt.y/pt.z
+                + camera::rgb_princ_pt_y;
+
+        for(int k = -2; k <= 2;k++)
+            for(int j = -2; j <= 2; j++)
+                mask.row(p_y+k).col(p_x+j) = cv::Mat(1,1,CV_8U,cv::Scalar(255,255,255));
+   }
+
+}
+
 void SupervoxelSet::substract(SupervoxelSet &cloud){
     SupervoxelArray cloud_sva = cloud.getSupervoxels();
     for(SupervoxelArray::iterator sv_itr = cloud_sva.begin();
