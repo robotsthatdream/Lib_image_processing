@@ -74,7 +74,7 @@ public:
     /**
      * @brief Extracts ROIs as cv::Rect from a given motion mask.
      */
-    std::vector<cv::Rect> motion_to_ROIs(cv::Mat& motion_mask);
+    std::vector<cv::Rect> motion_to_ROIs(cv::Mat& motion_mask, int thres = 75);
 
     /**
      * @brief get the results in images

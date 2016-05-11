@@ -327,11 +327,10 @@ PointCloudT SupervoxelSet::mean_color_cloud(){
 
 void SupervoxelSet::supervoxel_to_mask(uint32_t lbl, cv::Mat &mask){
 
-    //TODO replace hardcode values.
+    //TODO replace hardcode values by smart values.
 
     PointCloudT::Ptr sv = _supervoxels.at(lbl)->voxels_;
     mask = cv::Mat::zeros(480,640,CV_8U);
-
     for(int i = 0; i < sv->size(); i++){
         PointT pt = sv->at(i);
 
@@ -342,7 +341,7 @@ void SupervoxelSet::supervoxel_to_mask(uint32_t lbl, cv::Mat &mask){
 
         for(int k = -2; k <= 2;k++)
             for(int j = -2; j <= 2; j++)
-                mask.row(p_y+k).col(p_x+j) = cv::Mat(1,1,CV_8U,cv::Scalar(255,255,255));
+                mask.row(p_y+k).col(p_x+j) = 255;
    }
 
 }

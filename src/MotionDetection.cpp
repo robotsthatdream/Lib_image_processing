@@ -13,23 +13,29 @@ bool MotionDetection::detect(cv::Mat& diff)
     diff = cv::Mat::zeros(current.rows, current.cols, current.type());
 
     //conversion color to grayscale
-    cv::cvtColor(previous, previous, cv::COLOR_BGR2GRAY);
-    cv::cvtColor(current, current, cv::COLOR_BGR2GRAY);
+    if(previous.channels() == 3)
+        cv::cvtColor(previous, previous, cv::COLOR_BGR2GRAY);
+    if(current.channels() == 3)
+        cv::cvtColor(current, current, cv::COLOR_BGR2GRAY);
 
     //gaussian blur to eliminate some noise
     cv::GaussianBlur(previous, previous, cv::Size(3, 3), 0);
     cv::GaussianBlur(current, current, cv::Size(3, 3), 0);
 
+
     //compute the difference between the two frame to detect a motion
     cv::subtract(current, previous, diff);
+
 
     //binarisation of the difference image
     cv::adaptiveThreshold(diff, diff, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 5, 2);
 
-    _resultsRects = motion_to_ROIs(diff);
+
+    _resultsRects = motion_to_ROIs(diff,30);
 
     //clustering of the bounding boxes to assemble the parted objects
-    rect_clustering(_resultsRects);
+
+//    rect_clustering(_resultsRects);
     extractResults(_resultsRects);
     return !_resultsRects.empty();
 }
@@ -175,7 +181,7 @@ void MotionDetection::extractResults(std::vector<cv::Rect>& rects)
     }
 }
 
-std::vector<cv::Rect> MotionDetection::motion_to_ROIs(cv::Mat& motion_mask)
+std::vector<cv::Rect> MotionDetection::motion_to_ROIs(cv::Mat& motion_mask,int thres)
 {
     std::vector<cv::Mat> contours;
     std::vector<cv::Rect> ROIs;
@@ -186,7 +192,7 @@ std::vector<cv::Rect> MotionDetection::motion_to_ROIs(cv::Mat& motion_mask)
     //selection of minimal size contours using bounding box;
     for (unsigned int i = 0; i < contours.size(); i++) {
         double area = cv::contourArea(contours[i]);
-        if (area > 75) {
+        if (area > thres) {
             ROIs.push_back(cv::boundingRect(contours[i]));
         }
     }
