@@ -21,6 +21,30 @@
 
 namespace image_processing {
 
+typedef struct workspace_t{
+
+    struct sphere_t{
+
+        sphere_t(float sx, float sy, float sz, float r, float t)
+            : x(sx), y(sy), z(sz), radius(r), threshold(t){}
+
+        float x;
+        float y;
+        float z;
+        float radius;
+        float threshold;
+    };
+
+    workspace_t(bool s,float sx, float sy, float sz, float r, float t, std::vector<float> a)
+        : with_sphere(s),sphere(sx,sy,sz,r,t), area(a){}
+
+    bool with_sphere;
+
+    sphere_t sphere;
+    std::vector<float> area;
+
+}workspace_t;
+
 using namespace  parameters;
 
 /**
@@ -62,7 +86,8 @@ public :
      * @param nbr_iteration (set nbr_iteration > 1 if you want to refine the supervoxels) default value = 1
      * @return colorized pointcloud. Each color correspond to a supervoxel for a vizualisation.
      */
-    void computeSupervoxel(std::vector<float> area = std::vector<float>());
+    void computeSupervoxel(const workspace_t &workspace);
+    void computeSupervoxel();
 
     /**
      * @brief extract a pointcloud of edges of each supervoxel

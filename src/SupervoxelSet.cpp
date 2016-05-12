@@ -3,33 +3,71 @@
 #include <pcl/registration/correspondence_estimation.h>
 #include <boost/random.hpp>
 #include <pcl/filters/passthrough.h>
-
+#include <pcl/filters/model_outlier_removal.h>
 
 using namespace image_processing;
 
-void SupervoxelSet::computeSupervoxel(std::vector<float> area){
+void SupervoxelSet::computeSupervoxel(const workspace_t& workspace){
 
-    if(!area.empty()){//if an area is given reduce the input cloud to the area.
-        pcl::PassThrough<PointT> passFilter;
+    pcl::PassThrough<PointT> passFilter;
 
+    if(workspace.with_sphere){
+        pcl::ModelCoefficients sphere_coeff;
+        sphere_coeff.values.resize (4);
+        sphere_coeff.values[0] = workspace.sphere.x;
+        sphere_coeff.values[1] = workspace.sphere.y;
+        sphere_coeff.values[2] = workspace.sphere.z;
+        sphere_coeff.values[3] = workspace.sphere.radius;
 
-        passFilter.setInputCloud(_inputCloud);
-        passFilter.setFilterFieldName("x");
-        passFilter.setFilterLimits(area[0],area[1]);
-        passFilter.filter(*_inputCloud);
-
-        passFilter.setInputCloud(_inputCloud);
-        passFilter.setFilterFieldName("y");
-        passFilter.setFilterLimits(area[2],area[3]);
-        passFilter.filter(*_inputCloud);
-
-        passFilter.setInputCloud(_inputCloud);
-        passFilter.setFilterFieldName("z");
-        passFilter.setFilterLimits(area[4],area[5]);
-        passFilter.filter(*_inputCloud);
-
-
+        pcl::ModelOutlierRemoval<PointT> sphere_filter;
+        sphere_filter.setModelCoefficients (sphere_coeff);
+        sphere_filter.setNegative(true);
+        sphere_filter.setThreshold (workspace.sphere.threshold);
+        sphere_filter.setModelType (pcl::SACMODEL_SPHERE);
+        sphere_filter.setInputCloud (_inputCloud);
+        sphere_filter.filter(*_inputCloud);
     }
+
+    passFilter.setInputCloud(_inputCloud);
+    passFilter.setFilterFieldName("x");
+    passFilter.setFilterLimits(workspace.area[0],workspace.area[1]);
+    passFilter.filter(*_inputCloud);
+
+    passFilter.setInputCloud(_inputCloud);
+    passFilter.setFilterFieldName("y");
+    passFilter.setFilterLimits(workspace.area[2],workspace.area[3]);
+    passFilter.filter(*_inputCloud);
+
+    passFilter.setInputCloud(_inputCloud);
+    passFilter.setFilterFieldName("z");
+    passFilter.setFilterLimits(workspace.area[4],workspace.area[5]);
+    passFilter.filter(*_inputCloud);
+
+
+
+
+    //input cloud
+    if(_inputCloud->empty()){
+        std::cerr << "error : input cloud is empty" << std::endl;
+        exit(1);
+    }
+
+
+    //definition of super voxel clustering class
+    _extractor->setInputCloud(_inputCloud);
+
+    //--
+
+    std::cout << "Extracting supervoxels!" << std::endl;
+
+    _extractor->extract(_supervoxels);
+    assert(_supervoxels.size() != 0);
+    _extractor->getSupervoxelAdjacency(_adjacency_map);
+    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
+}
+
+void SupervoxelSet::computeSupervoxel(){
+
 
     //input cloud
     if(_inputCloud->empty()){
