@@ -2,6 +2,29 @@
 
 using namespace image_processing;
 
+void SurfaceOfInterest::generate(const workspace_t &workspace){
+    computeSupervoxel(workspace);
+    init_weights();
+}
+
+void SurfaceOfInterest::generate(const TrainingData<pcl::Supervoxel<PointT>>& dataset, const workspace_t& workspace){
+    computeSupervoxel(workspace);
+    compute_weights(dataset);
+}
+
+void SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, const workspace_t &workspace){
+    computeSupervoxel(workspace);
+    init_weights(0.);
+    find_soi(key_pts);
+}
+
+void SurfaceOfInterest::generate(const PointCloudT::Ptr background, const workspace_t &workspace){
+    delete_background(background);
+    computeSupervoxel(workspace);
+    init_weights();
+}
+
+
 void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
     pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr tree(new pcl::KdTreeFLANN<pcl::PointXYZ>());
 
@@ -26,7 +49,7 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
     std::vector<float> nn_distance(1);
 
     std::map<uint32_t,uint32_t> result;
-    std::map<uint32_t,uint32_t> no_result;
+//    std::map<uint32_t,uint32_t> no_result;
 
     for(int i = 0; i < key_pts->size(); i++){
         if(!pcl::isFinite(key_pts->points[i]))
@@ -37,27 +60,34 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
                       i, key_pts->points[i].x, key_pts->points[i].y, key_pts->points[i].z);
             continue;
         }
-        if(nn_distance[0] < 0.05)
-            result.emplace(centroids_label[nn_indices[0]],centroids_label[nn_indices[0]]);
-        else
-            no_result.emplace(centroids_label[nn_indices[0]],centroids_label[nn_indices[0]]);
+
+        result.emplace(centroids_label[nn_indices[0]],centroids_label[nn_indices[0]]);
+
+//        if(nn_distance[0] < 0.05)
+//            result.emplace(centroids_label[nn_indices[0]],centroids_label[nn_indices[0]]);
+//        else
+//            no_result.emplace(centroids_label[nn_indices[0]],centroids_label[nn_indices[0]]);
     }
 
 
-    for(auto it = no_result.begin(); it != no_result.end(); it++)
-        _labels_no_soi.push_back(it->first);
-
-    for(auto it = result.begin(); it != result.end(); it++){
-        _labels.push_back(it->first);
+    for(auto it = result.begin(); it != result.end(); it++)
         _weights.emplace(it->first,1.);
-    }
-    assert(_labels.size() == _weights.size());
+
+
+//    for(auto it = no_result.begin(); it != no_result.end(); it++)
+//        _labels_no_soi.push_back(it->first);
+
+//    for(auto it = result.begin(); it != result.end(); it++){
+//        _labels.push_back(it->first);
+//        _weights.emplace(it->first,1.);
+//    }
+//    assert(_labels.size() == _weights.size());
 }
 
-void SurfaceOfInterest::init_weights(){
+void SurfaceOfInterest::init_weights(float value){
     _weights.clear();
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
-        _weights.emplace(it_sv->first,1.);
+        _weights.emplace(it_sv->first,value);
     }
 
 }
@@ -129,6 +159,30 @@ void SurfaceOfInterest::compute_weights(const TrainingData<pcl::Supervoxel<Point
 
 }
 
+
+void SurfaceOfInterest::delete_background(const PointCloudT::Ptr background){
+    pcl::KdTreeFLANN<PointT>::Ptr tree(new pcl::KdTreeFLANN<PointT>);
+    tree->setInputCloud(background);
+
+    std::vector<int> nn_indices(1);
+    std::vector<float> nn_distance(1);
+
+    PointCloudT filtered_cloud;
+
+    for(auto pt : _inputCloud->points){
+        if(!pcl::isFinite(pt))
+            continue;
+
+        if(!tree->nearestKSearch(pt,1,nn_indices,nn_distance))
+            continue;
+
+        if(nn_distance[0] > 0.0001)
+            filtered_cloud.points.push_back(pt);
+    }
+
+    _inputCloud.reset(new PointCloudT(filtered_cloud));
+
+}
 
 void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances, pcl::Supervoxel<PointT> ref_sv){
 

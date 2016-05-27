@@ -64,11 +64,38 @@ public:
     void find_soi(const PointCloudXYZ::Ptr key_pts);
 
     /**
+     * @brief generate the soi for a pure random choice (i.e. all supervoxels are soi)
+     * @param workspace
+     */
+    void generate(const workspace_t& workspace);
+
+    /**
+     * @brief generate the soi with a simple linear fuzzy classifier
+     * @param training dataset
+     * @param workspace
+     */
+    void generate(const TrainingData<pcl::Supervoxel<PointT>>& dataset, const workspace_t& workspace);
+
+    /**
+     * @brief generate the soi with key points. Soi will be supervoxels who contains at least one key points.
+     * @param key points
+     * @param workspace
+     */
+    void generate(const PointCloudXYZ::Ptr key_pts,const workspace_t& workspace);
+
+    /**
+     * @brief generate the soi by deleting the background
+     * @param pointcloud of the background
+     * @param workspace
+     */
+    void generate(const PointCloudT::Ptr background, const workspace_t& workspace);
+
+    /**
      * @brief reduce the set of supervoxels to set of soi
      */
     void reduce_to_soi();
 
-    void init_weights();
+    void init_weights(float value = 1.);
 
     /**
      * @brief methode compute the weight of each supervoxels. The weights represent the probability for a soi to be explored.
@@ -84,6 +111,10 @@ public:
      * @param label of chosen supervoxel in the soi set
      */
     void choice_of_soi(pcl::Supervoxel<PointT>& supervoxel,uint32_t& lbl);
+
+
+    void delete_background(const PointCloudT::Ptr background);
+
 
     PointCloudT getColoredWeightedCloud();
 
