@@ -2,7 +2,7 @@
 #define DESCRIPTOR_EXTRACTION_H
 
 #include <opencv2/opencv.hpp>
-#include <pcl_types.h>
+#include "pcl_types.h"
 #include "default_parameters.hpp"
 
 namespace image_processing{

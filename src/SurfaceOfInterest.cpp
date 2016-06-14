@@ -131,10 +131,20 @@ void SurfaceOfInterest::compute_weights(const TrainingData<pcl::Supervoxel<Point
         bool interest = data[i].first;
         pcl::Supervoxel<PointT> sv = data[i].second;
 
+
         std::map<uint32_t,float> distances;
         _compute_distances(distances,sv);
 
-
+//        for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
+//            VectorXd sv_sample;
+//            sv_sample(0) = it_sv->second->centroid_.x;
+//            sv_sample(1) = it_sv->second->centroid_.y;
+//            sv_sample(2) = it_sv->second->centroid_.z;
+//            sv_sample(3) = it_sv->second->normal_.normal[0];
+//            sv_sample(4) = it_sv->second->normal_.normal[1];
+//            sv_sample(5) = it_sv->second->normal_.normal[2];
+//            distances.emplace(it_sv->first,(sv_sample - sample).squaredNorm());
+//        }
 
 
         for(auto it_w = _weights.begin(); it_w != _weights.end(); it_w++){

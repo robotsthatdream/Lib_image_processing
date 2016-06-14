@@ -103,7 +103,7 @@ public:
      * @param lbl label of the explored supervoxel
      * @param interest true if the explored supervoxel is interesting false otherwise
      */
-    void compute_weights(const TrainingData<pcl::Supervoxel<PointT>>& data);
+    void compute_weights(const TrainingData<pcl::Supervoxel<PointT> > &data);
 
     /**
      * @brief choose randomly one soi
@@ -112,7 +112,10 @@ public:
      */
     void choice_of_soi(pcl::Supervoxel<PointT>& supervoxel,uint32_t& lbl);
 
-
+    /**
+     * @brief delete the background of the input cloud
+     * @param a pointcloud
+     */
     void delete_background(const PointCloudT::Ptr background);
 
 
