@@ -73,7 +73,7 @@ public:
      * @brief get all data
      * @return vector of paired label and data
      */
-    const data_t& get(){return _data;}
+    const data_t& get() const {return _data;}
 
     /**
      * @brief get only positive data
@@ -92,5 +92,23 @@ protected:
     std::vector<Data> _neg_data;
     std::vector<Data> _pos_data;
 };
+
+template <typename Data>
+inline std::ostream& operator<< (std::ostream& os,const TrainingData<Data>& dataset ){
+
+    typename TrainingData<Data>::data_t data_set = dataset.get();
+    for(auto data : data_set){
+        os << "1 : ";
+        os << "l : ";
+        if(data.first)
+            os << "1";
+        else os << "0";
+
+        os << " - ";
+        os << data.second;
+    }
+
+    return os;
+}
 
 #endif //TRAINING_DATA_HPP

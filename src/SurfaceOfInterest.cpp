@@ -9,7 +9,7 @@ bool SurfaceOfInterest::generate(const workspace_t &workspace){
     return true;
 }
 
-bool SurfaceOfInterest::generate(const TrainingData<pcl::Supervoxel<PointT>>& dataset, const workspace_t& workspace){
+bool SurfaceOfInterest::generate(const TrainingData<SvFeature>& dataset, const workspace_t& workspace){
     if(!computeSupervoxel(workspace))
         return false;
     compute_weights(dataset);
@@ -131,13 +131,13 @@ void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint3
     //*/
 }
 
-void SurfaceOfInterest::compute_weights(const TrainingData<pcl::Supervoxel<PointT>>& data){
+void SurfaceOfInterest::compute_weights(const TrainingData<SvFeature>& data){
     init_weights();
 
     for(int i = 0; i < data.size(); i++){
 
         bool interest = data[i].first;
-        pcl::Supervoxel<PointT> sv = data[i].second;
+        SvFeature sv = data[i].second;
 
 
         std::map<uint32_t,float> distances;
@@ -202,16 +202,7 @@ void SurfaceOfInterest::delete_background(const PointCloudT::Ptr background){
 
 }
 
-void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances, pcl::Supervoxel<PointT> ref_sv){
-
-    std::vector<float> ref_normal = {ref_sv.normal_.normal[0],
-                                     ref_sv.normal_.normal[1],
-                                     ref_sv.normal_.normal[2],
-                                     ref_sv.normal_.normal[3]};
-
-    std::vector<float> ref_rgb = {(float)ref_sv.centroid_.r,
-                                  (float)ref_sv.centroid_.g,
-                                  (float)ref_sv.centroid_.b};
+void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances, const SvFeature& ref_sv){
 
     float w = _param.color_normal_ratio;
     float v = 1-_param.color_normal_ratio;
@@ -220,35 +211,35 @@ void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances,
     auto it_sv = _supervoxels.begin();
 
     pcl::Supervoxel< PointT >::Ptr sv = it_sv->second;
-    std::vector<float> normal = {sv->normal_.normal[0],
+    std::vector<double> normal = {sv->normal_.normal[0],
                                  sv->normal_.normal[1],
                                  sv->normal_.normal[2],
                                  sv->normal_.normal[3]};
 
-    std::vector<float> rgb = {(float)sv->centroid_.r,
-                              (float)sv->centroid_.g,
-                              (float)sv->centroid_.b};
-    float color_distance = _L2_distance(ref_rgb,rgb)/255.;
-    float normal_distance = _L2_distance(ref_normal,normal)/2.;
-    float distance = sqrt(w*color_distance*color_distance+v*normal_distance*normal_distance);
+    std::vector<double> rgb = {(double)sv->centroid_.r,
+                              (double)sv->centroid_.g,
+                              (double)sv->centroid_.b};
+    double color_distance = _L2_distance(ref_sv.color,rgb)/255.;
+    double normal_distance = _L2_distance(ref_sv.normal,normal)/2.;
+    double distance = sqrt(w*color_distance*color_distance+v*normal_distance*normal_distance);
     distances.emplace(it_sv->first,distance);
-    float max_distance = distance;
+    double max_distance = distance;
 
     for(; it_sv != _supervoxels.end(); ++it_sv){
         //        if(it_sv->first == lbl)
         //            continue;
         sv = it_sv->second;
-        std::vector<float> normal = {sv->normal_.normal[0],
+        std::vector<double> normal = {sv->normal_.normal[0],
                                      sv->normal_.normal[1],
                                      sv->normal_.normal[2],
                                      sv->normal_.normal[3]};
 
 
-        std::vector<float> rgb = {(float)sv->centroid_.r,
-                                  (float)sv->centroid_.g,
-                                  (float)sv->centroid_.b};
-        color_distance = _L2_distance(ref_rgb,rgb)/255.;
-        normal_distance = _L2_distance(ref_normal,normal)/2.;
+        std::vector<double> rgb = {(double)sv->centroid_.r,
+                                  (double)sv->centroid_.g,
+                                  (double)sv->centroid_.b};
+        color_distance = _L2_distance(ref_sv.color,rgb)/255.;
+        normal_distance = _L2_distance(ref_sv.normal,normal)/2.;
         distance = sqrt(w*color_distance*color_distance+v*normal_distance*normal_distance);
         if(distance > max_distance)
             max_distance = distance;
@@ -259,9 +250,9 @@ void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances,
         it_d->second = it_d->second / max_distance;
 }
 
-float SurfaceOfInterest::_L2_distance(const std::vector<float> &p1, const std::vector<float> &p2){
+double SurfaceOfInterest::_L2_distance(const std::vector<double> &p1, const std::vector<double> &p2){
 
-    float square_sum = 0;
+    double square_sum = 0;
     for(int i = 0; i < p1.size() ; i++){
         square_sum += (p1[i]-p2[i])*(p1[i]-p2[i]);
     }
