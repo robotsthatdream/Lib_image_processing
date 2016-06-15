@@ -8,6 +8,25 @@
 
 namespace image_processing {
 
+typedef struct SvFeature{
+    std::vector<double> color;
+    std::vector<double> normal;
+}SvFeature;
+
+inline std::ostream& operator<<(std::ostream& os, const SvFeature& feature){
+
+    os << "color : ";
+    for(auto c : feature.color)
+        os << c << ";";
+
+    os << "normal : ";
+    for(auto n : feature.normal)
+        os << n << ";";
+
+
+    return os;
+}
+
 class SurfaceOfInterest : public SupervoxelSet
 {
 public:
@@ -74,7 +93,7 @@ public:
      * @param training dataset
      * @param workspace
      */
-    bool generate(const TrainingData<pcl::Supervoxel<PointT>>& dataset, const workspace_t& workspace);
+    bool generate(const TrainingData<SvFeature> &dataset, const workspace_t& workspace);
 
     /**
      * @brief generate the soi with key points. Soi will be supervoxels who contains at least one key points.
@@ -103,7 +122,7 @@ public:
      * @param lbl label of the explored supervoxel
      * @param interest true if the explored supervoxel is interesting false otherwise
      */
-    void compute_weights(const TrainingData<pcl::Supervoxel<PointT> > &data);
+    void compute_weights(const TrainingData<SvFeature> &data);
 
     /**
      * @brief choose randomly one soi
@@ -123,9 +142,9 @@ public:
 
 private :
 
-    void _compute_distances(std::map<uint32_t,float> &distances, pcl::Supervoxel<PointT> sv);
+    void _compute_distances(std::map<uint32_t,float> &distances, const SvFeature &sv);
 
-    float _L2_distance(const std::vector<float> &p1,const std::vector<float> &p2);
+    double _L2_distance(const std::vector<double> &p1, const std::vector<double> &p2);
 
     struct _param_t{
         float interest_increment;
