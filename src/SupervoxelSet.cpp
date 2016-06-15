@@ -7,7 +7,7 @@
 
 using namespace image_processing;
 
-void SupervoxelSet::computeSupervoxel(const workspace_t& workspace){
+bool SupervoxelSet::computeSupervoxel(const workspace_t& workspace){
 
     pcl::PassThrough<PointT> passFilter;
 
@@ -49,7 +49,7 @@ void SupervoxelSet::computeSupervoxel(const workspace_t& workspace){
     //input cloud
     if(_inputCloud->empty()){
         std::cerr << "error : input cloud is empty" << std::endl;
-        exit(1);
+        return false;
     }
 
 
@@ -64,15 +64,16 @@ void SupervoxelSet::computeSupervoxel(const workspace_t& workspace){
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
     std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
+    return true;
 }
 
-void SupervoxelSet::computeSupervoxel(){
+bool SupervoxelSet::computeSupervoxel(){
 
 
     //input cloud
     if(_inputCloud->empty()){
         std::cerr << "error : input cloud is empty" << std::endl;
-        exit(1);
+        return false;
     }
 
 
@@ -87,6 +88,7 @@ void SupervoxelSet::computeSupervoxel(){
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
     std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
+    return true;
 }
 
 void SupervoxelSet::extractEdges(PointCloudT::Ptr edges_cloud, AdjacencyMap supervoxel_adjacency){

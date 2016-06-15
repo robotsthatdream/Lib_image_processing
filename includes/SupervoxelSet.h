@@ -86,8 +86,8 @@ public :
      * @param nbr_iteration (set nbr_iteration > 1 if you want to refine the supervoxels) default value = 1
      * @return colorized pointcloud. Each color correspond to a supervoxel for a vizualisation.
      */
-    void computeSupervoxel(const workspace_t &workspace);
-    void computeSupervoxel();
+    bool computeSupervoxel(const workspace_t &workspace);
+    bool computeSupervoxel();
 
     /**
      * @brief extract a pointcloud of edges of each supervoxel

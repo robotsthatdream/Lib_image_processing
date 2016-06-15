@@ -67,28 +67,28 @@ public:
      * @brief generate the soi for a pure random choice (i.e. all supervoxels are soi)
      * @param workspace
      */
-    void generate(const workspace_t& workspace);
+    bool generate(const workspace_t& workspace);
 
     /**
      * @brief generate the soi with a simple linear fuzzy classifier
      * @param training dataset
      * @param workspace
      */
-    void generate(const TrainingData<pcl::Supervoxel<PointT>>& dataset, const workspace_t& workspace);
+    bool generate(const TrainingData<pcl::Supervoxel<PointT>>& dataset, const workspace_t& workspace);
 
     /**
      * @brief generate the soi with key points. Soi will be supervoxels who contains at least one key points.
      * @param key points
      * @param workspace
      */
-    void generate(const PointCloudXYZ::Ptr key_pts,const workspace_t& workspace);
+    bool generate(const PointCloudXYZ::Ptr key_pts,const workspace_t& workspace);
 
     /**
      * @brief generate the soi by deleting the background
      * @param pointcloud of the background
      * @param workspace
      */
-    void generate(const PointCloudT::Ptr background, const workspace_t& workspace);
+    bool generate(const PointCloudT::Ptr background, const workspace_t& workspace);
 
     /**
      * @brief reduce the set of supervoxels to set of soi
