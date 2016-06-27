@@ -32,6 +32,15 @@ bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, const worksp
     return true;
 }
 
+bool SurfaceOfInterest::generate(oml::Classifier::ConstPtr model,const workspace_t &workspace, bool training){
+    if(!computeSupervoxel(workspace))
+        return false;
+
+    if(training)
+        compute_confidence_weights(model);
+    else compute_weights(model);
+
+}
 
 void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
     pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr tree(new pcl::KdTreeFLANN<pcl::PointXYZ>());
@@ -177,6 +186,45 @@ void SurfaceOfInterest::compute_weights(const TrainingData<SvFeature>& data){
 
 }
 
+void SurfaceOfInterest::compute_confidence_weights(oml::Classifier::ConstPtr model){
+    init_weights();
+    for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
+        pcl::Supervoxel<PointT> sv = *(itr->second);
+        oml::Sample s;
+        s.x << (double) sv.centroid_.r, (double) sv.centroid_.g, (double) sv.centroid_.b,
+                sv.normal_.normal[0], sv.normal_.normal[1], sv.normal_.normal[2];
+
+        oml::Result r(2);
+        model->eval(s,r);
+        s.y = r.prediction;
+        s.w = r.confidence(r.prediction);
+        _weights[itr->first] = (s.w - .5)*2.;
+        if(_weights[itr->first] > 1)
+            _weights[itr->first] = 1;
+    }
+
+}
+
+void SurfaceOfInterest::compute_weights(oml::Classifier::ConstPtr model){
+    init_weights();
+    oml::DataSet dataset;
+
+    for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
+        pcl::Supervoxel<PointT> sv = *(itr->second);
+        oml::Sample s;
+        s.x << (double) sv.centroid_.r, (double) sv.centroid_.g, (double) sv.centroid_.b,
+             sv.normal_.normal[0], sv.normal_.normal[1], sv.normal_.normal[2];
+
+        oml::Result r(2);
+        model->eval(s,r);
+        s.y = r.prediction;
+        s.w = r.confidence(r.prediction);
+        dataset.add(s);
+
+        _weights[itr->first] = r.confidence(0);
+    }
+
+}
 
 void SurfaceOfInterest::delete_background(const PointCloudT::Ptr background){
     pcl::KdTreeFLANN<PointT>::Ptr tree(new pcl::KdTreeFLANN<PointT>);

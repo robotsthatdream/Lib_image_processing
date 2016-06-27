@@ -180,9 +180,38 @@ bool SupervoxelSet::contain(uint32_t label){
 }
 
 uint32_t SupervoxelSet::whichVoxelContain(float x, float y, float z){
-  boost::random::mt19937 gen;
 
-  return isInThisVoxel(x,y,z,_supervoxels.begin()->first,_adjacency_map,gen,20);
+    pcl::PointXYZ pt;
+    pt.x = x;
+    pt.y = y;
+    pt.z = z;
+
+    pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr tree(new pcl::KdTreeFLANN<pcl::PointXYZ>);
+    PointCloudT centr;
+    std::map<int, uint32_t> centroids_label;
+    getCentroidCloud(centr,centroids_label);
+    PointCloudXYZ::Ptr centroids(new PointCloudXYZ);
+    for(int i = 0; i < centr.size(); i++){
+        pcl::PointXYZ pt;
+        pt.x = centr.points[i].x;
+        pt.y = centr.points[i].y;
+        pt.z = centr.points[i].z;
+        centroids->push_back(pt);
+    }
+
+    tree->setInputCloud(centroids);
+
+    std::vector<int> nn_indices(1);
+    std::vector<float> nn_distance(1);
+
+    if(!tree->nearestKSearch(pt,1,nn_indices,nn_distance))
+        return 0;
+
+    return centroids_label[nn_indices[0]];
+
+//  boost::random::mt19937 gen;
+
+//  return isInThisVoxel(x,y,z,_supervoxels.begin()->first,_adjacency_map,gen,20);
 }
 
 uint32_t SupervoxelSet::isInThisVoxel(float x, float y, float z, uint32_t label,AdjacencyMap am,  boost::random::mt19937 gen, int counter ){

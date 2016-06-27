@@ -16,14 +16,15 @@ add_definitions(${PCL_DEFINITIONS})
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 set(LIBRARY_OUTPUT_PATH lib/${CMAKE_BUILD_TYPE})
 
-include_directories(includes)
+include_directories(includes /usr/local/include)
+link_directories(/usr/local/lib)
 
 install(DIRECTORY includes/  DESTINATION /usr/local/include/${PROJECT_NAME})
 
 file(GLOB_RECURSE src_files src/* includes/*)
 
 add_library(image_processing ${SOURCE_FILES})
-target_link_libraries(image_processing ${PCL_LIBRARIES})
+target_link_libraries(image_processing ${PCL_LIBRARIES} oml_rf)
 
 install(TARGETS ${PROJECT_NAME}
     ARCHIVE DESTINATION /usr/local/lib

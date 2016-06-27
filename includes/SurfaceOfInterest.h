@@ -6,6 +6,8 @@
 #include <boost/random.hpp>
 #include <ctime>
 
+#include <online-machine-learning/online_rf.h>
+
 namespace image_processing {
 
 typedef struct SvFeature{
@@ -85,6 +87,7 @@ public:
     /**
      * @brief generate the soi for a pure random choice (i.e. all supervoxels are soi)
      * @param workspace
+     * @return if the generation of soi is successful
      */
     bool generate(const workspace_t& workspace);
 
@@ -92,6 +95,7 @@ public:
      * @brief generate the soi with a simple linear fuzzy classifier
      * @param training dataset
      * @param workspace
+     * @return if the generation of soi is successful
      */
     bool generate(const TrainingData<SvFeature> &dataset, const workspace_t& workspace);
 
@@ -99,15 +103,28 @@ public:
      * @brief generate the soi with key points. Soi will be supervoxels who contains at least one key points.
      * @param key points
      * @param workspace
+     * @return if the generation of soi is successful
      */
-    bool generate(const PointCloudXYZ::Ptr key_pts,const workspace_t& workspace);
+    bool generate(const PointCloudXYZ::Ptr key_pts, const workspace_t &workspace);
 
     /**
      * @brief generate the soi by deleting the background
      * @param pointcloud of the background
      * @param workspace
+     * @return if the generation of soi is successful
      */
     bool generate(const PointCloudT::Ptr background, const workspace_t& workspace);
+
+    /**
+     * @brief generate the soi by classifing the supervoxel with a online trained Random Forest.
+     * If the generation is in training mode, the soi will be computed according to an interest to unknown area in the visual field.
+     * In this mode the classifier should be in training. In the non training mode, the classifier is fixed and the soi are computed according to the classification.
+     * @param RF classifier
+     * @param workspace
+     * @param if true, the soi will be generated for training mode.
+     * @return if the generation of soi is successful
+     */
+    bool generate(oml::Classifier::ConstPtr model,const workspace_t &workspace, bool training = true);
 
     /**
      * @brief reduce the set of supervoxels to set of soi
@@ -123,6 +140,13 @@ public:
      * @param interest true if the explored supervoxel is interesting false otherwise
      */
     void compute_weights(const TrainingData<SvFeature> &data);
+
+    /**
+     * @brief compute the weights of each supervoxel with an online trained Random Forest classifer
+     * @param model
+     */
+    void compute_weights(oml::Classifier::ConstPtr model);
+    void compute_confidence_weights(oml::Classifier::ConstPtr model);
 
     /**
      * @brief choose randomly one soi
