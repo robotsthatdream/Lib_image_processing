@@ -43,7 +43,7 @@ bool SurfaceOfInterest::generate(oml::Classifier::ConstPtr model,const workspace
     if(training)
         compute_confidence_weights(model);
     else compute_weights(model);
-
+    return true;
 }
 
 void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
@@ -195,6 +195,7 @@ void SurfaceOfInterest::compute_confidence_weights(oml::Classifier::ConstPtr mod
     for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
         pcl::Supervoxel<PointT> sv = *(itr->second);
         oml::Sample s;
+	s.x.resize(6);
         s.x << (double) sv.centroid_.r, (double) sv.centroid_.g, (double) sv.centroid_.b,
                 sv.normal_.normal[0], sv.normal_.normal[1], sv.normal_.normal[2];
 
