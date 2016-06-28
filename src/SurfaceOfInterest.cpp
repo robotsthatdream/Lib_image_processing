@@ -201,6 +201,8 @@ void SurfaceOfInterest::compute_confidence_weights(oml::Classifier::ConstPtr mod
         _weights[itr->first] = (s.w - .5)*2.;
         if(_weights[itr->first] > 1)
             _weights[itr->first] = 1;
+
+        _weights[itr->first] = 1 - _weights[itr->first];
     }
 
 }
