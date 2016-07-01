@@ -32,7 +32,7 @@ bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, const worksp
     return true;
 }
 
-bool SurfaceOfInterest::generate(oml::Classifier::ConstPtr model,const workspace_t &workspace, bool training){
+bool SurfaceOfInterest::generate(const std::shared_ptr<oml::Classifier> model,const workspace_t &workspace, bool training){
     if(!computeSupervoxel(workspace))
         return false;
 
@@ -186,7 +186,7 @@ void SurfaceOfInterest::compute_weights(const TrainingData<SvFeature>& data){
 
 }
 
-void SurfaceOfInterest::compute_confidence_weights(oml::Classifier::ConstPtr model){
+void SurfaceOfInterest::compute_confidence_weights(const std::shared_ptr<oml::Classifier> model){
     init_weights();
     for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
         pcl::Supervoxel<PointT> sv = *(itr->second);
@@ -198,8 +198,8 @@ void SurfaceOfInterest::compute_confidence_weights(oml::Classifier::ConstPtr mod
         oml::Result r(2);
         model->eval(s,r);
         s.y = r.prediction;
-        s.w = r.confidence(r.prediction);
-        _weights[itr->first] = (s.w - .5)*2.;
+//        s.w = r.confidence(r.prediction);
+        _weights[itr->first] = (r.confidence(r.prediction));
         if(_weights[itr->first] > 1)
             _weights[itr->first] = 1;
 
@@ -208,7 +208,7 @@ void SurfaceOfInterest::compute_confidence_weights(oml::Classifier::ConstPtr mod
 
 }
 
-void SurfaceOfInterest::compute_weights(oml::Classifier::ConstPtr model){
+void SurfaceOfInterest::compute_weights(const std::shared_ptr<oml::Classifier> model){
     init_weights();
     oml::DataSet dataset;
 
