@@ -124,7 +124,7 @@ public:
      * @param if true, the soi will be generated for training mode.
      * @return if the generation of soi is successful
      */
-    bool generate(oml::Classifier::ConstPtr model,const workspace_t &workspace, bool training = true);
+    bool generate(const std::shared_ptr<oml::Classifier> model,const workspace_t &workspace, bool training = true);
 
     /**
      * @brief reduce the set of supervoxels to set of soi
@@ -145,8 +145,8 @@ public:
      * @brief compute the weights of each supervoxel with an online trained Random Forest classifer
      * @param model
      */
-    void compute_weights(oml::Classifier::ConstPtr model);
-    void compute_confidence_weights(oml::Classifier::ConstPtr model);
+    void compute_weights(const std::shared_ptr<oml::Classifier> model);
+    void compute_confidence_weights(const std::shared_ptr<oml::Classifier> model);
 
     /**
      * @brief choose randomly one soi
