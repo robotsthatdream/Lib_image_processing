@@ -193,12 +193,11 @@ public :
     void getCentroidCloud(PointCloudT& centroids, std::map<int,uint32_t>& centroidsLabel);
 
     /**
-     * @brief getColoredCloud DEPRECATED
+     * @brief getColoredCloud
      * @return a colored cloud to visualize supervoxel clustering
      */
-    const pcl::PointCloud<pcl::PointXYZL>& getColoredCloud(){
-        return *(_extractor->getLabeledCloud());
-    }
+    const PointCloudT& getColoredCloud();
+
 
     /**
      * @brief setInputCloud
