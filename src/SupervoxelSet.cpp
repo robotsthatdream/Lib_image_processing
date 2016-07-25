@@ -409,8 +409,11 @@ void SupervoxelSet::supervoxel_to_mask(uint32_t lbl, cv::Mat &mask){
                 + camera::rgb_princ_pt_y;
 
         for(int k = -2; k <= 2;k++)
-            for(int j = -2; j <= 2; j++)
+            for(int j = -2; j <= 2; j++){
+                if(p_x+j > mask.cols || p_y+k > mask.rows || p_y+k < 0 || p_x + j < 0 )
+                    continue;
                 mask.row(p_y+k).col(p_x+j) = 255;
+            }
    }
 
 }
