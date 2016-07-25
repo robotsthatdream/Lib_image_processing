@@ -58,12 +58,12 @@ bool SupervoxelSet::computeSupervoxel(const workspace_t& workspace){
 
     //--
 
-    std::cout << "Extracting supervoxels!" << std::endl;
+//    std::cout << "Extracting supervoxels!" << std::endl;
 
     _extractor->extract(_supervoxels);
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
-    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
+//    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
     return true;
 }
 
@@ -82,12 +82,12 @@ bool SupervoxelSet::computeSupervoxel(){
 
     //--
 
-    std::cout << "Extracting supervoxels!" << std::endl;
+//    std::cout << "Extracting supervoxels!" << std::endl;
 
     _extractor->extract(_supervoxels);
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
-    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
+//    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
     return true;
 }
 
@@ -486,4 +486,24 @@ std::vector<uint32_t> SupervoxelSet::getNeighbor(uint32_t label){
 
 }
 
+const PointCloudT& SupervoxelSet::getColoredCloud(){
+    std::srand(std::time(NULL));
 
+    PointCloudT cloud;
+    auto iter = _supervoxels.begin();
+    for(; iter != _supervoxels.end(); ++iter){
+        PointCloudT voxels = *((iter->second)->voxels_);
+        int r = rand()%255, g = rand()%255, b = rand()%255;
+        for(auto pt: voxels){
+            pt.r = r;
+            pt.g = g;
+            pt.b = b;
+
+            cloud.push_back(pt);
+        }
+
+    }
+
+    return cloud;
+
+}
