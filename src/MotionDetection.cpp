@@ -1,6 +1,6 @@
 #include <MotionDetection.h>
 
-bool MotionDetection::detect(cv::Mat& diff)
+bool MotionDetection::detect(cv::Mat& diff, int thre)
 {
     if (_frames.size() != 2) {
         std::cerr << "detect : need exactly 2 frames" << std::endl;
@@ -31,7 +31,7 @@ bool MotionDetection::detect(cv::Mat& diff)
     cv::adaptiveThreshold(diff, diff, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 5, 2);
 
 
-    _resultsRects = motion_to_ROIs(diff,30);
+    _resultsRects = motion_to_ROIs(diff,thre);
 
     //clustering of the bounding boxes to assemble the parted objects
 

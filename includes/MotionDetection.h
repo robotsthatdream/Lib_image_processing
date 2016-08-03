@@ -33,7 +33,7 @@ public:
      * @brief detects motions as ROIs in a frame.
      * @param image with the contours of mobiles _elements
      */
-    bool detect(cv::Mat& diff);
+    bool detect(cv::Mat& diff, int thre);
 
     /**
      * @brief Builds motion mask from current frame. Simple difference between background and current frame.
