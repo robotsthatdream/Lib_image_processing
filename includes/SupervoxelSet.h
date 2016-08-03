@@ -25,23 +25,23 @@ typedef struct workspace_t{
 
     struct sphere_t{
 
-        sphere_t(float sx, float sy, float sz, float r, float t)
+        sphere_t(double sx, double sy, double sz, double r, double t)
             : x(sx), y(sy), z(sz), radius(r), threshold(t){}
 
-        float x;
-        float y;
-        float z;
-        float radius;
-        float threshold;
+        double x;
+        double y;
+        double z;
+        double radius;
+        double threshold;
     };
 
-    workspace_t(bool s,float sx, float sy, float sz, float r, float t, std::vector<float> a)
+    workspace_t(bool s,double sx, double sy, double sz, double r, double t, std::vector<double> a)
         : with_sphere(s),sphere(sx,sy,sz,r,t), area(a){}
 
     bool with_sphere;
 
     sphere_t sphere;
-    std::vector<float> area;
+    std::vector<double> area;
 
 }workspace_t;
 
