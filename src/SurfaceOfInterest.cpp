@@ -334,3 +334,5 @@ PointCloudT SurfaceOfInterest::getColoredWeightedCloud(){
 
     return result;
 }
+
+

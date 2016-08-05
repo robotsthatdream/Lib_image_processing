@@ -481,7 +481,6 @@ std::vector<uint32_t> SupervoxelSet::getNeighbor(uint32_t label){
     for(;neighbor_it != _adjacency_map.equal_range(label).second;++neighbor_it)
         result.push_back(neighbor_it->second);
 
-
     return result;
 
 }
@@ -501,7 +500,6 @@ const PointCloudT& SupervoxelSet::getColoredCloud(){
 
             cloud.push_back(pt);
         }
-
     }
 
     return cloud;
