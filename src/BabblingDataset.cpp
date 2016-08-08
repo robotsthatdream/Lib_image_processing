@@ -14,6 +14,8 @@ bool BabblingDataset::_load_data_structure(const std::string &meta_data_filename
 
    _data_structure = meta_data["data_structure"];
 
+   _load_camera_param(_archive_name +"/"+ meta_data["camera_parameter"].as<std::string>());
+
    return true;
 }
 
@@ -184,7 +186,7 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
 }
 
 void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat &rgb, const cv::Mat &depth, PointCloudT::Ptr ptcl){
-    std::cout << "_rgbd_to_pointcloud" << std::endl;
+//    std::cout << "_rgbd_to_pointcloud" << std::endl;
 
 
     double center_x = _camera_parameter["rgb"]["principal_point"]["x"].as<double>();
@@ -192,9 +194,6 @@ void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat &rgb, const cv::Mat &dep
     double focal_x = _camera_parameter["rgb"]["focal_length"]["x"].as<double>();
     double focal_y = _camera_parameter["rgb"]["focal_length"]["y"].as<double>();
     float bad_point = std::numeric_limits<float>::quiet_NaN();
-
-
-//    ptcl = PointCloudT(rgb.cols,rgb.rows);
 
     for(int i = 0; i < rgb.cols; i++){
         for(int j = 0; j < rgb.rows; j++){
@@ -208,11 +207,16 @@ void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat &rgb, const cv::Mat &dep
                 pt.z = z;
             }
 
+            //TO DEBUG : Registration color problem
+//            pt.a = 255;
+//            cv::Vec3b color = rgb.at<cv::Vec3b>(i,j);
+//            pt.r = color[2];
+//            pt.g = color[1];
+//            pt.b = color[0];
             pt.a = 255;
-            cv::Vec3b color = rgb.at<cv::Vec3b>(i,j);
-            pt.r = color[2];
-            pt.g = color[1];
-            pt.b = color[0];
+            pt.r = 255;
+            pt.g = 255;
+            pt.b = 255;
 
             ptcl->push_back(pt);
         }
@@ -264,4 +268,34 @@ bool BabblingDataset::load_dataset(int iteration){
     }
 
     return true;
+}
+
+std::pair<double,BabblingDataset::cloud_set_t>
+BabblingDataset::extract_cloud(const rgbd_set_t::const_iterator &rgbd_iter,
+                            const rect_trajectories_t::const_iterator &rect_iter){
+
+    std::pair<double,cloud_set_t> res(rgbd_iter->first,cloud_set_t(rect_iter->second.size()));
+
+    PointCloudT::Ptr cloud_tmp(new PointCloudT);
+    for(size_t i = 0; i < rect_iter->second.size(); ++i){
+        _rgbd_to_pointcloud(cv::Mat(rgbd_iter->second.first,rect_iter->second[i]),
+                cv::Mat(rgbd_iter->second.second,rect_iter->second[i]),
+                cloud_tmp);
+        res.second[i] = *cloud_tmp;
+   }
+   cloud_tmp.reset();
+
+    return res;
+}
+
+void BabblingDataset::extract_cloud_trajectories(cloud_trajectories_set_t &cloud_traj){
+    std::cout << "extract_cloud_trajectories" << std::endl;
+
+
+    for(auto itr = _per_iter_rect_set.begin(); itr != _per_iter_rect_set.end();++itr){
+        cloud_traj.emplace(itr->first,cloud_trajectories_t());
+        for(auto rect_itr = itr->second.begin(); rect_itr != itr->second.end();++rect_itr)
+            cloud_traj[itr->first].emplace(rect_itr->first,extract_cloud(
+                                               _per_iter_rgbd_set[itr->first].find(rect_itr->first),rect_itr).second);
+    }
 }
