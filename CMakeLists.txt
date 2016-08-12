@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
 project(image_processing)
 
-set(SOURCE_FILES src/DescriptorExtraction.cpp src/MotionDetection.cpp src/SupervoxelSet.cpp src/SurfaceOfInterest.cpp)
+set(SOURCE_FILES src/DescriptorExtraction.cpp
+    src/MotionDetection.cpp
+    src/SupervoxelSet.cpp
+    src/SurfaceOfInterest.cpp
+    src/BabblingDataset.cpp
+    src/tools.cpp)
 
 #Libraries
 find_package(Boost REQUIRED COMPONENTS system )
@@ -24,8 +29,11 @@ install(DIRECTORY includes/  DESTINATION /usr/local/include/${PROJECT_NAME})
 file(GLOB_RECURSE src_files src/* includes/*)
 
 add_library(image_processing ${SOURCE_FILES})
-target_link_libraries(image_processing ${PCL_LIBRARIES} oml_rf)
+target_link_libraries(image_processing ${PCL_LIBRARIES} oml_rf yaml-cpp.so)
 
 install(TARGETS ${PROJECT_NAME}
     ARCHIVE DESTINATION /usr/local/lib
     LIBRARY DESTINATION /usr/local/lib)
+
+add_executable(load_dataset_test test/load_dataset_test.cpp)
+target_link_libraries(load_dataset_test image_processing ${PCL_LIBRARIES} oml_rf yaml-cpp.so ${OpenCV_LIBRARIES})

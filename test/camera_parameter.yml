@@ -1,0 +1,14 @@
+rgb:
+  focal_length:
+    x: 570.342
+    y: 570.342
+  principal_point:
+    x: 319.5
+    y: 239.5
+depth:
+  focal_length:
+    x: 570.342
+    y: 570.342
+  principal_point:
+    x: 314.5
+    y: 235.5
