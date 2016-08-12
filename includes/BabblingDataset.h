@@ -6,6 +6,9 @@
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include <MotionDetection.h>
+#include <SurfaceOfInterest.h>
+#include <pcl/filters/passthrough.h>
 
 namespace image_processing{
 
@@ -48,6 +51,8 @@ public:
     std::pair<double,cloud_set_t> extract_cloud(const rgbd_set_t::const_iterator &iter,
                                                 const rect_trajectories_t::const_iterator &rect_iter);
 
+    void _rgbd_to_pointcloud(const cv::Mat &rgb, const cv::Mat &depth, PointCloudT::Ptr ptcl);
+
     //GETTERS
     const per_iter_rgbd_set_t& get_per_iter_rgbd_set(){return _per_iter_rgbd_set;}
     const rect_trajectories_set_t& get_per_iter_rect_set(){return _per_iter_rect_set;}
@@ -58,6 +63,9 @@ private:
     YAML::Node _data_structure;
     std::map<int,std::string> _iterations_folders;
     YAML::Node _camera_parameter;
+    YAML::Node _supervoxel_parameter;
+    YAML::Node _soi_parameter;
+    workspace_t _workspace_parameter;
     std::string _archive_name;
 
 
@@ -76,9 +84,9 @@ private:
     bool _load_data_structure(const std::string& meta_data_filename);
     bool _load_data_iteration(const std::string& foldername, rgbd_set_t& rgbd_set, rect_trajectories_t& rect_traj);
     bool _load_motion_rects(const std::string& filename, rect_trajectories_t &rect_traj);
-    bool _load_camera_param(const std::string& filename);
+    bool _load_hyperparameters(const std::string& filename);
     bool _load_rgbd_images(const std::string &foldername, const rect_trajectories_t& rects, rgbd_set_t& rgbd_set);
-    void _rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& depth, PointCloudT::Ptr ptcl);
+//    void _rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& depth, PointCloudT::Ptr ptcl);
 
 };
 }

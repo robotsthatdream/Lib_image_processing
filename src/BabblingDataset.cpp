@@ -1,5 +1,6 @@
 #include <BabblingDataset.h>
 
+
 using namespace image_processing;
 
 bool BabblingDataset::_load_data_structure(const std::string &meta_data_filename){
@@ -14,7 +15,7 @@ bool BabblingDataset::_load_data_structure(const std::string &meta_data_filename
 
    _data_structure = meta_data["data_structure"];
 
-   _load_camera_param(_archive_name +"/"+ meta_data["camera_parameter"].as<std::string>());
+   _load_hyperparameters(_archive_name +"/"+ meta_data["hyperparameters"].as<std::string>());
 
    return true;
 }
@@ -57,6 +58,8 @@ bool BabblingDataset::_load_data_iteration(const std::string &foldername, rgbd_s
 bool BabblingDataset::_load_motion_rects(const std::string &filename, rect_trajectories_t& rect_traj){
     std::cout << "_load_motion_rects" << std::endl;
 
+    MotionDetection md;
+
     YAML::Node node = YAML::LoadFile(filename);
     if(node.IsNull()){
         std::cerr << "unable to open file " << filename << std::endl;
@@ -80,21 +83,41 @@ bool BabblingDataset::_load_motion_rects(const std::string &filename, rect_traje
             rect.height = node[key]["rects"][rect_key]["height"].as<int>();
             rect_vect.push_back(rect);
         }
+        md.rect_clustering(rect_vect);
         rect_traj.emplace(time,rect_vect);
     }
 
     return true;
 }
 
-bool BabblingDataset::_load_camera_param(const std::string &filename){
+bool BabblingDataset::_load_hyperparameters(const std::string &filename){
     std::cout << "_load_camera_param" << std::endl;
     std::cout << filename << std::endl;
 
-    _camera_parameter = YAML::LoadFile(filename);
-    if(_camera_parameter.IsNull()){
+    YAML::Node hyperparam = YAML::LoadFile(filename);
+    if(hyperparam.IsNull()){
         std::cerr << "unable to open " << filename << std::endl;
         return false;
     }
+
+    _camera_parameter = hyperparam["camera_parameters"];
+    _supervoxel_parameter = hyperparam["sv"];
+    _soi_parameter = hyperparam["soi"];
+    YAML::Node workspace_parameter = hyperparam["workspace"];
+    _workspace_parameter = workspace_t(true,
+            workspace_parameter["sphere"]["x"].as<float>(),
+            workspace_parameter["sphere"]["y"].as<float>(),
+            workspace_parameter["sphere"]["z"].as<float>(),
+            workspace_parameter["sphere"]["radius"].as<float>(),
+            workspace_parameter["sphere"]["threshold"].as<float>(),
+    {workspace_parameter["csg_intersect_cuboid"]["x_min"].as<float>(),
+     workspace_parameter["csg_intersect_cuboid"]["x_max"].as<float>(),
+     workspace_parameter["csg_intersect_cuboid"]["y_min"].as<float>(),
+     workspace_parameter["csg_intersect_cuboid"]["y_max"].as<float>(),
+     workspace_parameter["csg_intersect_cuboid"]["z_min"].as<float>(),
+     workspace_parameter["csg_intersect_cuboid"]["z_max"].as<float>()});
+
+
     return true;
 }
 
@@ -115,7 +138,7 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
         }
         boost::filesystem::directory_iterator end_itr;
 
-        for(boost::filesystem::directory_iterator itr(folder); itr != end_itr; ++itr){//if contained in a file
+        for(boost::filesystem::directory_iterator itr(folder); itr != end_itr; ++itr){
             std::vector<std::string> split_string;
             boost::split(split_string,itr->path().string(),boost::is_any_of("/"));
             boost::split(split_string,split_string.back(),boost::is_any_of("."));
@@ -124,11 +147,11 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
             if(rects.find(time) == rects.end())
                 continue;
 
-            cv::Mat image = cv::imread(itr->path().string());
+            cv::Mat image = cv::imread(itr->path().string(),CV_LOAD_IMAGE_COLOR);
 
             rgb_set.emplace(time,image);
         }
-    }else if (!std::strcmp(rgb_node["type"].as<std::string>().c_str(),"file")){
+    }else if (!std::strcmp(rgb_node["type"].as<std::string>().c_str(),"file")){//if contained in a file
         //TODO
     }
 
@@ -152,7 +175,7 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
 
             cv::Mat depth_img = cv::imread(itr->path().string(),CV_LOAD_IMAGE_UNCHANGED | CV_LOAD_IMAGE_ANYDEPTH);
 
-            cv::Mat(depth_img.rows,depth_img.cols,CV_32FC1,depth_img.data).copyTo(depth_img);
+            depth_img = cv::Mat(depth_img.rows,depth_img.cols,CV_32FC1,depth_img.data).clone();
 
             depth_set.emplace(time,depth_img);
         }
@@ -185,20 +208,23 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
     return true;
 }
 
-void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat &rgb, const cv::Mat &depth, PointCloudT::Ptr ptcl){
+void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& depth, PointCloudT::Ptr ptcl){
 //    std::cout << "_rgbd_to_pointcloud" << std::endl;
 
-
-    double center_x = _camera_parameter["rgb"]["principal_point"]["x"].as<double>();
-    double center_y = _camera_parameter["rgb"]["principal_point"]["y"].as<double>();
-    double focal_x = _camera_parameter["rgb"]["focal_length"]["x"].as<double>();
-    double focal_y = _camera_parameter["rgb"]["focal_length"]["y"].as<double>();
+    double center_x = _camera_parameter["depth"]["principal_point"]["x"].as<double>();
+    double center_y = _camera_parameter["depth"]["principal_point"]["y"].as<double>();
+    double focal_x = _camera_parameter["depth"]["focal_length"]["x"].as<double>();
+    double focal_y = _camera_parameter["depth"]["focal_length"]["y"].as<double>();
     float bad_point = std::numeric_limits<float>::quiet_NaN();
 
-    for(int i = 0; i < rgb.cols; i++){
-        for(int j = 0; j < rgb.rows; j++){
+    int rgb_cn = rgb.channels();
+
+    for(int i = 0; i < rgb.rows; i++){
+        uint8_t* rgb_rowPtr = (uint8_t*) rgb.row(i).data;
+        float* depth_rowPtr = (float*) depth.row(i).data;
+        for(int j = 0; j < rgb.cols; j++){
             PointT pt;
-            float z = depth.at<float>(i,j);
+            float z = depth_rowPtr[j];
             if(z == bad_point){
                 pt.x = pt.y = pt.z = bad_point;
             }else{
@@ -206,21 +232,41 @@ void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat &rgb, const cv::Mat &dep
                 pt.y = (j - center_y)*z/focal_y;
                 pt.z = z;
             }
+//            depth_rowPtr++;
 
             //TO DEBUG : Registration color problem
 //            pt.a = 255;
 //            cv::Vec3b color = rgb.at<cv::Vec3b>(i,j);
-//            pt.r = color[2];
-//            pt.g = color[1];
-//            pt.b = color[0];
-            pt.a = 255;
-            pt.r = 255;
-            pt.g = 255;
-            pt.b = 255;
 
-            ptcl->push_back(pt);
+
+            uint8_t r = rgb_rowPtr[j*rgb_cn + 2];
+            uint8_t g = rgb_rowPtr[j*rgb_cn + 1];
+            uint8_t b = rgb_rowPtr[j*rgb_cn + 0];
+
+            pt.r = rgb_rowPtr[j*rgb_cn + 2];
+            pt.g = rgb_rowPtr[j*rgb_cn + 1];
+            pt.b = rgb_rowPtr[j*rgb_cn + 0];
+
+//            pt.a = 255;
+//            pt.r = 255;
+//            pt.g = 255;
+//            pt.b = 255;
+
+            ptcl->points.push_back(pt);
         }
     }
+
+    ptcl->width = rgb.cols;
+    ptcl->height = rgb.rows;
+//    pcl::PassThrough<PointT> passFilter;
+
+
+//    passFilter.setInputCloud(ptcl);
+//    passFilter.setFilterFieldName("z");
+//    passFilter.setFilterLimits(_workspace_parameter.area[4],_workspace_parameter.area[5]);
+//    passFilter.filter(*ptcl);
+//    _workspace_parameter.filter(ptcl);
+
 }
 
 bool BabblingDataset::load_dataset(const std::string& meta_data_filename,const std::string& arch_name, int iteration){

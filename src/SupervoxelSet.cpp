@@ -7,6 +7,43 @@
 
 using namespace image_processing;
 
+void workspace_t::filter(PointCloudT::Ptr cloud){
+
+    pcl::PassThrough<PointT> passFilter;
+
+    if(with_sphere){
+        pcl::ModelCoefficients sphere_coeff;
+        sphere_coeff.values.resize (4);
+        sphere_coeff.values[0] = sphere.x;
+        sphere_coeff.values[1] = sphere.y;
+        sphere_coeff.values[2] = sphere.z;
+        sphere_coeff.values[3] = sphere.radius;
+
+        pcl::ModelOutlierRemoval<PointT> sphere_filter;
+        sphere_filter.setModelCoefficients (sphere_coeff);
+        sphere_filter.setNegative(true);
+        sphere_filter.setThreshold (sphere.threshold);
+        sphere_filter.setModelType (pcl::SACMODEL_SPHERE);
+        sphere_filter.setInputCloud (cloud);
+        sphere_filter.filter(*cloud);
+    }
+
+    passFilter.setInputCloud(cloud);
+    passFilter.setFilterFieldName("x");
+    passFilter.setFilterLimits(area[0],area[1]);
+    passFilter.filter(*cloud);
+
+    passFilter.setInputCloud(cloud);
+    passFilter.setFilterFieldName("y");
+    passFilter.setFilterLimits(area[2],area[3]);
+    passFilter.filter(*cloud);
+
+    passFilter.setInputCloud(cloud);
+    passFilter.setFilterFieldName("z");
+    passFilter.setFilterLimits(area[4],area[5]);
+    passFilter.filter(*cloud);
+}
+
 bool SupervoxelSet::computeSupervoxel(const workspace_t& workspace){
 
     pcl::PassThrough<PointT> passFilter;
