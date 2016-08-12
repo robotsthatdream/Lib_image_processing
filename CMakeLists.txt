@@ -5,8 +5,7 @@ set(SOURCE_FILES src/DescriptorExtraction.cpp
     src/MotionDetection.cpp
     src/SupervoxelSet.cpp
     src/SurfaceOfInterest.cpp
-    src/BabblingDataset.cpp
-    src/tools.cpp)
+    src/BabblingDataset.cpp)
 
 #Libraries
 find_package(Boost COMPONENTS system filesystem REQUIRED)
@@ -46,4 +45,4 @@ add_executable(fake_data test/fake_data.cpp)
 target_link_libraries(fake_data ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(convex_hull_test test/convex_hull_test.cpp)
-target_link_libraries(convex_hull_test ${PCL_LIBRARIES})
+target_link_libraries(convex_hull_test  image_processing ${PCL_LIBRARIES} oml_rf yaml-cpp.so ${OpenCV_LIBRARIES})
