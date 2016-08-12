@@ -196,7 +196,7 @@ public :
      * @brief getColoredCloud
      * @return a colored cloud to visualize supervoxel clustering
      */
-    const PointCloudT& getColoredCloud();
+     void getColoredCloud(PointCloudT&);
 
 
     /**

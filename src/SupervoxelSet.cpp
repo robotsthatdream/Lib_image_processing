@@ -489,10 +489,9 @@ std::vector<uint32_t> SupervoxelSet::getNeighbor(uint32_t label){
 
 }
 
-const PointCloudT& SupervoxelSet::getColoredCloud(){
+void SupervoxelSet::getColoredCloud(PointCloudT& cloud){
     std::srand(std::time(NULL));
 
-    PointCloudT cloud;
     auto iter = _supervoxels.begin();
     for(; iter != _supervoxels.end(); ++iter){
         PointCloudT voxels = *((iter->second)->voxels_);
@@ -506,7 +505,4 @@ const PointCloudT& SupervoxelSet::getColoredCloud(){
         }
 
     }
-
-    return cloud;
-
 }
