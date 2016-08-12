@@ -166,18 +166,24 @@ void SurfaceOfInterest::compute_weights(const TrainingData<SvFeature>& data){
 
         for(auto it_w = _weights.begin(); it_w != _weights.end(); it_w++){
 
-            float dist;
-            if(interest)
-                dist = distances[it_w->first];
-            else
-                dist = 1 - distances[it_w->first];
+            float dist = distances[it_w->first];
+//            if(interest)
+//                dist = distances[it_w->first];
+//            else
+//                dist = 1 - distances[it_w->first];
 
-            if(dist < _param.distance_threshold)
+            if(dist > _param.distance_threshold)
                 continue;
 
-            it_w->second = it_w->second - _param.interest_increment*dist;
+            if(interest)
+                it_w->second = it_w->second + _param.interest_increment*(1-dist);
+            else
+                it_w->second = it_w->second - _param.interest_increment*(1-dist);
+
             if(it_w->second < 0)
                 it_w->second = 0.;
+            if(it_w->second > 1)
+                it_w->second = 1.;
         }
 
 
@@ -215,6 +221,8 @@ void SurfaceOfInterest::compute_weights(const std::shared_ptr<oml::Classifier> m
     for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
         pcl::Supervoxel<PointT> sv = *(itr->second);
         oml::Sample s;
+        s.x.resize(6);
+
         s.x << (double) sv.centroid_.r, (double) sv.centroid_.g, (double) sv.centroid_.b,
              sv.normal_.normal[0], sv.normal_.normal[1], sv.normal_.normal[2];
 
