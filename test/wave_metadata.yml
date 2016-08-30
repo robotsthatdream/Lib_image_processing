@@ -1,0 +1,24 @@
+type:  "wave_supervisor"
+sequential:  true
+hyperparameters: "hyperparameters.yml"
+data_structure:
+  folder_prefix: "/motion/scene"
+  depth:
+    type: "folder"
+    ext: ".png"
+  rgb:
+    type: "folder"
+    ext: ".jpg"
+  motion:  "motion_rects.yml"
+  soi_classifier:  "soi_classifier.yml"
+  joints_values:  "controller_feedback.yml"
+topics:
+  data:
+    motion: "/dream_babbling/motion_detector_node"
+    joints_values: "/dream_babbling/controller_node/feedback"
+    soi_classifier: "/dream_babbling/babbling_node/soi_classifier"
+  servers:
+    controller_server: "controller_node"
+    database_server: "/dream_babbling/db_manager_node"
+  services:
+    motion_detector_service: "/dream_babbling/motion_detector_node/is_moving"

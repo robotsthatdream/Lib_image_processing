@@ -1,0 +1,57 @@
+sv:
+  use_transform: false
+  voxel_resolution: 0.008
+  color_importance: 0.2
+  spatial_importance: 0.4
+  normal_importance: 0.4
+  seed_resolution: 0.05
+soi:
+  interest_increment: 0.05
+  non_interest_val: 0.0
+  color_normal_ratio: 0.5
+  distance_threshold: 0.5
+random_forest_classifier:
+  numRandomTests: 10
+  maxDepth: 10
+  counterThreshold: 200
+  numTrees: 10
+  numEpochs: 1
+  findTrainError: 0
+  savePath: "~/dream/arm_experiment_ws/"
+  verbose: 0
+random_forest_dataset:
+  int numClasses: 2
+  numFeatures: 6
+  minColorRange: 0.0
+  maxColorRange: 255.0
+  minNormalRange: -1.0
+  maxNormalRange: 1.0
+workspace:
+  sphere:
+    x: 0.08
+    y: 0.05
+    z: 1.14
+    radius: 0.73
+    threshold: 0.35
+  csg_intersect_cuboid:
+    x_min: -0.5
+    x_max: 0.5
+    y_min: -0.11
+    y_max: 0.3
+    z_min: 0.8
+    z_max: 1.05
+camera_parameters:
+  rgb:
+    focal_length:
+      x: 570.342
+      y: 570.342
+    principal_point:
+      x: 319.5
+      y: 239.5
+  depth:
+    focal_length:
+      x: 570.342
+      y: 570.342
+    principal_point:
+      x: 314.5
+      y: 235.5

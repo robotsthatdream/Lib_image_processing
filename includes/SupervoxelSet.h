@@ -38,10 +38,13 @@ typedef struct workspace_t{
     workspace_t(bool s,double sx, double sy, double sz, double r, double t, std::vector<double> a)
         : with_sphere(s),sphere(sx,sy,sz,r,t), area(a){}
 
+
     bool with_sphere;
 
     sphere_t sphere;
     std::vector<double> area;
+
+    void filter(PointCloudT::Ptr cloud);
 
 }workspace_t;
 
@@ -196,7 +199,7 @@ public :
      * @brief getColoredCloud
      * @return a colored cloud to visualize supervoxel clustering
      */
-    const PointCloudT& getColoredCloud();
+     void getColoredCloud(PointCloudT&);
 
 
     /**

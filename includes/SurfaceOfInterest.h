@@ -11,6 +11,10 @@
 namespace image_processing {
 
 typedef struct SvFeature{
+
+    SvFeature(std::vector<double> c, std::vector<double> n) :
+        color(c), normal(n){}
+
     std::vector<double> color;
     std::vector<double> normal;
 }SvFeature;
@@ -163,6 +167,7 @@ public:
 
 
     PointCloudT getColoredWeightedCloud();
+
 
 private :
 
