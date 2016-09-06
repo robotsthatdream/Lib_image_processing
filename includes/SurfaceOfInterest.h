@@ -12,6 +12,7 @@ namespace image_processing {
 
 typedef struct SvFeature{
 
+    SvFeature(){}
     SvFeature(std::vector<double> c, std::vector<double> n) :
         color(c), normal(n){}
 

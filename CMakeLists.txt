@@ -8,7 +8,8 @@ set(SOURCE_FILES src/DescriptorExtraction.cpp
     src/BabblingDataset.cpp)
 
 #Libraries
-find_package(Boost COMPONENTS system filesystem REQUIRED)
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost COMPONENTS filesystem system REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS features2d nonfree)
 find_package(PCL 1.7 REQUIRED)
 find_package(VTK REQUIRED)
