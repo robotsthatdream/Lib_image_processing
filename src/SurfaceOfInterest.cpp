@@ -4,21 +4,24 @@ using namespace image_processing;
 
 bool SurfaceOfInterest::generate(const workspace_t &workspace){
     if(!computeSupervoxel(workspace))
-        return false;
+	return false;
+
     init_weights();
     return true;
 }
 
 bool SurfaceOfInterest::generate(const TrainingData<SvFeature>& dataset, const workspace_t& workspace){
     if(!computeSupervoxel(workspace))
-        return false;
+	return false;
+
     compute_weights(dataset);
     return true;
 }
 
 bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, const workspace_t &workspace){
     if(!computeSupervoxel(workspace))
-        return false;
+	return false;
+
     init_weights(0.);
     find_soi(key_pts);
     return true;
@@ -27,7 +30,8 @@ bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, const workspa
 bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, const workspace_t &workspace){
     delete_background(background);
     if(!computeSupervoxel(workspace))
-        return false;
+	return false;
+
     init_weights();
     return true;
 }

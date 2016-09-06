@@ -100,7 +100,7 @@ bool SupervoxelSet::computeSupervoxel(const workspace_t& workspace){
     _extractor->extract(_supervoxels);
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
-//    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
+//   std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
     return true;
 }
 
@@ -124,7 +124,7 @@ bool SupervoxelSet::computeSupervoxel(){
     _extractor->extract(_supervoxels);
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
-//    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
+    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl; 
     return true;
 }
 
