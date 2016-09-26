@@ -219,6 +219,8 @@ void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& dep
 
     int rgb_cn = rgb.channels();
 
+    uint8_t r, r_2, g, g_2, b, b_2;
+
     for(int i = 0; i < rgb.rows; i++){
         uint8_t* rgb_rowPtr = (uint8_t*) rgb.row(i).data;
         float* depth_rowPtr = (float*) depth.row(i).data;
@@ -238,10 +240,21 @@ void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& dep
 //            pt.a = 255;
 //            cv::Vec3b color = rgb.at<cv::Vec3b>(i,j);
 
+            r_2 = r;
+            g_2 = g;
+            b_2 = b;
+            r = rgb_rowPtr[j*rgb_cn + 2];
+            g = rgb_rowPtr[j*rgb_cn + 1];
+            b = rgb_rowPtr[j*rgb_cn + 0];
 
-            uint8_t r = rgb_rowPtr[j*rgb_cn + 2];
-            uint8_t g = rgb_rowPtr[j*rgb_cn + 1];
-            uint8_t b = rgb_rowPtr[j*rgb_cn + 0];
+
+//            if(r == r_2 && g == g_2 && b == b_2){
+//                std::cout << "same color as before " << i << " " << j << std::endl;
+//            }else {
+//                std::cout << "_________________________________________________" << std::endl;
+//                std::cout << "diff color as before " << i << " " << j << std::endl;
+//                std::cout << "_________________________________________________" << std::endl;
+//            }
 
             pt.r = rgb_rowPtr[j*rgb_cn + 2];
             pt.g = rgb_rowPtr[j*rgb_cn + 1];

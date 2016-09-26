@@ -25,6 +25,7 @@ typedef struct workspace_t{
 
     struct sphere_t{
 
+        sphere_t(){}
         sphere_t(double sx, double sy, double sz, double r, double t)
             : x(sx), y(sy), z(sz), radius(r), threshold(t){}
 
@@ -35,6 +36,7 @@ typedef struct workspace_t{
         double threshold;
     };
 
+    workspace_t(){}
     workspace_t(bool s,double sx, double sy, double sz, double r, double t, std::vector<double> a)
         : with_sphere(s),sphere(sx,sy,sz,r,t), area(a){}
 
