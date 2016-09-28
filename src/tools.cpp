@@ -6,7 +6,7 @@
 namespace image_processing{
 
 static bool extract_convex_hull(const PointCloudT::Ptr cloud,  std::vector<Eigen::Vector3d>& vertices){
-      pcl::ConvexHull hull_extractor;
+      pcl::ConvexHull<PointT> hull_extractor;
       PointCloudXYZ hull_cloud;
       hull_extractor.setInputCloud(cloud);
       hull_extractor.reconstruct(hull_cloud);
