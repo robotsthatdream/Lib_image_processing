@@ -1,3 +1,6 @@
+#ifndef _TOOLS_HPP
+#define _TOOLS_HPP
+
 #include <iostream>
 #include <pcl_types.h>
 #include <Eigen/Core>
@@ -5,9 +8,12 @@
 
 namespace image_processing{
 
-static bool extract_convex_hull(const PointCloudT::Ptr cloud,  std::vector<Eigen::Vector3d>& vertices){
+
+//TO DO : Templatize
+//template<typename point>
+bool extract_convex_hull(pcl::PointCloud<PointT>::ConstPtr cloud,  std::vector<Eigen::Vector3d>& vertex_list){
       pcl::ConvexHull<PointT> hull_extractor;
-      PointCloudXYZ hull_cloud;
+      pcl::PointCloud<PointT> hull_cloud;
       hull_extractor.setInputCloud(cloud);
       hull_extractor.reconstruct(hull_cloud);
 
@@ -17,9 +23,11 @@ static bool extract_convex_hull(const PointCloudT::Ptr cloud,  std::vector<Eigen
       }
 
       for(auto it = hull_cloud.points.begin(); it != hull_cloud.points.end(); ++it)
-          vertices.push_back(Eigen::Vector3d(it->x,it->y,it->z));
+          vertex_list.push_back(Eigen::Vector3d(it->x,it->y,it->z));
 
 
       return true;
 }
 }
+
+#endif //_TOOLS_HPP

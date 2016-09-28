@@ -1,6 +1,6 @@
 type:  "wave_supervisor"
 sequential:  true
-camera_parameter: "camera_parameter.yml"
+hyperparameters: "hyperparameters.yml"
 data_structure:
   folder_prefix: "/motion/scene"
   depth:

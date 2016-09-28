@@ -10,7 +10,7 @@ soi:
   non_interest_val: 0.0
   color_normal_ratio: 0.5
   distance_threshold: 0.5
-random_forest:
+random_forest_classifier:
   numRandomTests: 10
   maxDepth: 10
   counterThreshold: 200
@@ -19,7 +19,7 @@ random_forest:
   findTrainError: 0
   savePath: "~/dream/arm_experiment_ws/"
   verbose: 0
-dataset:
+random_forest_dataset:
   int numClasses: 2
   numFeatures: 6
   minColorRange: 0.0

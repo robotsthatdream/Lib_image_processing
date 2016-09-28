@@ -7,6 +7,43 @@
 
 using namespace image_processing;
 
+void workspace_t::filter(PointCloudT::Ptr cloud){
+
+    pcl::PassThrough<PointT> passFilter;
+
+    if(with_sphere){
+        pcl::ModelCoefficients sphere_coeff;
+        sphere_coeff.values.resize (4);
+        sphere_coeff.values[0] = sphere.x;
+        sphere_coeff.values[1] = sphere.y;
+        sphere_coeff.values[2] = sphere.z;
+        sphere_coeff.values[3] = sphere.radius;
+
+        pcl::ModelOutlierRemoval<PointT> sphere_filter;
+        sphere_filter.setModelCoefficients (sphere_coeff);
+        sphere_filter.setNegative(true);
+        sphere_filter.setThreshold (sphere.threshold);
+        sphere_filter.setModelType (pcl::SACMODEL_SPHERE);
+        sphere_filter.setInputCloud (cloud);
+        sphere_filter.filter(*cloud);
+    }
+
+    passFilter.setInputCloud(cloud);
+    passFilter.setFilterFieldName("x");
+    passFilter.setFilterLimits(area[0],area[1]);
+    passFilter.filter(*cloud);
+
+    passFilter.setInputCloud(cloud);
+    passFilter.setFilterFieldName("y");
+    passFilter.setFilterLimits(area[2],area[3]);
+    passFilter.filter(*cloud);
+
+    passFilter.setInputCloud(cloud);
+    passFilter.setFilterFieldName("z");
+    passFilter.setFilterLimits(area[4],area[5]);
+    passFilter.filter(*cloud);
+}
+
 bool SupervoxelSet::computeSupervoxel(const workspace_t& workspace){
 
     pcl::PassThrough<PointT> passFilter;
@@ -63,7 +100,7 @@ bool SupervoxelSet::computeSupervoxel(const workspace_t& workspace){
     _extractor->extract(_supervoxels);
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
-//    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
+//   std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
     return true;
 }
 
@@ -87,7 +124,7 @@ bool SupervoxelSet::computeSupervoxel(){
     _extractor->extract(_supervoxels);
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
-//    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
+    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl; 
     return true;
 }
 
@@ -409,10 +446,10 @@ void SupervoxelSet::supervoxel_to_mask(uint32_t lbl, cv::Mat &mask){
                 + camera::rgb_princ_pt_y;
 
         for(int k = -2; k <= 2;k++){
-            if(p_y+k > mask.rows || p_y+k < 0)
+            if(p_y+k >= mask.rows || p_y+k <= 0)
                 continue;
             for(int j = -2; j <= 2; j++){
-                if(p_x+j > mask.cols || p_x + j < 0 )
+                if(p_x+j >= mask.cols || p_x + j <= 0 )
                     continue;
                 mask.row(p_y+k).col(p_x+j) = 255;
             }
