@@ -94,7 +94,7 @@ public:
      * @param workspace
      * @return if the generation of soi is successful
      */
-    bool generate(const workspace_t& workspace);
+    bool generate(workspace_t& workspace);
 
     /**
      * @brief generate the soi with a simple linear fuzzy classifier
@@ -102,7 +102,7 @@ public:
      * @param workspace
      * @return if the generation of soi is successful
      */
-    bool generate(const TrainingData<SvFeature> &dataset, const workspace_t& workspace);
+    bool generate(const TrainingData<SvFeature> &dataset, workspace_t& workspace);
 
     /**
      * @brief generate the soi with key points. Soi will be supervoxels who contains at least one key points.
@@ -110,7 +110,7 @@ public:
      * @param workspace
      * @return if the generation of soi is successful
      */
-    bool generate(const PointCloudXYZ::Ptr key_pts, const workspace_t &workspace);
+    bool generate(const PointCloudXYZ::Ptr key_pts, workspace_t &workspace);
 
     /**
      * @brief generate the soi by deleting the background
@@ -118,7 +118,7 @@ public:
      * @param workspace
      * @return if the generation of soi is successful
      */
-    bool generate(const PointCloudT::Ptr background, const workspace_t& workspace);
+    bool generate(const PointCloudT::Ptr background, workspace_t& workspace);
 
     /**
      * @brief generate the soi by classifing the supervoxel with a online trained Random Forest.
@@ -129,7 +129,7 @@ public:
      * @param if true, the soi will be generated for training mode.
      * @return if the generation of soi is successful
      */
-    bool generate(const std::shared_ptr<oml::Classifier> model,const workspace_t &workspace, bool training = true);
+    bool generate(const std::shared_ptr<oml::Classifier> model, workspace_t &workspace, bool training = true);
 
     /**
      * @brief reduce the set of supervoxels to set of soi
@@ -158,7 +158,7 @@ public:
      * @param supervoxel
      * @param label of chosen supervoxel in the soi set
      */
-    void choice_of_soi(pcl::Supervoxel<PointT>& supervoxel,uint32_t& lbl);
+    void choice_of_soi(pcl::Supervoxel<PointHSV> &supervoxel, uint32_t& lbl);
 
     /**
      * @brief delete the background of the input cloud

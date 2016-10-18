@@ -3,8 +3,8 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/filters/passthrough.h>
-#include <tools.hpp>
-#include <pcl_types.h>
+#include <image_processing/tools.hpp>
+#include <image_processing/pcl_types.h>
 
 
 int main(int argc, char** argv){

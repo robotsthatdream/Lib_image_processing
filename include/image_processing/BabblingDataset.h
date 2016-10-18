@@ -1,13 +1,13 @@
 #ifndef _BABBLING_DATASET_H
 #define _BABBLING_DATASET_H
 
-#include <pcl_types.h>
+#include "image_processing/pcl_types.h"
 #include <opencv2/opencv.hpp>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
-#include <MotionDetection.h>
-#include <SurfaceOfInterest.h>
+#include <image_processing/MotionDetection.h>
+#include <image_processing/SurfaceOfInterest.h>
 #include <pcl/filters/passthrough.h>
 
 namespace image_processing{

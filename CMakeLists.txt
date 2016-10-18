@@ -14,19 +14,16 @@ find_package(OpenCV REQUIRED COMPONENTS features2d nonfree)
 find_package(PCL 1.7 REQUIRED)
 find_package(VTK REQUIRED)
 
-include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
+include_directories(include ${PCL_INCLUDE_DIRS} /usr/local/include)
+link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 set(LIBRARY_OUTPUT_PATH lib/${CMAKE_BUILD_TYPE})
 
-include_directories(includes /usr/local/include)
-link_directories(/usr/local/lib)
+install(DIRECTORY include/image_processing/  DESTINATION /usr/local/include/${PROJECT_NAME})
 
-install(DIRECTORY includes/  DESTINATION /usr/local/include/${PROJECT_NAME})
-
-file(GLOB_RECURSE src_files src/* includes/*)
+file(GLOB_RECURSE src_files src/* include/image_processing/*)
 
 add_library(image_processing ${SOURCE_FILES})
 target_link_libraries(image_processing  ${PCL_LIBRARIES} oml_rf yaml-cpp.so ${Boost_LIBRARIES})

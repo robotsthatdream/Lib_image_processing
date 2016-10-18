@@ -1,8 +1,9 @@
-#include <SurfaceOfInterest.h>
+#include "image_processing/SurfaceOfInterest.h"
+#include "pcl/tracking/impl/hsv_color_coherence.hpp"
 
 using namespace image_processing;
 
-bool SurfaceOfInterest::generate(const workspace_t &workspace){
+bool SurfaceOfInterest::generate(workspace_t &workspace){
     if(!computeSupervoxel(workspace))
 	return false;
 
@@ -10,7 +11,7 @@ bool SurfaceOfInterest::generate(const workspace_t &workspace){
     return true;
 }
 
-bool SurfaceOfInterest::generate(const TrainingData<SvFeature>& dataset, const workspace_t& workspace){
+bool SurfaceOfInterest::generate(const TrainingData<SvFeature>& dataset, workspace_t& workspace){
     if(!computeSupervoxel(workspace))
 	return false;
 
@@ -18,7 +19,7 @@ bool SurfaceOfInterest::generate(const TrainingData<SvFeature>& dataset, const w
     return true;
 }
 
-bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, const workspace_t &workspace){
+bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, workspace_t &workspace){
     if(!computeSupervoxel(workspace))
 	return false;
 
@@ -27,7 +28,7 @@ bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, const workspa
     return true;
 }
 
-bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, const workspace_t &workspace){
+bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, workspace_t &workspace){
     delete_background(background);
     if(!computeSupervoxel(workspace))
 	return false;
@@ -36,7 +37,7 @@ bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, const worksp
     return true;
 }
 
-bool SurfaceOfInterest::generate(const std::shared_ptr<oml::Classifier> model,const workspace_t &workspace, bool training){
+bool SurfaceOfInterest::generate(const std::shared_ptr<oml::Classifier> model, workspace_t &workspace, bool training){
     if(!computeSupervoxel(workspace))
         return false;
 
@@ -120,7 +121,7 @@ void SurfaceOfInterest::reduce_to_soi(){
     consolidate();
 }
 
-void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl){
+void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointHSV> &supervoxel, uint32_t &lbl){
 
     //*build the distribution from weights
     std::map<float,uint32_t> soi_dist;
@@ -199,7 +200,7 @@ void SurfaceOfInterest::compute_weights(const TrainingData<SvFeature>& data){
 void SurfaceOfInterest::compute_confidence_weights(const std::shared_ptr<oml::Classifier> model){
     init_weights();
     for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
-        pcl::Supervoxel<PointT> sv = *(itr->second);
+        pcl::Supervoxel<PointHSV> sv = *(itr->second);
         oml::Sample s;
 	s.x.resize(6);
         s.x << (double) sv.centroid_.r, (double) sv.centroid_.g, (double) sv.centroid_.b,
@@ -223,7 +224,7 @@ void SurfaceOfInterest::compute_weights(const std::shared_ptr<oml::Classifier> m
     oml::DataSet dataset;
 
     for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
-        pcl::Supervoxel<PointT> sv = *(itr->second);
+        pcl::Supervoxel<PointHSV> sv = *(itr->second);
         oml::Sample s;
         s.x.resize(6);
 
@@ -269,19 +270,20 @@ void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances,
 
     float w = _param.color_normal_ratio;
     float v = 1-_param.color_normal_ratio;
-
+    float hsv[3];
 
     auto it_sv = _supervoxels.begin();
 
-    pcl::Supervoxel< PointT >::Ptr sv = it_sv->second;
+    pcl::Supervoxel< PointHSV >::Ptr sv = it_sv->second;
     std::vector<double> normal = {sv->normal_.normal[0],
                                  sv->normal_.normal[1],
                                  sv->normal_.normal[2],
                                  sv->normal_.normal[3]};
 
-    std::vector<double> rgb = {(double)sv->centroid_.r,
-                              (double)sv->centroid_.g,
-                              (double)sv->centroid_.b};
+    pcl::tracking::RGB2HSV(sv->centroid_.r,sv->centroid_.g,sv->centroid_.b,hsv[0],hsv[1],hsv[2]);
+    std::vector<double> rgb = {(double)hsv[0],
+                              (double)hsv[1],
+                              (double)hsv[2]};
     double color_distance = _L2_distance(ref_sv.color,rgb)/255.;
     double normal_distance = _L2_distance(ref_sv.normal,normal)/2.;
     double distance = sqrt(w*color_distance*color_distance+v*normal_distance*normal_distance);
@@ -298,9 +300,10 @@ void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances,
                                      sv->normal_.normal[3]};
 
 
-        std::vector<double> rgb = {(double)sv->centroid_.r,
-                                  (double)sv->centroid_.g,
-                                  (double)sv->centroid_.b};
+        pcl::tracking::RGB2HSV(sv->centroid_.r,sv->centroid_.g,sv->centroid_.b,hsv[0],hsv[1],hsv[2]);
+        std::vector<double> rgb = {(double)hsv[0],
+                                  (double)hsv[1],
+                                  (double)hsv[2]};
         color_distance = _L2_distance(ref_sv.color,rgb)/255.;
         normal_distance = _L2_distance(ref_sv.normal,normal)/2.;
         distance = sqrt(w*color_distance*color_distance+v*normal_distance*normal_distance);
@@ -328,7 +331,7 @@ PointCloudT SurfaceOfInterest::getColoredWeightedCloud(){
     PointCloudT result;
 
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
-        pcl::Supervoxel<PointT>::Ptr current_sv = it_sv->second;
+        pcl::Supervoxel<PointHSV>::Ptr current_sv = it_sv->second;
         float c = 255.*_weights[it_sv->first];
         uint8_t color = c;
 
