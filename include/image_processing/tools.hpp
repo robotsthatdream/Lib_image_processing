@@ -9,6 +9,7 @@
 
 namespace image_processing{
 
+
 //TO DO : Templatize
 //template<typename point>
 bool extract_convex_hull(pcl::PointCloud<PointT>::ConstPtr cloud,  std::vector<Eigen::Vector3d>& vertex_list){
