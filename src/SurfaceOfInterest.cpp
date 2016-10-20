@@ -280,11 +280,12 @@ void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances,
                                  sv->normal_.normal[3]};
 
     tools::rgb2hsv(sv->centroid_.r,sv->centroid_.g,sv->centroid_.b,hsv[0],hsv[1],hsv[2]);
-    std::vector<double> rgb = {(double)hsv[0]};
+    std::vector<double> HSV = {(double)hsv[0]};
 
 //                              (double)hsv[1],
 //                              (double)hsv[2]};
-    double color_distance = _L2_distance(ref_sv.color,rgb)/*/255.*/;
+    double color_distance = _L2_distance(ref_sv.color,HSV)/*/255.*/;
+
     double normal_distance = _L2_distance(ref_sv.normal,normal)/2.;
     double distance = sqrt(w*color_distance*color_distance+v*normal_distance*normal_distance);
     distances.emplace(it_sv->first,distance);
@@ -294,17 +295,17 @@ void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances,
         //        if(it_sv->first == lbl)
         //            continue;
         sv = it_sv->second;
-        std::vector<double> normal = {sv->normal_.normal[0],
+        normal = {sv->normal_.normal[0],
                                      sv->normal_.normal[1],
                                      sv->normal_.normal[2],
                                      sv->normal_.normal[3]};
 
 
         tools::rgb2hsv(sv->centroid_.r,sv->centroid_.g,sv->centroid_.b,hsv[0],hsv[1],hsv[2]);
-        std::vector<double> rgb = {(double)hsv[0]};
+        HSV = {(double)hsv[0]};
 //                                  (double)hsv[1],
 //                                  (double)hsv[2]};
-        color_distance = _L2_distance(ref_sv.color,rgb)/*/255.*/;
+        color_distance = _L2_distance(ref_sv.color,HSV)/*/255.*/;
         normal_distance = _L2_distance(ref_sv.normal,normal)/2.;
         distance = sqrt(w*color_distance*color_distance+v*normal_distance*normal_distance);
         if(distance > max_distance)
