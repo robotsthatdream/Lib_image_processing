@@ -80,7 +80,7 @@ public :
 
     template <typename Param>
     void init(){
-        _extractor.reset(new pcl::SupervoxelClustering<PointHSV>(Param::voxel_resolution,Param::seed_resolution,Param::use_transform));
+        _extractor.reset(new pcl::SupervoxelClustering<PointT>(Param::voxel_resolution,Param::seed_resolution,Param::use_transform));
         _extractor->setColorImportance(Param::color_importance);
         _extractor->setSpatialImportance(Param::spatial_importance);
         _extractor->setNormalImportance(Param::normal_importance);
@@ -100,7 +100,7 @@ public :
      * @param edges_cloud output pointcloud
      * @param supervoxel_adjacency (optional)
      */
-//    void extractEdges(PointCloudT::Ptr edges_cloud, AdjacencyMap supervoxel_adjacency = AdjacencyMap());
+    void extractEdges(PointCloudT::Ptr edges_cloud, AdjacencyMap supervoxel_adjacency = AdjacencyMap());
 
     /**
      *@brief insert a new supervoxel in this. (Whatever his neighborhood)
@@ -108,7 +108,7 @@ public :
      *@param supervoxel : pcl::Supervoxel
      *@param neighborhood : std::vector<uint32_t> neighborLabel
      */
-    void insert(uint32_t label, pcl::Supervoxel<PointHSV>::Ptr supervoxel, std::vector<uint32_t> neighborLabel);
+    void insert(uint32_t label, pcl::Supervoxel<PointT>::Ptr supervoxel, std::vector<uint32_t> neighborLabel);
 
     /**
      *@brief Restore coherence between supervoxels and adjacency_map.
@@ -144,7 +144,7 @@ public :
      * @brief extractCloud : give the pointcloud in base of supervoxel
      * @param resultCloud : output
      */
-    void extractCloud(PointCloudHSV &resultCloud);
+    void extractCloud(PointCloudT &resultCloud);
 
     /**
      * @brief globalPosition
@@ -177,7 +177,7 @@ public :
      */
     Superpixels to_superpixels();
 
-//    PointCloudT mean_color_cloud();
+    PointCloudT mean_color_cloud();
 
     void supervoxel_to_mask(uint32_t lbl,cv::Mat& mask);
 
@@ -247,14 +247,14 @@ public :
      *@param label : uint32_t
      *@return pcl::Supervoxel
      */
-    const pcl::Supervoxel<PointHSV>::Ptr& at(uint32_t label) const {return _supervoxels.at(label);}
+    const pcl::Supervoxel<PointT>::Ptr& at(uint32_t label) const {return _supervoxels.at(label);}
     //---------------------------------------------------------
 
 protected:
     uint32_t isInThisVoxel(float x, float y, float z, uint32_t label, AdjacencyMap am, boost::random::mt19937 gen, int counter = 5);
 
     PointCloudT::Ptr _inputCloud;
-    std::shared_ptr<pcl::SupervoxelClustering<PointHSV> > _extractor;
+    std::shared_ptr<pcl::SupervoxelClustering<PointT> > _extractor;
     SupervoxelArray _supervoxels;
     AdjacencyMap _adjacency_map;
     double _seed_resolution;

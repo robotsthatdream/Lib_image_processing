@@ -120,7 +120,7 @@ void SurfaceOfInterest::reduce_to_soi(){
     consolidate();
 }
 
-void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointHSV> &supervoxel, uint32_t &lbl){
+void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl){
 
     //*build the distribution from weights
     std::map<float,uint32_t> soi_dist;
@@ -199,7 +199,7 @@ void SurfaceOfInterest::compute_weights(const TrainingData<SvFeature>& data){
 void SurfaceOfInterest::compute_confidence_weights(const std::shared_ptr<oml::Classifier> model){
     init_weights();
     for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
-        pcl::Supervoxel<PointHSV> sv = *(itr->second);
+        pcl::Supervoxel<PointT> sv = *(itr->second);
         oml::Sample s;
 	s.x.resize(6);
         s.x << (double) sv.centroid_.r, (double) sv.centroid_.g, (double) sv.centroid_.b,
@@ -223,7 +223,7 @@ void SurfaceOfInterest::compute_weights(const std::shared_ptr<oml::Classifier> m
     oml::DataSet dataset;
 
     for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
-        pcl::Supervoxel<PointHSV> sv = *(itr->second);
+        pcl::Supervoxel<PointT> sv = *(itr->second);
         oml::Sample s;
         s.x.resize(6);
 
@@ -273,7 +273,7 @@ void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances,
 
     auto it_sv = _supervoxels.begin();
 
-    pcl::Supervoxel< PointHSV >::Ptr sv = it_sv->second;
+    pcl::Supervoxel< PointT >::Ptr sv = it_sv->second;
     std::vector<double> normal = {sv->normal_.normal[0],
                                  sv->normal_.normal[1],
                                  sv->normal_.normal[2],
@@ -330,7 +330,7 @@ PointCloudT SurfaceOfInterest::getColoredWeightedCloud(){
     PointCloudT result;
 
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
-        pcl::Supervoxel<PointHSV>::Ptr current_sv = it_sv->second;
+        pcl::Supervoxel<PointT>::Ptr current_sv = it_sv->second;
         float c = 255.*_weights[it_sv->first];
         uint8_t color = c;
 

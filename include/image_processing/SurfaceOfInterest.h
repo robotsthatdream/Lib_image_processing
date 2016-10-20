@@ -158,7 +158,7 @@ public:
      * @param supervoxel
      * @param label of chosen supervoxel in the soi set
      */
-    void choice_of_soi(pcl::Supervoxel<PointHSV> &supervoxel, uint32_t& lbl);
+    void choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint32_t& lbl);
 
     /**
      * @brief delete the background of the input cloud

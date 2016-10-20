@@ -14,7 +14,7 @@ typedef pcl::PointXYZHSV PointHSV;
 typedef pcl::PointCloud<PointHSV> PointCloudHSV;
 typedef pcl::PointCloud<pcl::Normal> PointCloudN;
 typedef pcl::PointCloud<pcl::PointXYZ> PointCloudXYZ;
-typedef std::map<uint32_t, pcl::Supervoxel<PointHSV>::Ptr > SupervoxelArray;
+typedef std::map<uint32_t, pcl::Supervoxel<PointT>::Ptr > SupervoxelArray;
 typedef std::multimap<uint32_t,uint32_t> AdjacencyMap;
 typedef std::map<uint32_t,std::vector<cv::Point2f>> Superpixels;
 }

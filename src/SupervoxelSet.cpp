@@ -1,10 +1,9 @@
-#include "image_processing/SupervoxelSet.h"
+#include <image_processing/SupervoxelSet.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/registration/correspondence_estimation.h>
 #include <boost/random.hpp>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/model_outlier_removal.h>
-#include "image_processing/tools.hpp"
 
 using namespace image_processing;
 
@@ -47,41 +46,39 @@ void workspace_t::filter(PointCloudT::Ptr cloud){
 
 bool SupervoxelSet::computeSupervoxel(workspace_t& workspace){
 
-      workspace.filter(_inputCloud);
+    pcl::PassThrough<PointT> passFilter;
 
-//    pcl::PassThrough<PointT> passFilter;
+    if(workspace.with_sphere){
+        pcl::ModelCoefficients sphere_coeff;
+        sphere_coeff.values.resize (4);
+        sphere_coeff.values[0] = workspace.sphere.x;
+        sphere_coeff.values[1] = workspace.sphere.y;
+        sphere_coeff.values[2] = workspace.sphere.z;
+        sphere_coeff.values[3] = workspace.sphere.radius;
 
-//    if(workspace.with_sphere){
-//        pcl::ModelCoefficients sphere_coeff;
-//        sphere_coeff.values.resize (4);
-//        sphere_coeff.values[0] = workspace.sphere.x;
-//        sphere_coeff.values[1] = workspace.sphere.y;
-//        sphere_coeff.values[2] = workspace.sphere.z;
-//        sphere_coeff.values[3] = workspace.sphere.radius;
+        pcl::ModelOutlierRemoval<PointT> sphere_filter;
+        sphere_filter.setModelCoefficients (sphere_coeff);
+        sphere_filter.setNegative(true);
+        sphere_filter.setThreshold (workspace.sphere.threshold);
+        sphere_filter.setModelType (pcl::SACMODEL_SPHERE);
+        sphere_filter.setInputCloud (_inputCloud);
+        sphere_filter.filter(*_inputCloud);
+    }
 
-//        pcl::ModelOutlierRemoval<PointT> sphere_filter;
-//        sphere_filter.setModelCoefficients (sphere_coeff);
-//        sphere_filter.setNegative(true);
-//        sphere_filter.setThreshold (workspace.sphere.threshold);
-//        sphere_filter.setModelType (pcl::SACMODEL_SPHERE);
-//        sphere_filter.setInputCloud (_inputCloud);
-//        sphere_filter.filter(*_inputCloud);
-//    }
+    passFilter.setInputCloud(_inputCloud);
+    passFilter.setFilterFieldName("x");
+    passFilter.setFilterLimits(workspace.area[0],workspace.area[1]);
+    passFilter.filter(*_inputCloud);
 
-//    passFilter.setInputCloud(_inputCloud);
-//    passFilter.setFilterFieldName("x");
-//    passFilter.setFilterLimits(workspace.area[0],workspace.area[1]);
-//    passFilter.filter(*_inputCloud);
+    passFilter.setInputCloud(_inputCloud);
+    passFilter.setFilterFieldName("y");
+    passFilter.setFilterLimits(workspace.area[2],workspace.area[3]);
+    passFilter.filter(*_inputCloud);
 
-//    passFilter.setInputCloud(_inputCloud);
-//    passFilter.setFilterFieldName("y");
-//    passFilter.setFilterLimits(workspace.area[2],workspace.area[3]);
-//    passFilter.filter(*_inputCloud);
-
-//    passFilter.setInputCloud(_inputCloud);
-//    passFilter.setFilterFieldName("z");
-//    passFilter.setFilterLimits(workspace.area[4],workspace.area[5]);
-//    passFilter.filter(*_inputCloud);
+    passFilter.setInputCloud(_inputCloud);
+    passFilter.setFilterFieldName("z");
+    passFilter.setFilterLimits(workspace.area[4],workspace.area[5]);
+    passFilter.filter(*_inputCloud);
 
 
 
@@ -92,12 +89,9 @@ bool SupervoxelSet::computeSupervoxel(workspace_t& workspace){
         return false;
     }
 
-    PointCloudHSV::Ptr hsv_cloud(new PointCloudHSV);
-    image_processing::tools::cloudRGB2HSV(_inputCloud,hsv_cloud);
-
 
     //definition of super voxel clustering class
-    _extractor->setInputCloud(hsv_cloud);
+    _extractor->setInputCloud(_inputCloud);
 
     //--
 
@@ -119,11 +113,9 @@ bool SupervoxelSet::computeSupervoxel(){
         return false;
     }
 
-    PointCloudHSV::Ptr hsv_cloud(new PointCloudHSV);
-    image_processing::tools::cloudRGB2HSV(_inputCloud,hsv_cloud);
 
     //definition of super voxel clustering class
-    _extractor->setInputCloud(hsv_cloud);
+    _extractor->setInputCloud(_inputCloud);
 
     //--
 
@@ -136,73 +128,73 @@ bool SupervoxelSet::computeSupervoxel(){
     return true;
 }
 
-//void SupervoxelSet::extractEdges(PointCloudT::Ptr edges_cloud, AdjacencyMap supervoxel_adjacency){
+void SupervoxelSet::extractEdges(PointCloudT::Ptr edges_cloud, AdjacencyMap supervoxel_adjacency){
 
-//    if(supervoxel_adjacency.empty())
-//        supervoxel_adjacency = _adjacency_map;
+    if(supervoxel_adjacency.empty())
+        supervoxel_adjacency = _adjacency_map;
 
-//    //compute one edge point per adjacent supervoxel.
-//    std::multimap<uint32_t,uint32_t> verification_map;
+    //compute one edge point per adjacent supervoxel.
+    std::multimap<uint32_t,uint32_t> verification_map;
 
-//    std::multimap<uint32_t,uint32_t>::iterator label_itr = supervoxel_adjacency.begin();
-//    for(;label_itr != supervoxel_adjacency.end();){//iterate through adjacency map
-//        uint32_t supervoxel_label = label_itr->first;
-//        pcl::Supervoxel<PointT>::Ptr supervoxel = _supervoxels.at(supervoxel_label);
-//        std::multimap<uint32_t,uint32_t>::iterator adjacent_itr = supervoxel_adjacency.equal_range(supervoxel_label).first;
-//        int i = 0;
-//        for(;adjacent_itr != supervoxel_adjacency.equal_range(supervoxel_label).second;++adjacent_itr){
-//            //iterate through neighborhood of current supervoxel
-//            pcl::Supervoxel<PointT>::Ptr neighbor_supervoxel = _supervoxels.at (adjacent_itr->second);
-//            PointCloudT::Ptr neighbor_cloud = neighbor_supervoxel->voxels_;
-//            PointCloudT::iterator cloud_itr = neighbor_cloud->begin();
-//            PointT currentPoint = *cloud_itr;
-//            for(;cloud_itr != neighbor_cloud->end();++cloud_itr){
-//                PointT point = *cloud_itr;
-//                if(pcl::euclideanDistance(point,supervoxel->centroid_)
-//                        < pcl::euclideanDistance(currentPoint,supervoxel->centroid_))
-//                    currentPoint = point;
-//            }
-//            //to do a comment
-//            bool can_append = true;
-//            if(verification_map.find(adjacent_itr->first) != verification_map.end()){
-//                std::multimap<uint32_t,uint32_t>::iterator verif_itr
-//                        = verification_map.equal_range(adjacent_itr->first).first;
-//                for(;verif_itr != verification_map.equal_range(adjacent_itr->first).second;verif_itr++){
-//                    if(verif_itr->second == supervoxel_label)
-//                        can_append = false;
-//                }
-//            }
-//            if(can_append){
-//                edges_cloud->push_back(currentPoint);
-//                verification_map.insert(std::pair<uint32_t,uint32_t>(supervoxel_label,adjacent_itr->first));
-//            }
-//        }
-//        i++;
-//        if(i<8){//if this supervoxel is a side supervoxel
-//            PointCloudT::iterator cloud_itr = supervoxel->voxels_->begin();
-//            PointT selected_pt = *cloud_itr;
-//            float previous_sum =  pcl::euclideanDistance(edges_cloud->back(),selected_pt);
-//            for(int j = i; j > 1 ; j--){
-//                previous_sum+=pcl::euclideanDistance(selected_pt,edges_cloud->at(edges_cloud->size()-j));
-//            }
-//            previous_sum+=pcl::euclideanDistance(selected_pt,supervoxel->centroid_);
-//            for(;cloud_itr != supervoxel->voxels_->end();++cloud_itr){
-//                PointT point = *cloud_itr;
-//                float sum = pcl::euclideanDistance(edges_cloud->back(),point);
-//                for(int j = i; j > 1 ; j--){
-//                    sum+=pcl::euclideanDistance(point,edges_cloud->at(edges_cloud->size()-j));
-//                }
-//                sum += pcl::euclideanDistance(point,supervoxel->centroid_);
-//                if(sum > previous_sum){
-//                    previous_sum = sum;
-//                    selected_pt = point;
-//                }
-//            }
-//            edges_cloud->push_back(selected_pt);
-//        }
-//        label_itr = supervoxel_adjacency.upper_bound (supervoxel_label);
-//    }
-//}
+    std::multimap<uint32_t,uint32_t>::iterator label_itr = supervoxel_adjacency.begin();
+    for(;label_itr != supervoxel_adjacency.end();){//iterate through adjacency map
+        uint32_t supervoxel_label = label_itr->first;
+        pcl::Supervoxel<PointT>::Ptr supervoxel = _supervoxels.at(supervoxel_label);
+        std::multimap<uint32_t,uint32_t>::iterator adjacent_itr = supervoxel_adjacency.equal_range(supervoxel_label).first;
+        int i = 0;
+        for(;adjacent_itr != supervoxel_adjacency.equal_range(supervoxel_label).second;++adjacent_itr){
+            //iterate through neighborhood of current supervoxel
+            pcl::Supervoxel<PointT>::Ptr neighbor_supervoxel = _supervoxels.at (adjacent_itr->second);
+            PointCloudT::Ptr neighbor_cloud = neighbor_supervoxel->voxels_;
+            PointCloudT::iterator cloud_itr = neighbor_cloud->begin();
+            PointT currentPoint = *cloud_itr;
+            for(;cloud_itr != neighbor_cloud->end();++cloud_itr){
+                PointT point = *cloud_itr;
+                if(pcl::euclideanDistance(point,supervoxel->centroid_)
+                        < pcl::euclideanDistance(currentPoint,supervoxel->centroid_))
+                    currentPoint = point;
+            }
+            //to do a comment
+            bool can_append = true;
+            if(verification_map.find(adjacent_itr->first) != verification_map.end()){
+                std::multimap<uint32_t,uint32_t>::iterator verif_itr
+                        = verification_map.equal_range(adjacent_itr->first).first;
+                for(;verif_itr != verification_map.equal_range(adjacent_itr->first).second;verif_itr++){
+                    if(verif_itr->second == supervoxel_label)
+                        can_append = false;
+                }
+            }
+            if(can_append){
+                edges_cloud->push_back(currentPoint);
+                verification_map.insert(std::pair<uint32_t,uint32_t>(supervoxel_label,adjacent_itr->first));
+            }
+        }
+        i++;
+        if(i<8){//if this supervoxel is a side supervoxel
+            PointCloudT::iterator cloud_itr = supervoxel->voxels_->begin();
+            PointT selected_pt = *cloud_itr;
+            float previous_sum =  pcl::euclideanDistance(edges_cloud->back(),selected_pt);
+            for(int j = i; j > 1 ; j--){
+                previous_sum+=pcl::euclideanDistance(selected_pt,edges_cloud->at(edges_cloud->size()-j));
+            }
+            previous_sum+=pcl::euclideanDistance(selected_pt,supervoxel->centroid_);
+            for(;cloud_itr != supervoxel->voxels_->end();++cloud_itr){
+                PointT point = *cloud_itr;
+                float sum = pcl::euclideanDistance(edges_cloud->back(),point);
+                for(int j = i; j > 1 ; j--){
+                    sum+=pcl::euclideanDistance(point,edges_cloud->at(edges_cloud->size()-j));
+                }
+                sum += pcl::euclideanDistance(point,supervoxel->centroid_);
+                if(sum > previous_sum){
+                    previous_sum = sum;
+                    selected_pt = point;
+                }
+            }
+            edges_cloud->push_back(selected_pt);
+        }
+        label_itr = supervoxel_adjacency.upper_bound (supervoxel_label);
+    }
+}
 
 
 void SupervoxelSet::consolidate(){
@@ -263,7 +255,7 @@ uint32_t SupervoxelSet::isInThisVoxel(float x, float y, float z, uint32_t label,
   if(counter <= 0)
     return 221133;
   label = _supervoxels.lower_bound(label)->first;
-  pcl::Supervoxel<PointHSV>::Ptr vox = _supervoxels.at(label);
+  pcl::Supervoxel<PointT>::Ptr vox = _supervoxels.at(label);
   double distance = sqrt((x-vox->centroid_.x)*(x-vox->centroid_.x)
                          + (y-vox->centroid_.y)*(y-vox->centroid_.y)
                          + (z-vox->centroid_.z)*(z-vox->centroid_.z));
@@ -306,9 +298,9 @@ uint32_t SupervoxelSet::isInThisVoxel(float x, float y, float z, uint32_t label,
 }
 
 void SupervoxelSet::insert(uint32_t label,
-                               pcl::Supervoxel<PointHSV>::Ptr supervoxel,
+                               pcl::Supervoxel<PointT>::Ptr supervoxel,
                                std::vector<uint32_t> neighborLabel){
-    _supervoxels.insert(std::pair<uint32_t,pcl::Supervoxel<PointHSV>::Ptr >(label,supervoxel));
+    _supervoxels.insert(std::pair<uint32_t,pcl::Supervoxel<PointT>::Ptr >(label,supervoxel));
 
     for(int i = 0; i < neighborLabel.size(); i++)
         _adjacency_map.insert(std::pair<uint32_t,uint32_t>(label,neighborLabel.at(i)));
@@ -324,13 +316,13 @@ void SupervoxelSet::clear(){
     for(auto it = _supervoxels.begin();it != _supervoxels.end();it++){
         remove(it->first);
     }
-    _extractor.reset(new pcl::SupervoxelClustering<PointHSV>(supervoxel::voxel_resolution,supervoxel::seed_resolution,supervoxel::use_transform));
+    _extractor.reset(new pcl::SupervoxelClustering<PointT>(supervoxel::voxel_resolution,supervoxel::seed_resolution,supervoxel::use_transform));
 }
 
-void SupervoxelSet::extractCloud(PointCloudHSV& resultCloud){
+void SupervoxelSet::extractCloud(PointCloudT& resultCloud){
     for(SupervoxelArray::iterator sv_itr = _supervoxels.begin();
         sv_itr != _supervoxels.end(); sv_itr++){
-        pcl::Supervoxel<PointHSV>::Ptr current = sv_itr->second;
+        pcl::Supervoxel<PointT>::Ptr current = sv_itr->second;
         resultCloud += *(current->voxels_);
     }
 
@@ -399,9 +391,9 @@ Superpixels SupervoxelSet::to_superpixels(){
 
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
         std::vector<cv::Point2f> pts;
-        pcl::Supervoxel<PointHSV> current_sv = *(it_sv->second);
+        pcl::Supervoxel<PointT> current_sv = *(it_sv->second);
         for(int i = 0; i < current_sv.voxels_->size(); i++){
-            PointHSV pt_vx = current_sv.voxels_->at(i);
+            PointT pt_vx = current_sv.voxels_->at(i);
             float px = pt_vx.x;
             float py = pt_vx.y;
             float pz = pt_vx.z;
@@ -418,35 +410,35 @@ Superpixels SupervoxelSet::to_superpixels(){
     return result;
 }
 
-//PointCloudT SupervoxelSet::mean_color_cloud(){
-//    PointCloudT ptcl;
+PointCloudT SupervoxelSet::mean_color_cloud(){
+    PointCloudT ptcl;
 
-//    for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
-//        PointCloudT::Ptr current_sv = it_sv->second->voxels_;
-//        PointT current_centroid = it_sv->second->centroid_;
+    for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
+        PointCloudT::Ptr current_sv = it_sv->second->voxels_;
+        PointT current_centroid = it_sv->second->centroid_;
 
-//        for(auto pt : *current_sv){
-//            PointT tmp_pt;
-//            tmp_pt.x = pt.x;
-//            tmp_pt.y = pt.y;
-//            tmp_pt.z = pt.z;
-//            tmp_pt.r = current_centroid.r;
-//            tmp_pt.g = current_centroid.g;
-//            tmp_pt.b = current_centroid.b;
-//            ptcl.push_back(pt);
-//        }
-//    }
-//    return ptcl;
-//}
+        for(auto pt : *current_sv){
+            PointT tmp_pt;
+            tmp_pt.x = pt.x;
+            tmp_pt.y = pt.y;
+            tmp_pt.z = pt.z;
+            tmp_pt.r = current_centroid.r;
+            tmp_pt.g = current_centroid.g;
+            tmp_pt.b = current_centroid.b;
+            ptcl.push_back(pt);
+        }
+    }
+    return ptcl;
+}
 
 void SupervoxelSet::supervoxel_to_mask(uint32_t lbl, cv::Mat &mask){
 
     //TODO replace hardcode values by smart values.
 
-    PointCloudHSV::Ptr sv = _supervoxels.at(lbl)->voxels_;
+    PointCloudT::Ptr sv = _supervoxels.at(lbl)->voxels_;
     mask = cv::Mat::zeros(480,640,CV_8U);
     for(int i = 0; i < sv->size(); i++){
-        PointHSV pt = sv->at(i);
+        PointT pt = sv->at(i);
 
         int p_x = camera::focal_length_x*pt.x/pt.z
                 + camera::rgb_princ_pt_x;
@@ -481,7 +473,7 @@ pcl::PointXYZ SupervoxelSet::globalPosition(){
     double sumX = 0;
     double sumY = 0;
     double sumZ = 0;
-    pcl::Supervoxel<PointHSV>::Ptr current_sv(new pcl::Supervoxel<PointHSV>);
+    pcl::Supervoxel<PointT>::Ptr current_sv(new pcl::Supervoxel<PointT>);
     for(SupervoxelArray::iterator itr = _supervoxels.begin();
         itr != _supervoxels.end(); itr++){
         current_sv = itr->second;
@@ -504,7 +496,7 @@ void SupervoxelSet::getCentroidCloud(PointCloudT &centroids, std::map<int,uint32
     int i = 0;
     for(SupervoxelArray::iterator it = _supervoxels.begin()
         ; it != _supervoxels.end(); it++){
-        pcl::Supervoxel<PointHSV>::Ptr supervoxel = it->second;
+        pcl::Supervoxel<PointT>::Ptr supervoxel = it->second;
         centroids.push_back(supervoxel->centroid_);
         centroid_normals.push_back(supervoxel->normal_);
         centroidsLabel.insert(std::pair<int,uint32_t>(i,it->first));
@@ -517,7 +509,7 @@ void SupervoxelSet::getCentroidCloud(PointCloudT &centroids, std::map<int,uint32
     int i = 0;
     for(SupervoxelArray::iterator it = _supervoxels.begin()
         ; it != _supervoxels.end(); it++){
-        pcl::Supervoxel<PointHSV>::Ptr supervoxel = it->second;
+        pcl::Supervoxel<PointT>::Ptr supervoxel = it->second;
         centroids.push_back(supervoxel->centroid_);
         centroidsLabel.insert(std::pair<int,uint32_t>(i,it->first));
         i++;
@@ -541,18 +533,14 @@ void SupervoxelSet::getColoredCloud(PointCloudT& cloud){
 
     auto iter = _supervoxels.begin();
     for(; iter != _supervoxels.end(); ++iter){
-        PointCloudHSV voxels = *((iter->second)->voxels_);
+        PointCloudT voxels = *((iter->second)->voxels_);
         int r = rand()%255, g = rand()%255, b = rand()%255;
         for(auto pt: voxels){
-            PointT tmp;
-            tmp.x = pt.x;
-            tmp.y = pt.y;
-            tmp.z = pt.z;
-            tmp.r = r;
-            tmp.g = g;
-            tmp.b = b;
+            pt.r = r;
+            pt.g = g;
+            pt.b = b;
 
-            cloud.push_back(tmp);
+            cloud.push_back(pt);
         }
     }
 }
