@@ -25,7 +25,7 @@ int main(int argc, char** argv){
     pass.filter (*cloud);
 
     std::vector<Eigen::Vector3d> vertices;
-    image_processing::extract_convex_hull/*<pcl::PointXYZ>*/(cloud,vertices);
+    image_processing::tools::extract_convex_hull/*<pcl::PointXYZ>*/(cloud,vertices);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZ>);
 //    pcl::ConvexHull<pcl::PointXYZ> hull;

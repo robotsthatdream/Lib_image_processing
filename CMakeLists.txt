@@ -5,7 +5,9 @@ set(SOURCE_FILES src/DescriptorExtraction.cpp
     src/MotionDetection.cpp
     src/SupervoxelSet.cpp
     src/SurfaceOfInterest.cpp
-    src/BabblingDataset.cpp)
+    src/BabblingDataset.cpp
+    src/tools.cpp
+)
 
 #Libraries
 set(Boost_USE_STATIC_LIBS ON)

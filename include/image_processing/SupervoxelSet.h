@@ -12,6 +12,7 @@
 
 #include "default_parameters.hpp"
 #include "pcl_types.h"
+#include "tools.hpp"
 #include <string>
 #include <vector>
 

@@ -1,48 +1,36 @@
 #ifndef _TOOLS_HPP
 #define _TOOLS_HPP
 
-#include <iostream>
 #include "pcl_types.h"
 #include <Eigen/Core>
 #include <pcl/surface/convex_hull.h>
-#include <pcl/tracking/impl/hsv_color_coherence.hpp>
 
 namespace image_processing{
+namespace tools{
+//class tools{
 
+//public:
+    //TO DO : Templatize
+    //template<typename point>
+    bool extract_convex_hull(pcl::PointCloud<PointT>::ConstPtr cloud,  std::vector<Eigen::Vector3d>& vertex_list);
 
-//TO DO : Templatize
-//template<typename point>
-bool extract_convex_hull(pcl::PointCloud<PointT>::ConstPtr cloud,  std::vector<Eigen::Vector3d>& vertex_list){
-      pcl::ConvexHull<PointT> hull_extractor;
-      pcl::PointCloud<PointT> hull_cloud;
-      hull_extractor.setInputCloud(cloud);
-      hull_extractor.reconstruct(hull_cloud);
+    /** \brief Convert a RGB tuple to an HSV one.
+ * \param[in] r the input Red component
+ * \param[in] g the input Green component
+ * \param[in] b the input Blue component
+ * \param[out] fh the output Hue component
+ * \param[out] fs the output Saturation component
+ * \param[out] fv the output Value component
+ */
+    void rgb2hsv (int r, int g, int b, float& fh, float& fs, float& fv);
 
-      if(hull_cloud.empty()){
-          std::cerr << "unable to compute the convex hull" << std::endl;
-          return false;
-      }
-
-      for(auto it = hull_cloud.points.begin(); it != hull_cloud.points.end(); ++it)
-          vertex_list.push_back(Eigen::Vector3d(it->x,it->y,it->z));
-
-
-      return true;
-}
-
-void RGB2HSV(const PointCloudT::Ptr input, PointCloudHSV::Ptr output){
-    float h, s, v;
-
-    for(auto itr = input->begin(); itr != input->end(); itr++){
-        pcl::tracking::RGB2HSV(itr->r,itr->g,itr->b,h,s,v);
-        output->push_back(PointHSV(h,s,v));
-        output->back().x = itr->x;
-        output->back().y = itr->y;
-        output->back().z = itr->z;
-    }
-
-}
-
-}
+    /**
+ * @brief convert a pcl::PointCloud<PointXYZRGB> to pcl::PointCloud<PointXYZHSV>
+ * @param input cloud
+ * @param output cloud
+ */
+    void cloudRGB2HSV(const PointCloudT::Ptr input, PointCloudHSV::Ptr output);
+}//tools
+}//image_processing
 
 #endif //_TOOLS_HPP

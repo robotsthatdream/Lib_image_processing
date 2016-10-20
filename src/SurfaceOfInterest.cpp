@@ -1,5 +1,4 @@
 #include "image_processing/SurfaceOfInterest.h"
-#include "pcl/tracking/impl/hsv_color_coherence.hpp"
 
 using namespace image_processing;
 
@@ -280,7 +279,7 @@ void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances,
                                  sv->normal_.normal[2],
                                  sv->normal_.normal[3]};
 
-    pcl::tracking::RGB2HSV(sv->centroid_.r,sv->centroid_.g,sv->centroid_.b,hsv[0],hsv[1],hsv[2]);
+    tools::rgb2hsv(sv->centroid_.r,sv->centroid_.g,sv->centroid_.b,hsv[0],hsv[1],hsv[2]);
     std::vector<double> rgb = {(double)hsv[0],
                               (double)hsv[1],
                               (double)hsv[2]};
@@ -300,7 +299,7 @@ void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances,
                                      sv->normal_.normal[3]};
 
 
-        pcl::tracking::RGB2HSV(sv->centroid_.r,sv->centroid_.g,sv->centroid_.b,hsv[0],hsv[1],hsv[2]);
+        tools::rgb2hsv(sv->centroid_.r,sv->centroid_.g,sv->centroid_.b,hsv[0],hsv[1],hsv[2]);
         std::vector<double> rgb = {(double)hsv[0],
                                   (double)hsv[1],
                                   (double)hsv[2]};

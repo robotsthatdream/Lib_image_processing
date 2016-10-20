@@ -93,7 +93,7 @@ bool SupervoxelSet::computeSupervoxel(workspace_t& workspace){
     }
 
     PointCloudHSV::Ptr hsv_cloud(new PointCloudHSV);
-    image_processing::RGB2HSV(_inputCloud,hsv_cloud);
+    image_processing::tools::cloudRGB2HSV(_inputCloud,hsv_cloud);
 
 
     //definition of super voxel clustering class
@@ -120,7 +120,7 @@ bool SupervoxelSet::computeSupervoxel(){
     }
 
     PointCloudHSV::Ptr hsv_cloud(new PointCloudHSV);
-    image_processing::RGB2HSV(_inputCloud,hsv_cloud);
+    image_processing::tools::cloudRGB2HSV(_inputCloud,hsv_cloud);
 
     //definition of super voxel clustering class
     _extractor->setInputCloud(hsv_cloud);
