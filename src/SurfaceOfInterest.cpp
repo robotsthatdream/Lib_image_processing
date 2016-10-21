@@ -43,7 +43,7 @@ bool SurfaceOfInterest::generate(const std::shared_ptr<oml::Classifier> model, w
     if(training)
         compute_confidence_weights(model);
     else compute_weights(model);
-    return true;
+        return true;
 }
 
 void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
@@ -139,7 +139,9 @@ void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint3
     boost::random::uniform_real_distribution<> dist(0.,1.);
 
     float choice = dist(_gen);
+
     lbl = soi_dist.lower_bound(choice)->second;
+    assert(_supervoxels[lbl]);
     supervoxel = *(_supervoxels[lbl]);
     //*/
 }
