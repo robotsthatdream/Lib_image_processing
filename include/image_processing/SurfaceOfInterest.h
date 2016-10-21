@@ -102,7 +102,7 @@ public:
      * @param workspace
      * @return if the generation of soi is successful
      */
-    bool generate(const TrainingData<SvFeature> &dataset, workspace_t& workspace);
+    bool generate(const TrainingData<SvFeature> &dataset, workspace_t& workspace, float init_val = 1.);
 
     /**
      * @brief generate the soi with key points. Soi will be supervoxels who contains at least one key points.
@@ -145,6 +145,7 @@ public:
      * @param interest true if the explored supervoxel is interesting false otherwise
      */
     void compute_weights(const TrainingData<SvFeature> &data);
+    void compute_confidence_weights(const TrainingData<SvFeature> model);
 
     /**
      * @brief compute the weights of each supervoxel with an online trained Random Forest classifer
@@ -158,7 +159,8 @@ public:
      * @param supervoxel
      * @param label of chosen supervoxel in the soi set
      */
-    void choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint32_t& lbl);
+    bool choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint32_t& lbl);
+    bool choice_of_soi_by_uncertainty(pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl);
 
     /**
      * @brief delete the background of the input cloud

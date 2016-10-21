@@ -10,10 +10,11 @@ bool SurfaceOfInterest::generate(workspace_t &workspace){
     return true;
 }
 
-bool SurfaceOfInterest::generate(const TrainingData<SvFeature>& dataset, workspace_t& workspace){
+bool SurfaceOfInterest::generate(const TrainingData<SvFeature>& dataset, workspace_t& workspace, float init_val){
     if(!computeSupervoxel(workspace))
 	return false;
 
+    init_weights(init_val);
     compute_weights(dataset);
     return true;
 }
@@ -120,7 +121,7 @@ void SurfaceOfInterest::reduce_to_soi(){
     consolidate();
 }
 
-void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl){
+bool SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl){
 
     //*build the distribution from weights
     std::map<float,uint32_t> soi_dist;
@@ -129,8 +130,48 @@ void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint3
     for(auto it = _weights.begin(); it != _weights.end(); it++)
         total_w += it->second;
 
+    if(total_w == 0)
+        return false;
+
+
     for(auto it = _weights.begin(); it != _weights.end(); it++){
         val+=it->second/(total_w);
+        soi_dist.emplace(val,it->first);
+    }
+    //*/
+
+
+    //*choice of a supervoxel
+    boost::random::uniform_real_distribution<> dist(0.,1.);
+
+    float choice = dist(_gen);
+    lbl = soi_dist.lower_bound(choice)->second;
+    supervoxel = *(_supervoxels[lbl]);
+    //*/
+
+    return true;
+}
+
+bool SurfaceOfInterest::choice_of_soi_by_uncertainty(pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl){
+
+    //*build the distribution from weights
+    std::map<float,uint32_t> soi_dist;
+    float val = 0.f;
+    float total_w = 0.f;
+    for(auto it = _weights.begin(); it != _weights.end(); it++){
+        if(it->second < 0.5)
+            total_w += (1.-it->second)*2.;
+        else
+            total_w += it->second*2.;
+    }
+
+    if(total_w == 0)
+        return false;
+
+    for(auto it = _weights.begin(); it != _weights.end(); it++){
+        if(it->second < .5)
+            val+=(1.-it->second)*2./(total_w);
+        else val+=(it->second)*2./(total_w);
         soi_dist.emplace(val,it->first);
     }
     //*/
@@ -142,11 +183,11 @@ void SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint3
     lbl = soi_dist.lower_bound(choice)->second;
     supervoxel = *(_supervoxels[lbl]);
     //*/
+
+    return true;
 }
 
 void SurfaceOfInterest::compute_weights(const TrainingData<SvFeature>& data){
-    init_weights();
-
     for(int i = 0; i < data.size(); i++){
 
         bool interest = data[i].first;
@@ -156,25 +197,11 @@ void SurfaceOfInterest::compute_weights(const TrainingData<SvFeature>& data){
         std::map<uint32_t,float> distances;
         _compute_distances(distances,sv);
 
-//        for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
-//            VectorXd sv_sample;
-//            sv_sample(0) = it_sv->second->centroid_.x;
-//            sv_sample(1) = it_sv->second->centroid_.y;
-//            sv_sample(2) = it_sv->second->centroid_.z;
-//            sv_sample(3) = it_sv->second->normal_.normal[0];
-//            sv_sample(4) = it_sv->second->normal_.normal[1];
-//            sv_sample(5) = it_sv->second->normal_.normal[2];
-//            distances.emplace(it_sv->first,(sv_sample - sample).squaredNorm());
-//        }
-
 
         for(auto it_w = _weights.begin(); it_w != _weights.end(); it_w++){
 
             float dist = distances[it_w->first];
-//            if(interest)
-//                dist = distances[it_w->first];
-//            else
-//                dist = 1 - distances[it_w->first];
+
 
             if(dist > _param.distance_threshold)
                 continue;
@@ -195,6 +222,8 @@ void SurfaceOfInterest::compute_weights(const TrainingData<SvFeature>& data){
 
 
 }
+
+
 
 void SurfaceOfInterest::compute_confidence_weights(const std::shared_ptr<oml::Classifier> model){
     init_weights();
