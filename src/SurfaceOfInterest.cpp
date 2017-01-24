@@ -161,17 +161,19 @@ bool SurfaceOfInterest::choice_of_soi_by_uncertainty(pcl::Supervoxel<PointT> &su
     float val = 0.f;
     float total_w = 0.f;
     for(auto it = _weights.begin(); it != _weights.end(); it++){
-        if(it->second < 0.5)
+        if(it->second > 0.5)
             total_w += (1.-it->second)*2.;
         else
             total_w += it->second*2.;
     }
 
+    std::cout << "global uncertainty : " << total_w << std::endl;
+
     if(total_w == 0)
         return false;
 
     for(auto it = _weights.begin(); it != _weights.end(); it++){
-        if(it->second < .5)
+        if(it->second > .5)
             val+=(1.-it->second)*2./(total_w);
         else val+=(it->second)*2./(total_w);
         soi_dist.emplace(val,it->first);
