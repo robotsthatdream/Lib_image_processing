@@ -2,11 +2,12 @@
 #define _SURFACE_OF_INTEREST_H
 
 #include "SupervoxelSet.h"
-#include "TrainingData.hpp"
+//#include "TrainingData.hpp"
 #include <boost/random.hpp>
 #include <ctime>
+#include <iagmm/data.hpp>
+#include <iagmm/nnmap.hpp>
 
-#include <online-machine-learning/online_rf.h>
 
 namespace image_processing {
 
@@ -37,12 +38,16 @@ inline std::ostream& operator<<(std::ostream& os, const SvFeature& feature){
 class SurfaceOfInterest : public SupervoxelSet
 {
 public:
+
+    typedef std::map<uint32_t,double> saliency_map_t;
+
     /**
      * @brief default constructor
      */
     SurfaceOfInterest() : SupervoxelSet(){
         _gen.seed(std::time(0));
-        init_soi<parameters::soi>();
+        _weights.emplace("color",saliency_map_t());
+        _weights.emplace("normal",saliency_map_t());
     }
 
     /**
@@ -51,15 +56,22 @@ public:
      */
     SurfaceOfInterest(const PointCloudT::Ptr& cloud) : SupervoxelSet(cloud){
         _gen.seed(std::time(0));
-        init_soi<parameters::soi>();
+        _weights.emplace("color",saliency_map_t());
+        _weights.emplace("normal",saliency_map_t());
     }
     /**
      * @brief copy constructor
      * @param soi
      */
-    SurfaceOfInterest(const SurfaceOfInterest& soi) : SupervoxelSet(soi){
+    SurfaceOfInterest(const SurfaceOfInterest& soi) :
+        SupervoxelSet(soi),
+        _weights(soi._weights),
+        _labels(soi._labels),
+        _labels_no_soi(_labels_no_soi)
+    {
         _gen.seed(std::time(0));
-        init_soi<parameters::soi>();
+        _weights.emplace("color",saliency_map_t());
+        _weights.emplace("normal",saliency_map_t());
     }
     /**
      * @brief constructor with a SupervoxelSet
@@ -67,20 +79,6 @@ public:
      */
     SurfaceOfInterest(const SupervoxelSet& super) : SupervoxelSet(super){
         _gen.seed(std::time(0));
-        init_soi<parameters::soi>();
-    }
-
-    /**
-     * @brief initialisation function
-     * Template : parameters use for the soi comuptation
-     */
-    template <typename Param>
-    void init_soi(){
-        _param.color_normal_ratio = Param::color_normal_ratio;
-        _param.distance_threshold = Param::distance_threshold;
-        _param.interest_increment = Param::interest_increment;
-        _param.non_interest_val = Param::non_interest_val;
-//        _param.normal_importance = Param::normal_importance;
     }
 
     /**
@@ -90,22 +88,30 @@ public:
     void find_soi(const PointCloudXYZ::Ptr key_pts);
 
     /**
-     * @brief generate the soi for a pure random choice (i.e. all supervoxels are soi)
+     * @brief NAIVE POLICY generate the soi for a pure random choice (i.e. all supervoxels are soi)
      * @param workspace
      * @return if the generation of soi is successful
      */
     bool generate(workspace_t& workspace);
 
     /**
-     * @brief generate the soi with a simple linear fuzzy classifier
-     * @param training dataset
+     * @brief LEARNING POLICY generate the soi with a classifier specify in argument
+     * @param the classifier
      * @param workspace
      * @return if the generation of soi is successful
      */
-    bool generate(const TrainingData<SvFeature> &dataset, workspace_t& workspace, float init_val = 1.);
+    template <typename classifier_t>
+    bool generate(const std::string &modality, classifier_t& classifier, workspace_t& workspace, float init_val = 1.){
+        if(!computeSupervoxel(workspace))
+        return false;
+
+        init_weights(init_val);
+        compute_weights(modality, classifier);
+        return true;
+    }
 
     /**
-     * @brief generate the soi with key points. Soi will be supervoxels who contains at least one key points.
+     * @brief KEY POINTS POLICY generate the soi with key points. Soi will be supervoxels who contains at least one key points.
      * @param key points
      * @param workspace
      * @return if the generation of soi is successful
@@ -113,23 +119,12 @@ public:
     bool generate(const PointCloudXYZ::Ptr key_pts, workspace_t &workspace);
 
     /**
-     * @brief generate the soi by deleting the background
+     * @brief EXPERT POLICY generate the soi by deleting the background
      * @param pointcloud of the background
      * @param workspace
      * @return if the generation of soi is successful
      */
     bool generate(const PointCloudT::Ptr background, workspace_t& workspace);
-
-    /**
-     * @brief generate the soi by classifing the supervoxel with a online trained Random Forest.
-     * If the generation is in training mode, the soi will be computed according to an interest to unknown area in the visual field.
-     * In this mode the classifier should be in training. In the non training mode, the classifier is fixed and the soi are computed according to the classification.
-     * @param RF classifier
-     * @param workspace
-     * @param if true, the soi will be generated for training mode.
-     * @return if the generation of soi is successful
-     */
-    bool generate(const std::shared_ptr<oml::Classifier> model, workspace_t &workspace, bool training = true);
 
     /**
      * @brief reduce the set of supervoxels to set of soi
@@ -144,23 +139,46 @@ public:
      * @param lbl label of the explored supervoxel
      * @param interest true if the explored supervoxel is interesting false otherwise
      */
-    void compute_weights(const TrainingData<SvFeature> &data);
-    void compute_confidence_weights(const TrainingData<SvFeature> model);
+    template <typename classifier_t>
+    void compute_weights(const std::string& modality, classifier_t &classifier){
+        //For Color case
+        if(modality == "color"){
+            for(const auto& sv : _supervoxels){
+                float hsv[3];
+                tools::rgb2hsv(sv.second->centroid_.r,
+                               sv.second->centroid_.g,
+                               sv.second->centroid_.b,
+                               hsv[0],hsv[1],hsv[2]);
+                Eigen::VectorXd new_s(3);
+                new_s << hsv[0],
+                        hsv[1],
+                        hsv[2];
+                _weights["color"][sv.first] = classifier.compute_estimation(new_s,1);
+            }
+            return;
+        }
+        if(modality == "normal"){
+            for(const auto& sv : _supervoxels){
+                Eigen::VectorXd new_s(3);
+                new_s << sv.second->normal_.normal[0],
+                        sv.second->normal_.normal[1],
+                        sv.second->normal_.normal[2];
+                _weights["normal"][sv.first] = classifier.compute_estimation(new_s,1);
+            }
+            return;
+        }
 
-    /**
-     * @brief compute the weights of each supervoxel with an online trained Random Forest classifer
-     * @param model
-     */
-    void compute_weights(const std::shared_ptr<oml::Classifier> model);
-    void compute_confidence_weights(const std::shared_ptr<oml::Classifier> model);
+        std::cerr << "SurfaceOfInterest Error: unknow modality" << std::endl;
+    }
+
 
     /**
      * @brief choose randomly one soi
      * @param supervoxel
      * @param label of chosen supervoxel in the soi set
      */
-    bool choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint32_t& lbl);
-    bool choice_of_soi_by_uncertainty(pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl);
+    bool choice_of_soi(const std::string &modality, pcl::Supervoxel<PointT> &supervoxel, uint32_t& lbl);
+    bool choice_of_soi_by_uncertainty(const std::string &modality, pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl);
 
     /**
      * @brief delete the background of the input cloud
@@ -169,30 +187,16 @@ public:
     void delete_background(const PointCloudT::Ptr background);
 
 
-    PointCloudT getColoredWeightedCloud();
+    PointCloudT getColoredWeightedCloud(const std::string &modality);
 
 
 private :
-
-    void _compute_distances(std::map<uint32_t,float> &distances, const SvFeature &sv);
-
-    double _L2_distance(const std::vector<double> &p1, const std::vector<double> &p2);
-
-    struct _param_t{
-        float interest_increment;
-        float non_interest_val;
-        float color_normal_ratio;
-        float distance_threshold;
-    };
-
-    _param_t _param;
-
     std::vector<uint32_t> _labels;
     std::vector<uint32_t> _labels_no_soi;
-    std::map<uint32_t,float> _weights;
-    boost::random::mt19937 _gen;
+    std::map<std::string,saliency_map_t> _weights;
 
-    std::vector<std::pair<bool,float>> _data;
+
+    boost::random::mt19937 _gen;
 
 };
 

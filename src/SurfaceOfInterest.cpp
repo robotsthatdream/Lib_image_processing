@@ -1,7 +1,9 @@
 #include "image_processing/SurfaceOfInterest.h"
+#include "eigen3/Eigen/Core"
 
 using namespace image_processing;
 
+//NAIVE POLICY
 bool SurfaceOfInterest::generate(workspace_t &workspace){
     if(!computeSupervoxel(workspace))
 	return false;
@@ -10,15 +12,7 @@ bool SurfaceOfInterest::generate(workspace_t &workspace){
     return true;
 }
 
-bool SurfaceOfInterest::generate(const TrainingData<SvFeature>& dataset, workspace_t& workspace, float init_val){
-    if(!computeSupervoxel(workspace))
-	return false;
-
-    init_weights(init_val);
-    compute_weights(dataset);
-    return true;
-}
-
+//KEYPOINTS POLICY
 bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, workspace_t &workspace){
     if(!computeSupervoxel(workspace))
 	return false;
@@ -28,6 +22,7 @@ bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, workspace_t &
     return true;
 }
 
+//EXPERT POLICY
 bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, workspace_t &workspace){
     delete_background(background);
     if(!computeSupervoxel(workspace))
@@ -37,16 +32,6 @@ bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, workspace_t 
     return true;
 }
 
-bool SurfaceOfInterest::generate(const std::shared_ptr<oml::Classifier> model, workspace_t &workspace, bool training){
-    if(!computeSupervoxel(workspace))
-        return false;
-
-    if(training)
-        compute_confidence_weights(model);
-    else compute_weights(model);
-        return true;
-}
-
 void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
     pcl::KdTreeFLANN<pcl::PointXYZ>::Ptr tree(new pcl::KdTreeFLANN<pcl::PointXYZ>());
 
@@ -54,7 +39,7 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
     std::map<int, uint32_t> centroids_label;
     _labels.clear();
     _labels_no_soi.clear();
-    _weights.clear();
+    _weights["color"].clear();
     getCentroidCloud(centr, centroids_label);
     PointCloudXYZ::Ptr centroids(new PointCloudXYZ);
     for(int i = 0; i < centr.size(); i++){
@@ -93,7 +78,7 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
 
 
     for(auto it = result.begin(); it != result.end(); it++)
-        _weights.emplace(it->first,1.);
+        _weights["color"].emplace(it->first,1.);
 
 
 //    for(auto it = no_result.begin(); it != no_result.end(); it++)
@@ -107,10 +92,13 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
 }
 
 void SurfaceOfInterest::init_weights(float value){
-    _weights.clear();
-    for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
-        _weights.emplace(it_sv->first,value);
+    for(auto& mod : _weights){
+        mod.second.clear();
+        for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
+            mod.second.emplace(it_sv->first,value);
+        }
     }
+
 
 }
 
@@ -121,21 +109,21 @@ void SurfaceOfInterest::reduce_to_soi(){
     consolidate();
 }
 
-bool SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl){
+bool SurfaceOfInterest::choice_of_soi(const std::string& modality, pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl){
 
     //*build the distribution from weights
     std::map<float,uint32_t> soi_dist;
     float val = 0.f;
     float total_w = 0.f;
-    for(auto it = _weights.begin(); it != _weights.end(); it++)
+    for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++)
         total_w += it->second;
 
     if(total_w == 0)
         return false;
 
 
-    for(auto it = _weights.begin(); it != _weights.end(); it++){
-        val+=it->second/(total_w*_weights.size());
+    for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++){
+        val+=it->second/(total_w*_weights[modality].size());
         soi_dist.emplace(val,it->first);
     }
     //*/
@@ -154,13 +142,13 @@ bool SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint3
     return true;
 }
 
-bool SurfaceOfInterest::choice_of_soi_by_uncertainty(pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl){
+bool SurfaceOfInterest::choice_of_soi_by_uncertainty(const std::string& modality, pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl){
 
     //*build the distribution from weights
     std::map<float,uint32_t> soi_dist;
     float val = 0.f;
     float total_w = 0.f;
-    for(auto it = _weights.begin(); it != _weights.end(); it++){
+    for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++){
         if(it->second > 0.5)
             total_w += (1.-it->second)*2.;
         else
@@ -172,7 +160,7 @@ bool SurfaceOfInterest::choice_of_soi_by_uncertainty(pcl::Supervoxel<PointT> &su
     if(total_w == 0)
         return false;
 
-    for(auto it = _weights.begin(); it != _weights.end(); it++){
+    for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++){
         if(it->second > .5)
             val+=(1.-it->second)*2./(total_w);
         else val+=(it->second)*2./(total_w);
@@ -191,88 +179,6 @@ bool SurfaceOfInterest::choice_of_soi_by_uncertainty(pcl::Supervoxel<PointT> &su
     return true;
 }
 
-void SurfaceOfInterest::compute_weights(const TrainingData<SvFeature>& data){
-    for(int i = 0; i < data.size(); i++){
-
-        bool interest = data[i].first;
-        SvFeature sv = data[i].second;
-
-
-        std::map<uint32_t,float> distances;
-        _compute_distances(distances,sv);
-
-
-        for(auto it_w = _weights.begin(); it_w != _weights.end(); it_w++){
-
-            float dist = distances[it_w->first];
-
-
-            if(dist > _param.distance_threshold)
-                continue;
-
-            if(interest)
-                it_w->second = it_w->second + _param.interest_increment*(1-dist);
-            else
-                it_w->second = it_w->second - _param.interest_increment*(1-dist);
-
-            if(it_w->second < 0)
-                it_w->second = 0.;
-            if(it_w->second > 1)
-                it_w->second = 1.;
-        }
-
-
-    }
-
-
-}
-
-
-
-void SurfaceOfInterest::compute_confidence_weights(const std::shared_ptr<oml::Classifier> model){
-    init_weights();
-    for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
-        pcl::Supervoxel<PointT> sv = *(itr->second);
-        oml::Sample s;
-	s.x.resize(6);
-        s.x << (double) sv.centroid_.r, (double) sv.centroid_.g, (double) sv.centroid_.b,
-                sv.normal_.normal[0], sv.normal_.normal[1], sv.normal_.normal[2];
-
-        oml::Result r(2);
-        model->eval(s,r);
-        s.y = r.prediction;
-//        s.w = r.confidence(r.prediction);
-        _weights[itr->first] = (r.confidence(r.prediction));
-        if(_weights[itr->first] > 1)
-            _weights[itr->first] = 1;
-
-        _weights[itr->first] = 1 - _weights[itr->first];
-    }
-
-}
-
-void SurfaceOfInterest::compute_weights(const std::shared_ptr<oml::Classifier> model){
-    init_weights();
-    oml::DataSet dataset;
-
-    for(auto itr = _supervoxels.begin(); itr != _supervoxels.end(); ++itr){
-        pcl::Supervoxel<PointT> sv = *(itr->second);
-        oml::Sample s;
-        s.x.resize(6);
-
-        s.x << (double) sv.centroid_.r, (double) sv.centroid_.g, (double) sv.centroid_.b,
-             sv.normal_.normal[0], sv.normal_.normal[1], sv.normal_.normal[2];
-
-        oml::Result r(2);
-        model->eval(s,r);
-        s.y = r.prediction;
-        s.w = r.confidence(r.prediction);
-        dataset.add(s);
-
-        _weights[itr->first] = r.confidence(0);
-    }
-
-}
 
 void SurfaceOfInterest::delete_background(const PointCloudT::Ptr background){
     pcl::KdTreeFLANN<PointT>::Ptr tree(new pcl::KdTreeFLANN<PointT>);
@@ -298,75 +204,15 @@ void SurfaceOfInterest::delete_background(const PointCloudT::Ptr background){
 
 }
 
-void SurfaceOfInterest::_compute_distances(std::map<uint32_t, float> &distances, const SvFeature& ref_sv){
-
-    float w = _param.color_normal_ratio;
-    float v = 1-_param.color_normal_ratio;
-    float hsv[3];
-
-    auto it_sv = _supervoxels.begin();
-
-    pcl::Supervoxel< PointT >::Ptr sv = it_sv->second;
-    std::vector<double> normal = {sv->normal_.normal[0],
-                                 sv->normal_.normal[1],
-                                 sv->normal_.normal[2],
-                                 sv->normal_.normal[3]};
-
-    tools::rgb2hsv(sv->centroid_.r,sv->centroid_.g,sv->centroid_.b,hsv[0],hsv[1],hsv[2]);
-    std::vector<double> HSV = {(double)hsv[0]};
-
-//                              (double)hsv[1],
-//                              (double)hsv[2]};
-    double color_distance = _L2_distance(ref_sv.color,HSV)/*/255.*/;
-
-    double normal_distance = _L2_distance(ref_sv.normal,normal)/2.;
-    double distance = sqrt(w*color_distance*color_distance+v*normal_distance*normal_distance);
-    distances.emplace(it_sv->first,distance);
-    double max_distance = distance;
-
-    for(; it_sv != _supervoxels.end(); ++it_sv){
-        //        if(it_sv->first == lbl)
-        //            continue;
-        sv = it_sv->second;
-        normal = {sv->normal_.normal[0],
-                                     sv->normal_.normal[1],
-                                     sv->normal_.normal[2],
-                                     sv->normal_.normal[3]};
 
 
-        tools::rgb2hsv(sv->centroid_.r,sv->centroid_.g,sv->centroid_.b,hsv[0],hsv[1],hsv[2]);
-        HSV = {(double)hsv[0]};
-//                                  (double)hsv[1],
-//                                  (double)hsv[2]};
-        color_distance = _L2_distance(ref_sv.color,HSV)/*/255.*/;
-        normal_distance = _L2_distance(ref_sv.normal,normal)/2.;
-        distance = sqrt(w*color_distance*color_distance+v*normal_distance*normal_distance);
-        if(distance > max_distance)
-            max_distance = distance;
-        distances.emplace(it_sv->first,distance);
-    }
-
-    for(auto it_d = distances.begin(); it_d != distances.end(); it_d++)
-        it_d->second = it_d->second / max_distance;
-}
-
-double SurfaceOfInterest::_L2_distance(const std::vector<double> &p1, const std::vector<double> &p2){
-
-    double square_sum = 0;
-    for(int i = 0; i < p1.size() ; i++){
-        square_sum += (p1[i]-p2[i])*(p1[i]-p2[i]);
-    }
-    return sqrt(square_sum);
-
-}
-
-PointCloudT SurfaceOfInterest::getColoredWeightedCloud(){
+PointCloudT SurfaceOfInterest::getColoredWeightedCloud(const std::string &modality){
 
     PointCloudT result;
 
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
         pcl::Supervoxel<PointT>::Ptr current_sv = it_sv->second;
-        float c = 255.*_weights[it_sv->first];
+        float c = 255.*_weights[modality][it_sv->first];
         uint8_t color = c;
 
         for(auto v : *(current_sv->voxels_)){
