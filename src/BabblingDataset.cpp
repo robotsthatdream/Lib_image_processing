@@ -133,7 +133,7 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
     //extract rgb images
     std::string f_name(rgb_node.as<std::string>());
     boost::split(split_string,f_name,boost::is_any_of("."));
-    if(split_string[1] == ""){ //if contained in a folder
+    if(split_string.size() == 1){ //if contained in a folder
         std::string folder = foldername + "/rgb";
         if(!boost::filesystem::exists(folder)){
             std::cerr << "unable to find " << folder << std::endl;
@@ -154,16 +154,20 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
             rgb_set.emplace(time,image);
         }
     }else if (split_string[1] == "yml"){//if contained in a file
-        YAML::Node rgb_file = YAML::LoadFile(rgb_node.as<std::string>());
-        for(YAML::iterator it = rgb_file.begin(); it != rgb_file.end(); it++)
-        std::vector<uint8_t> vec_data(rgb_file["depth"].as<std::string>().begin(),rgb_file["depth"].as<std::string>().end());
-        cv::Mat image(cv::Mat(vec_data,true));
-        double time = std::stod()
-        rgb_set.emlace()
+        YAML::Node rgb_file = YAML::LoadFile(foldername + "/" + rgb_node.as<std::string>());
+        for(YAML::iterator it = rgb_file.begin(); it != rgb_file.end(); it++){
+            std::vector<uchar> vec_data = YAML::DecodeBase64(it->second["rgb"].as<std::string>());
+            cv::Mat image = cv::imdecode(vec_data,cv::IMREAD_UNCHANGED);
+            double time = it->second["timestamp"]["sec"].as<double>() +
+                    it->second["timestamp"]["nsec"].as<double>()*1e-9;
+            rgb_set.emplace(time,image);
+        }
     }
 
     //Extract depth images
-    if(!std::strcmp(depth_node["type"].as<std::string>().c_str(),"folder")){//if contained in a folder
+    f_name = depth_node.as<std::string>();
+    boost::split(split_string,f_name,boost::is_any_of("."));
+    if(split_string.size() == 1){//if contained in a folder
         std::string folder = foldername + "/depth";
         if(!boost::filesystem::exists(folder)){
             std::cerr << "unable to find " << folder << std::endl;
@@ -186,8 +190,15 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
 
             depth_set.emplace(time,depth_img);
         }
-    }else if (!std::strcmp(depth_node["type"].as<std::string>().c_str(),"file")){//if contained in a file
-        //TODO
+    }else if(split_string[1] == "yml"){//if contained in a file
+        YAML::Node depth_file = YAML::LoadFile(foldername + "/" + depth_node.as<std::string>());
+        for(YAML::iterator it = depth_file.begin(); it != depth_file.end(); it++){
+            std::vector<uchar> vec_data = YAML::DecodeBase64(it->second["depth"].as<std::string>());
+            cv::Mat image = cv::imdecode(vec_data,cv::IMREAD_UNCHANGED);
+            double time = it->second["timestamp"]["sec"].as<double>() +
+                    it->second["timestamp"]["nsec"].as<double>()*1e-9;
+            depth_set.emplace(time,image);
+        }
     }
 
     //Merged both rgb_set and depth set in a rgbd_set
@@ -226,58 +237,38 @@ void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& dep
 
     int rgb_cn = rgb.channels();
 
-    uint8_t r, r_2, g, g_2, b, b_2;
+    ptcl->width = rgb.cols;
+    ptcl->height = rgb.rows;
 
     for(int i = 0; i < rgb.rows; i++){
-        uint8_t* rgb_rowPtr = (uint8_t*) rgb.row(i).data;
-        float* depth_rowPtr = (float*) depth.row(i).data;
+        uchar* rgb_rowPtr = reinterpret_cast<uchar*>(rgb.row(i).data);
+        float* depth_rowPtr = reinterpret_cast<float*>(depth.row(i).data);
+
+
         for(int j = 0; j < rgb.cols; j++){
             PointT pt;
             float z = depth_rowPtr[j];
-            if(z == bad_point){
+            if(z != z){
                 pt.x = pt.y = pt.z = bad_point;
+                continue;
             }else{
                 pt.x = (i - center_x)*z/focal_x;
                 pt.y = (j - center_y)*z/focal_y;
                 pt.z = z;
             }
-//            depth_rowPtr++;
 
-            //TO DEBUG : Registration color problem
-//            pt.a = 255;
-//            cv::Vec3b color = rgb.at<cv::Vec3b>(i,j);
-
-            r_2 = r;
-            g_2 = g;
-            b_2 = b;
-            r = rgb_rowPtr[j*rgb_cn + 2];
-            g = rgb_rowPtr[j*rgb_cn + 1];
-            b = rgb_rowPtr[j*rgb_cn + 0];
-
-
-//            if(r == r_2 && g == g_2 && b == b_2){
-//                std::cout << "same color as before " << i << " " << j << std::endl;
-//            }else {
-//                std::cout << "_________________________________________________" << std::endl;
-//                std::cout << "diff color as before " << i << " " << j << std::endl;
-//                std::cout << "_________________________________________________" << std::endl;
-//            }
 
             pt.r = rgb_rowPtr[j*rgb_cn + 2];
             pt.g = rgb_rowPtr[j*rgb_cn + 1];
             pt.b = rgb_rowPtr[j*rgb_cn + 0];
 
-//            pt.a = 255;
-//            pt.r = 255;
-//            pt.g = 255;
-//            pt.b = 255;
+            pt.a = 255;
 
-            ptcl->points.push_back(pt);
+            ptcl->push_back(pt);
         }
     }
 
-    ptcl->width = rgb.cols;
-    ptcl->height = rgb.rows;
+
 //    pcl::PassThrough<PointT> passFilter;
 
 
