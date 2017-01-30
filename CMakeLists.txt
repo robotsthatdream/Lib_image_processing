@@ -9,14 +9,18 @@ set(SOURCE_FILES src/DescriptorExtraction.cpp
     src/tools.cpp
 )
 
+FILE(GLOB_RECURSE HEADFILES "include/*.hpp" "include/*.h")
+add_custom_target(headers SOURCES ${HEADFILES})
+
+
 #Libraries
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS filesystem system REQUIRED)
-find_package(OpenCV REQUIRED COMPONENTS features2d nonfree)
+find_package(OpenCV 2.4.8 REQUIRED COMPONENTS features2d nonfree)
 find_package(PCL 1.7 REQUIRED)
 find_package(VTK REQUIRED)
 
-include_directories(include ${PCL_INCLUDE_DIRS} /usr/local/include)
+include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include)
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 
