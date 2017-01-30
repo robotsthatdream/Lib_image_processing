@@ -135,7 +135,7 @@ bool SurfaceOfInterest::choice_of_soi(pcl::Supervoxel<PointT> &supervoxel, uint3
 
 
     for(auto it = _weights.begin(); it != _weights.end(); it++){
-        val+=it->second/(total_w);
+        val+=it->second/(total_w*_weights.size());
         soi_dist.emplace(val,it->first);
     }
     //*/
