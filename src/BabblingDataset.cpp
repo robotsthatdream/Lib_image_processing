@@ -128,9 +128,12 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
     YAML::Node depth_node = _data_structure["depth"];
     std::map<double,cv::Mat> rgb_set;
     std::map<double,cv::Mat> depth_set;
+    std::vector<std::string> split_string;
 
     //extract rgb images
-    if(!std::strcmp(rgb_node["type"].as<std::string>().c_str(),"folder")){ //if contained in a folder
+    std::string f_name(rgb_node.as<std::string>());
+    boost::split(split_string,f_name,boost::is_any_of("."));
+    if(split_string[1] == ""){ //if contained in a folder
         std::string folder = foldername + "/rgb";
         if(!boost::filesystem::exists(folder)){
             std::cerr << "unable to find " << folder << std::endl;
@@ -139,7 +142,6 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
         boost::filesystem::directory_iterator end_itr;
 
         for(boost::filesystem::directory_iterator itr(folder); itr != end_itr; ++itr){
-            std::vector<std::string> split_string;
             boost::split(split_string,itr->path().string(),boost::is_any_of("/"));
             boost::split(split_string,split_string.back(),boost::is_any_of("."));
             boost::split(split_string,split_string.front(),boost::is_any_of("_"));
@@ -151,8 +153,13 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
 
             rgb_set.emplace(time,image);
         }
-    }else if (!std::strcmp(rgb_node["type"].as<std::string>().c_str(),"file")){//if contained in a file
-        //TODO
+    }else if (split_string[1] == "yml"){//if contained in a file
+        YAML::Node rgb_file = YAML::LoadFile(rgb_node.as<std::string>());
+        for(YAML::iterator it = rgb_file.begin(); it != rgb_file.end(); it++)
+        std::vector<uint8_t> vec_data(rgb_file["depth"].as<std::string>().begin(),rgb_file["depth"].as<std::string>().end());
+        cv::Mat image(cv::Mat(vec_data,true));
+        double time = std::stod()
+        rgb_set.emlace()
     }
 
     //Extract depth images
@@ -179,7 +186,7 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
 
             depth_set.emplace(time,depth_img);
         }
-    }else if (!std::strcmp(rgb_node["type"].as<std::string>().c_str(),"file")){//if contained in a file
+    }else if (!std::strcmp(depth_node["type"].as<std::string>().c_str(),"file")){//if contained in a file
         //TODO
     }
 
