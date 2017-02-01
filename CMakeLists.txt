@@ -32,7 +32,7 @@ install(DIRECTORY include/image_processing/  DESTINATION /usr/local/include/${PR
 file(GLOB_RECURSE src_files src/* include/image_processing/*)
 
 add_library(image_processing ${SOURCE_FILES})
-target_link_libraries(image_processing  ${PCL_LIBRARIES} oml_rf yaml-cpp.so ${Boost_LIBRARIES})
+target_link_libraries(image_processing  ${PCL_LIBRARIES} yaml-cpp.so ${Boost_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}
     ARCHIVE DESTINATION /usr/local/lib
@@ -40,13 +40,13 @@ install(TARGETS ${PROJECT_NAME}
 
 #test and example code
 add_executable(load_dataset_test test/load_dataset_test.cpp)
-target_link_libraries(load_dataset_test image_processing ${PCL_LIBRARIES} oml_rf yaml-cpp.so ${OpenCV_LIBRARIES})
+target_link_libraries(load_dataset_test image_processing ${PCL_LIBRARIES} yaml-cpp.so ${OpenCV_LIBRARIES})
 
 add_executable(test_rgb_reconstruct test/test_rgb_reconstruct.cpp)
-target_link_libraries(test_rgb_reconstruct image_processing ${PCL_LIBRARIES} oml_rf yaml-cpp.so ${OpenCV_LIBRARIES})
+target_link_libraries(test_rgb_reconstruct image_processing ${PCL_LIBRARIES} yaml-cpp.so ${OpenCV_LIBRARIES})
 
 add_executable(fake_data test/fake_data.cpp)
 target_link_libraries(fake_data ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
 add_executable(convex_hull_test test/convex_hull_test.cpp)
-target_link_libraries(convex_hull_test  image_processing ${PCL_LIBRARIES} oml_rf yaml-cpp.so ${OpenCV_LIBRARIES})
+target_link_libraries(convex_hull_test  image_processing ${PCL_LIBRARIES} yaml-cpp.so ${OpenCV_LIBRARIES})

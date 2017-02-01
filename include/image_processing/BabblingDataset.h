@@ -45,16 +45,56 @@ public:
     }
 
 
+    /**
+     * @brief load dataset by providing the wave metadata yaml file and a folder name containing the dataset
+     * @param wave meta data yaml file name
+     * @param folder name containing the dataset
+     * @param [optional] iteration to load. If not set load the entire dataset
+     * @return
+     */
     bool load_dataset(const std::string& meta_data_filename, const std::string &arch_name, int iteration = 0);
+
+    /**
+     * @brief load_dataset
+     * @param iteration
+     * @return
+     */
     bool load_dataset(int iteration = 0);
+
+    /**
+     * @brief extract_cloud_trajectories
+     * @param cloud_traj
+     */
     void extract_cloud_trajectories(cloud_trajectories_set_t& cloud_traj);
+
+    /**
+     * @brief extract_cloud
+     * @param iter
+     * @param rect_iter
+     * @return
+     */
     std::pair<double,cloud_set_t> extract_cloud(const rgbd_set_t::const_iterator &iter,
                                                 const rect_trajectories_t::const_iterator &rect_iter);
 
-    void _rgbd_to_pointcloud(const cv::Mat &rgb, const cv::Mat &depth, PointCloudT::Ptr ptcl);
+    /**
+     * @brief rgbd_to_pointcloud
+     * @param rgb
+     * @param depth
+     * @param ptcl
+     */
+    void rgbd_to_pointcloud(const cv::Mat &rgb, const cv::Mat &depth, PointCloudT::Ptr ptcl);
 
     //GETTERS
+    /**
+     * @brief get_per_iter_rgbd_set
+     * @return
+     */
     const per_iter_rgbd_set_t& get_per_iter_rgbd_set(){return _per_iter_rgbd_set;}
+
+    /**
+     * @brief get_per_iter_rect_set
+     * @return
+     */
     const rect_trajectories_set_t& get_per_iter_rect_set(){return _per_iter_rect_set;}
 
 private:
@@ -67,7 +107,6 @@ private:
     YAML::Node _soi_parameter;
     workspace_t _workspace_parameter;
     std::string _archive_name;
-
 
 
     /**
@@ -86,7 +125,6 @@ private:
     bool _load_motion_rects(const std::string& filename, rect_trajectories_t &rect_traj);
     bool _load_hyperparameters(const std::string& filename);
     bool _load_rgbd_images(const std::string &foldername, const rect_trajectories_t& rects, rgbd_set_t& rgbd_set);
-//    void _rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& depth, PointCloudT::Ptr ptcl);
 
 };
 }

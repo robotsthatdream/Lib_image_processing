@@ -5,8 +5,7 @@
 //#include "TrainingData.hpp"
 #include <boost/random.hpp>
 #include <ctime>
-#include <iagmm/data.hpp>
-#include <iagmm/nnmap.hpp>
+
 
 
 namespace image_processing {

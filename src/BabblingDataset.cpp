@@ -226,7 +226,7 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
     return true;
 }
 
-void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& depth, PointCloudT::Ptr ptcl){
+void BabblingDataset::rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& depth, PointCloudT::Ptr ptcl){
 //    std::cout << "_rgbd_to_pointcloud" << std::endl;
 
     double center_x = _camera_parameter["depth"]["principal_point"]["x"].as<double>();
@@ -335,7 +335,7 @@ BabblingDataset::extract_cloud(const rgbd_set_t::const_iterator &rgbd_iter,
 
     PointCloudT::Ptr cloud_tmp(new PointCloudT);
     for(size_t i = 0; i < rect_iter->second.size(); ++i){
-        _rgbd_to_pointcloud(cv::Mat(rgbd_iter->second.first,rect_iter->second[i]),
+        rgbd_to_pointcloud(cv::Mat(rgbd_iter->second.first,rect_iter->second[i]),
                 cv::Mat(rgbd_iter->second.second,rect_iter->second[i]),
                 cloud_tmp);
         res.second[i] = *cloud_tmp;

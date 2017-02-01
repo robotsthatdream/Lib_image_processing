@@ -30,7 +30,7 @@ int main(int argc, char** argv){
     viewer.runOnVisualizationThread([&](pcl::visualization::PCLVisualizer& vis){
         vis.removeAllPointClouds();
         cloud.reset(new PointCloudT);
-        bds._rgbd_to_pointcloud(itr->second.first,itr->second.second,cloud);
+        bds.rgbd_to_pointcloud(itr->second.first,itr->second.second,cloud);
 //        for(int i = 0; i < itr->second.size(); i++ ){
 //            cloud.reset(new PointCloudT(itr->second[i]));
 
