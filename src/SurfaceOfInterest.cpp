@@ -147,6 +147,7 @@ bool SurfaceOfInterest::choice_of_soi_by_uncertainty(const std::string& modality
     //*build the distribution from weights
     std::map<float,uint32_t> soi_dist;
     float val = 0.f;
+
     float total_w = 0.f;
     for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++){
         if(it->second > 0.5)
