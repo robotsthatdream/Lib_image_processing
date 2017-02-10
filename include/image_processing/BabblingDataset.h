@@ -26,7 +26,15 @@ public:
     typedef std::map<double,rect_set_t> rect_trajectories_t;
     typedef std::map<int,rect_trajectories_t> rect_trajectories_set_t;
 
+    /**
+     * @brief default constructor
+     */
     BabblingDataset(){}
+
+    /**
+     * @brief copy constructor
+     * @param bds
+     */
     BabblingDataset(const BabblingDataset& bds)
         : _per_iter_rgbd_set(bds._per_iter_rgbd_set),
           _per_iter_rect_set(bds._per_iter_rect_set),
@@ -35,13 +43,14 @@ public:
           _data_structure(bds._data_structure),
           _iterations_folders(bds._iterations_folders){}
 
-    BabblingDataset(const std::string& arch_name){
-        _load_iteration_folders(arch_name);
-    }
-    BabblingDataset(const std::string &arch_name, const std::string &meta_data){
+    /**
+     * @brief Constructor that load directertly the data from the metadata of the experiment
+     * @param folder name of the dataset
+     */
+    BabblingDataset(const std::string &arch_name){
         _archive_name = arch_name;
         _load_iteration_folders(arch_name);
-        _load_data_structure(meta_data);
+        _load_data_structure(arch_name+"/wave_metadata.yml");
     }
 
 
@@ -123,7 +132,7 @@ private:
     bool _load_data_structure(const std::string& meta_data_filename);
     bool _load_data_iteration(const std::string& foldername, rgbd_set_t& rgbd_set, rect_trajectories_t& rect_traj);
     bool _load_motion_rects(const std::string& filename, rect_trajectories_t &rect_traj);
-    bool _load_hyperparameters(const std::string& filename);
+    bool _load_hyperparameters(const YAML::Node& hyperparam);
     bool _load_rgbd_images(const std::string &foldername, const rect_trajectories_t& rects, rgbd_set_t& rgbd_set);
 
 };
