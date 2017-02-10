@@ -8,7 +8,7 @@ bool SurfaceOfInterest::generate(workspace_t &workspace){
     if(!computeSupervoxel(workspace))
 	return false;
 
-    init_weights();
+    init_weights("color");
     return true;
 }
 
@@ -17,7 +17,7 @@ bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, workspace_t &
     if(!computeSupervoxel(workspace))
 	return false;
 
-    init_weights(0.);
+    init_weights("color",0.);
     find_soi(key_pts);
     return true;
 }
@@ -28,7 +28,7 @@ bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, workspace_t 
     if(!computeSupervoxel(workspace))
 	return false;
 
-    init_weights();
+    init_weights("color");
     return true;
 }
 
@@ -91,15 +91,13 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
 //    assert(_labels.size() == _weights.size());
 }
 
-void SurfaceOfInterest::init_weights(float value){
-    for(auto& mod : _weights){
-        mod.second.clear();
-        for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
-            mod.second.emplace(it_sv->first,value);
-        }
+void SurfaceOfInterest::init_weights(const std::string& modality, float value){
+//    for(auto& mod : _weights){
+//        mod.second.clear();
+    _weights[modality].clear();
+    for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
+        _weights[modality].emplace(it_sv->first,value);
     }
-
-
 }
 
 void SurfaceOfInterest::reduce_to_soi(){
@@ -123,7 +121,7 @@ bool SurfaceOfInterest::choice_of_soi(const std::string& modality, pcl::Supervox
 
 
     for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++){
-        val+=it->second/(total_w*_weights[modality].size());
+        val+=it->second/(total_w/**_weights[modality].size()*/);
         soi_dist.emplace(val,it->first);
     }
     //*/

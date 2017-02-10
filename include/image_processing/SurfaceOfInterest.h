@@ -104,7 +104,7 @@ public:
         if(!computeSupervoxel(workspace))
         return false;
 
-        init_weights(init_val);
+        init_weights(modality,init_val);
         compute_weights(modality, classifier);
         return true;
     }
@@ -130,7 +130,7 @@ public:
      */
     void reduce_to_soi();
 
-    void init_weights(float value = 1.);
+    void init_weights(const std::string& modality, float value = 1.);
 
     /**
      * @brief methode compute the weight of each supervoxels. The weights represent the probability for a soi to be explored.
@@ -140,7 +140,6 @@ public:
      */
     template <typename classifier_t>
     void compute_weights(const std::string& modality, classifier_t &classifier){
-        //For Color case
         if(modality == "color"){
             for(const auto& sv : _supervoxels){
                 float hsv[3];
