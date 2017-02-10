@@ -15,7 +15,7 @@ bool BabblingDataset::_load_data_structure(const std::string &meta_data_filename
 
    _data_structure = meta_data["data_structure"];
 
-   _load_hyperparameters(_archive_name +"/"+ meta_data["hyperparameters"].as<std::string>());
+   _load_hyperparameters(meta_data["experiment"]);
 
    return true;
 }
@@ -90,15 +90,8 @@ bool BabblingDataset::_load_motion_rects(const std::string &filename, rect_traje
     return true;
 }
 
-bool BabblingDataset::_load_hyperparameters(const std::string &filename){
+bool BabblingDataset::_load_hyperparameters(const YAML::Node& hyperparam){
     std::cout << "_load_camera_param" << std::endl;
-    std::cout << filename << std::endl;
-
-    YAML::Node hyperparam = YAML::LoadFile(filename);
-    if(hyperparam.IsNull()){
-        std::cerr << "unable to open " << filename << std::endl;
-        return false;
-    }
 
     _camera_parameter = hyperparam["camera_parameters"];
     _supervoxel_parameter = hyperparam["sv"];
@@ -128,9 +121,12 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
     YAML::Node depth_node = _data_structure["depth"];
     std::map<double,cv::Mat> rgb_set;
     std::map<double,cv::Mat> depth_set;
+    std::vector<std::string> split_string;
 
     //extract rgb images
-    if(!std::strcmp(rgb_node["type"].as<std::string>().c_str(),"folder")){ //if contained in a folder
+    std::string f_name(rgb_node.as<std::string>());
+    boost::split(split_string,f_name,boost::is_any_of("."));
+    if(split_string.size() == 1){ //if contained in a folder
         std::string folder = foldername + "/rgb";
         if(!boost::filesystem::exists(folder)){
             std::cerr << "unable to find " << folder << std::endl;
@@ -139,7 +135,6 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
         boost::filesystem::directory_iterator end_itr;
 
         for(boost::filesystem::directory_iterator itr(folder); itr != end_itr; ++itr){
-            std::vector<std::string> split_string;
             boost::split(split_string,itr->path().string(),boost::is_any_of("/"));
             boost::split(split_string,split_string.back(),boost::is_any_of("."));
             boost::split(split_string,split_string.front(),boost::is_any_of("_"));
@@ -151,12 +146,21 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
 
             rgb_set.emplace(time,image);
         }
-    }else if (!std::strcmp(rgb_node["type"].as<std::string>().c_str(),"file")){//if contained in a file
-        //TODO
+    }else if (split_string[1] == "yml"){//if contained in a file
+        YAML::Node rgb_file = YAML::LoadFile(foldername + "/" + rgb_node.as<std::string>());
+        for(YAML::iterator it = rgb_file.begin(); it != rgb_file.end(); it++){
+            std::vector<uchar> vec_data = YAML::DecodeBase64(it->second["rgb"].as<std::string>());
+            cv::Mat image = cv::imdecode(vec_data,cv::IMREAD_UNCHANGED);
+            double time = it->second["timestamp"]["sec"].as<double>() +
+                    it->second["timestamp"]["nsec"].as<double>()*1e-9;
+            rgb_set.emplace(time,image);
+        }
     }
 
     //Extract depth images
-    if(!std::strcmp(depth_node["type"].as<std::string>().c_str(),"folder")){//if contained in a folder
+    f_name = depth_node.as<std::string>();
+    boost::split(split_string,f_name,boost::is_any_of("."));
+    if(split_string.size() == 1){//if contained in a folder
         std::string folder = foldername + "/depth";
         if(!boost::filesystem::exists(folder)){
             std::cerr << "unable to find " << folder << std::endl;
@@ -179,8 +183,15 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
 
             depth_set.emplace(time,depth_img);
         }
-    }else if (!std::strcmp(rgb_node["type"].as<std::string>().c_str(),"file")){//if contained in a file
-        //TODO
+    }else if(split_string[1] == "yml"){//if contained in a file
+        YAML::Node depth_file = YAML::LoadFile(foldername + "/" + depth_node.as<std::string>());
+        for(YAML::iterator it = depth_file.begin(); it != depth_file.end(); it++){
+            std::vector<uchar> vec_data = YAML::DecodeBase64(it->second["depth"].as<std::string>());
+            cv::Mat image = cv::imdecode(vec_data,cv::IMREAD_UNCHANGED);
+            double time = it->second["timestamp"]["sec"].as<double>() +
+                    it->second["timestamp"]["nsec"].as<double>()*1e-9;
+            depth_set.emplace(time,image);
+        }
     }
 
     //Merged both rgb_set and depth set in a rgbd_set
@@ -208,7 +219,7 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
     return true;
 }
 
-void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& depth, PointCloudT::Ptr ptcl){
+void BabblingDataset::rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& depth, PointCloudT::Ptr ptcl){
 //    std::cout << "_rgbd_to_pointcloud" << std::endl;
 
     double center_x = _camera_parameter["depth"]["principal_point"]["x"].as<double>();
@@ -219,58 +230,38 @@ void BabblingDataset::_rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& dep
 
     int rgb_cn = rgb.channels();
 
-    uint8_t r, r_2, g, g_2, b, b_2;
+    ptcl->width = rgb.cols;
+    ptcl->height = rgb.rows;
 
     for(int i = 0; i < rgb.rows; i++){
-        uint8_t* rgb_rowPtr = (uint8_t*) rgb.row(i).data;
-        float* depth_rowPtr = (float*) depth.row(i).data;
+        uchar* rgb_rowPtr = reinterpret_cast<uchar*>(rgb.row(i).data);
+        float* depth_rowPtr = reinterpret_cast<float*>(depth.row(i).data);
+
+
         for(int j = 0; j < rgb.cols; j++){
             PointT pt;
             float z = depth_rowPtr[j];
-            if(z == bad_point){
+            if(z != z){
                 pt.x = pt.y = pt.z = bad_point;
+                continue;
             }else{
                 pt.x = (i - center_x)*z/focal_x;
                 pt.y = (j - center_y)*z/focal_y;
                 pt.z = z;
             }
-//            depth_rowPtr++;
 
-            //TO DEBUG : Registration color problem
-//            pt.a = 255;
-//            cv::Vec3b color = rgb.at<cv::Vec3b>(i,j);
-
-            r_2 = r;
-            g_2 = g;
-            b_2 = b;
-            r = rgb_rowPtr[j*rgb_cn + 2];
-            g = rgb_rowPtr[j*rgb_cn + 1];
-            b = rgb_rowPtr[j*rgb_cn + 0];
-
-
-//            if(r == r_2 && g == g_2 && b == b_2){
-//                std::cout << "same color as before " << i << " " << j << std::endl;
-//            }else {
-//                std::cout << "_________________________________________________" << std::endl;
-//                std::cout << "diff color as before " << i << " " << j << std::endl;
-//                std::cout << "_________________________________________________" << std::endl;
-//            }
 
             pt.r = rgb_rowPtr[j*rgb_cn + 2];
             pt.g = rgb_rowPtr[j*rgb_cn + 1];
             pt.b = rgb_rowPtr[j*rgb_cn + 0];
 
-//            pt.a = 255;
-//            pt.r = 255;
-//            pt.g = 255;
-//            pt.b = 255;
+            pt.a = 255;
 
-            ptcl->points.push_back(pt);
+            ptcl->push_back(pt);
         }
     }
 
-    ptcl->width = rgb.cols;
-    ptcl->height = rgb.rows;
+
 //    pcl::PassThrough<PointT> passFilter;
 
 
@@ -337,7 +328,7 @@ BabblingDataset::extract_cloud(const rgbd_set_t::const_iterator &rgbd_iter,
 
     PointCloudT::Ptr cloud_tmp(new PointCloudT);
     for(size_t i = 0; i < rect_iter->second.size(); ++i){
-        _rgbd_to_pointcloud(cv::Mat(rgbd_iter->second.first,rect_iter->second[i]),
+        rgbd_to_pointcloud(cv::Mat(rgbd_iter->second.first,rect_iter->second[i]),
                 cv::Mat(rgbd_iter->second.second,rect_iter->second[i]),
                 cloud_tmp);
         res.second[i] = *cloud_tmp;

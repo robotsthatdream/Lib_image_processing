@@ -3,12 +3,8 @@ sequential:  true
 hyperparameters: "hyperparameters.yml"
 data_structure:
   folder_prefix: "/motion/scene"
-  depth:
-    type: "folder"
-    ext: ".png"
-  rgb:
-    type: "folder"
-    ext: ".jpg"
+  depth: "depth"
+  rgb: "rgb"
   motion:  "motion_rects.yml"
   soi_classifier:  "soi_classifier.yml"
   joints_values:  "controller_feedback.yml"
