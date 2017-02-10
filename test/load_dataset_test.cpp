@@ -7,13 +7,13 @@ using namespace image_processing;
 
 int main(int argc, char** argv){
 
-    if(argc < 4){
-        std::cerr << "usage one folder, one dataset description yml file and a number of iteration" << std::endl;
+    if(argc < 3){
+        std::cerr << "usage one folder and a number of iteration" << std::endl;
         return 1;
     }
 
-    int iteration = std::atoi(argv[3]);
-    BabblingDataset bds(argv[1],argv[2]);
+    int iteration = std::atoi(argv[2]);
+    BabblingDataset bds(argv[1]);
     bds.load_dataset(iteration);
 
     bool clouds_end = true;

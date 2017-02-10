@@ -15,7 +15,7 @@ bool BabblingDataset::_load_data_structure(const std::string &meta_data_filename
 
    _data_structure = meta_data["data_structure"];
 
-   _load_hyperparameters(_archive_name +"/"+ meta_data["hyperparameters"].as<std::string>());
+   _load_hyperparameters(meta_data["experiment"]);
 
    return true;
 }
@@ -90,15 +90,8 @@ bool BabblingDataset::_load_motion_rects(const std::string &filename, rect_traje
     return true;
 }
 
-bool BabblingDataset::_load_hyperparameters(const std::string &filename){
+bool BabblingDataset::_load_hyperparameters(const YAML::Node& hyperparam){
     std::cout << "_load_camera_param" << std::endl;
-    std::cout << filename << std::endl;
-
-    YAML::Node hyperparam = YAML::LoadFile(filename);
-    if(hyperparam.IsNull()){
-        std::cerr << "unable to open " << filename << std::endl;
-        return false;
-    }
 
     _camera_parameter = hyperparam["camera_parameters"];
     _supervoxel_parameter = hyperparam["sv"];
