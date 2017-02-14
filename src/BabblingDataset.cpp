@@ -34,7 +34,8 @@ void BabblingDataset::_load_iteration_folders(const std::string& arch_name){
 }
 
 bool BabblingDataset::_load_data_iteration(const std::string &foldername, rgbd_set_t& rgbd_set,
-                                           rect_trajectories_t& rect_traj){
+                                           rect_trajectories_t& rect_traj,
+                                           arm_trajectories_t &arm_traj){
 
     std::cout << "_load_data_iteration" << std::endl;
 
@@ -51,6 +52,7 @@ bool BabblingDataset::_load_data_iteration(const std::string &foldername, rgbd_s
 
     _load_motion_rects(folder+ "/" + _data_structure["motion"].as<std::string>(),rect_traj);
     _load_rgbd_images(folder,rect_traj,rgbd_set);
+    _load_arm_trajectories(folder + "/" + _data_structure["joints_values"].as<std::string>(),arm_traj);
 
     return true;
 }
@@ -219,6 +221,29 @@ bool BabblingDataset::_load_rgbd_images(const std::string& foldername, const rec
     return true;
 }
 
+bool BabblingDataset::_load_arm_trajectories(const std::string &filename, arm_trajectories_t &arm_traj){
+    std::cout << "_load_arm_trajectories" << std::endl;
+
+    YAML::Node controller_feedback = YAML::LoadFile(filename);
+    if(controller_feedback.IsNull())
+        return false;
+
+    for(YAML::iterator it = controller_feedback.begin(); it != controller_feedback.end(); ++it){
+        std::vector<double> traj;
+        for(int i = 0; i < it->second["joints_values"].size();i++)
+            traj.push_back(it->second["joints_values"]["joint_"+std::to_string(i)].as<double>());
+//        for(YAML::iterator it_traj = it->second["joints_values"].begin();
+//            it_traj != it->second["joints_values"].end(); ++it_traj)
+//            traj.push_back(it_traj->second.as<double>());
+
+        double time = it->second["timestamp"]["sec"].as<double>() +
+                it->second["timestamp"]["nsec"].as<double>()*1e-9;
+        arm_traj.emplace(time,traj);
+    }
+
+    return true;
+}
+
 void BabblingDataset::rgbd_to_pointcloud(const cv::Mat& rgb, const cv::Mat& depth, PointCloudT::Ptr ptcl){
 //    std::cout << "_rgbd_to_pointcloud" << std::endl;
 
@@ -292,28 +317,34 @@ bool BabblingDataset::load_dataset(const std::string& meta_data_filename,const s
         _load_iteration_folders(arch_name);
     }
 
-    load_dataset(iteration);
+    return load_dataset(iteration);
 
 }
 
 bool BabblingDataset::load_dataset(int iteration){
     std::cout << "load_dataset 2" << std::endl;
 
+    rect_trajectories_t rects;
+    rgbd_set_t images;
+    arm_trajectories_t arm_traj;
+
     if(iteration > 0){
-        rect_trajectories_t rects;
-        rgbd_set_t images;
-        if(!_load_data_iteration(_iterations_folders[iteration],images,rects))
+
+        if(!_load_data_iteration(_iterations_folders[iteration],images,rects,arm_traj))
             return false;
         _per_iter_rect_set.emplace(iteration,rects);
         _per_iter_rgbd_set.emplace(iteration,images);
+        _per_iter_arm_traj.emplace(iteration,arm_traj);
     }else{
         for(auto itr = _iterations_folders.begin(); itr != _iterations_folders.end(); ++itr){
-            rect_trajectories_t rects;
-            rgbd_set_t images;
-            if(!_load_data_iteration(itr->second,images,rects))
+            if(!_load_data_iteration(itr->second,images,rects,arm_traj))
                 return false;
             _per_iter_rect_set.emplace(itr->first,rects);
             _per_iter_rgbd_set.emplace(itr->first,images);
+            _per_iter_arm_traj.emplace(iteration,arm_traj);
+            rects.clear();
+            images.clear();
+            arm_traj.clear();
         }
     }
 
