@@ -196,7 +196,7 @@ public :
      * @param centroid_normals : output pointcloud of centroids normals (in second variant)
      */
     void getCentroidCloud(PointCloudT& centroids, std::map<int,uint32_t>& centroidsLabel, PointCloudN& centroid_normals);
-    void getCentroidCloud(PointCloudT &centroids, std::map<int,uint32_t>& centroidsLabel);
+    void getCentroidCloud(PointCloudT& centroids, std::map<int,uint32_t>& centroidsLabel);
 
     /**
      * @brief getColoredCloud
