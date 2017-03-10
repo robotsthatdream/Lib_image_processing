@@ -100,6 +100,7 @@ bool SupervoxelSet::computeSupervoxel(workspace_t& workspace){
     _extractor->extract(_supervoxels);
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
+    _color_gradient_descriptors();
 //   std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
     return true;
 }
@@ -124,6 +125,8 @@ bool SupervoxelSet::computeSupervoxel(){
     _extractor->extract(_supervoxels);
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
+    _color_gradient_descriptors();
+
     std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl; 
     return true;
 }
@@ -325,8 +328,6 @@ void SupervoxelSet::extractCloud(PointCloudT& resultCloud){
         pcl::Supervoxel<PointT>::Ptr current = sv_itr->second;
         resultCloud += *(current->voxels_);
     }
-
-
 }
 
 SupervoxelSet SupervoxelSet::compare(SupervoxelSet &super,double threshold,double position_importance, double normal_importance){
@@ -490,6 +491,42 @@ pcl::PointXYZ SupervoxelSet::globalPosition(){
     return result;
 }
 
+void SupervoxelSet::_color_gradient_descriptors(){
+
+    Eigen::MatrixXd gradient_filter_x(3,3);
+    gradient_filter_x << -1, 0, 1,
+                         -2, 0, 2,
+                         -1, 0, 1;
+    Eigen::MatrixXd gradient_filter_y(3,3);
+    gradient_filter_y << -1, -2, -1,
+                          0, 0, 0,
+                          1, 2, 1;
+    Eigen::VectorXd featX(3), featY(3), feat(3);
+    int i = 1, j = 1;
+    for(const auto& sv : _supervoxels){
+        i = 1;
+        j = 1;
+        featX << 0, 0, 0;
+        featY << 0, 0, 0;
+        PointT center = sv.second->centroid_;
+        for(auto it = _adjacency_map.equal_range(sv.first).first;
+            it != _adjacency_map.equal_range(sv.first).second; ++it){
+            PointT pt = _supervoxels[it->second]->centroid_;
+            i += (center.x - pt.x) > 0 ? 1 : -1;
+            j += (center.y - pt.y) > 0 ? 1 : -1;
+            featX(0) += gradient_filter_x(i,j)*pt.r;
+            featX(1) += gradient_filter_x(i,j)*pt.g;
+            featX(2) += gradient_filter_x(i,j)*pt.b;
+            featY(0) += gradient_filter_y(i,j)*pt.r;
+            featY(1) += gradient_filter_y(i,j)*pt.g;
+            featY(2) += gradient_filter_y(i,j)*pt.b;
+        }
+        feat << atan2(featY(0),featX(0)),
+                atan2(featY(1),featX(1)),
+                atan2(featY(2),featX(2));
+        _color_gradients.emplace(sv.first,feat);
+    }
+}
 
 void SupervoxelSet::getCentroidCloud(PointCloudT &centroids, std::map<int,uint32_t> &centroidsLabel, PointCloudN &centroid_normals){
 

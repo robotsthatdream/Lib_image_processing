@@ -248,16 +248,21 @@ public :
      *@return pcl::Supervoxel
      */
     const pcl::Supervoxel<PointT>::Ptr& at(uint32_t label) const {return _supervoxels.at(label);}
+
+    const std::map<uint32_t,Eigen::VectorXd>& get_color_gradients(){return _color_gradients;}
     //---------------------------------------------------------
 
 protected:
     uint32_t isInThisVoxel(float x, float y, float z, uint32_t label, AdjacencyMap am, boost::random::mt19937 gen, int counter = 5);
+    void _color_gradient_descriptors();
+
 
     PointCloudT::Ptr _inputCloud;
     std::shared_ptr<pcl::SupervoxelClustering<PointT> > _extractor;
     SupervoxelArray _supervoxels;
     AdjacencyMap _adjacency_map;
     double _seed_resolution;
+    std::map<uint32_t,Eigen::VectorXd> _color_gradients;
 
 };
 

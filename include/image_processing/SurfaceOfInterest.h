@@ -30,7 +30,6 @@ inline std::ostream& operator<<(std::ostream& os, const SvFeature& feature){
     for(auto n : feature.normal)
         os << n << ";";
 
-
     return os;
 }
 
@@ -171,9 +170,7 @@ public:
             return;
         }
         if(modality == "color_gradient"){
-            std::map<uint32_t,Eigen::VectorXd> cg_desc;
-            _color_gradient_descriptors(cg_desc);
-            for(const auto& cg_feat : cg_desc){
+            for(const auto& cg_feat : _color_gradients){
                 Eigen::VectorXd new_s(3);
                 new_s << cg_feat.second(0),
                         cg_feat.second(1),
@@ -205,8 +202,6 @@ public:
 
 
 private :
-    void _color_gradient_descriptors(std::map<uint32_t,Eigen::VectorXd>& og_features);
-
     std::vector<uint32_t> _labels;
     std::vector<uint32_t> _labels_no_soi;
     std::map<std::string,saliency_map_t> _weights;
