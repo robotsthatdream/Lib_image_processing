@@ -156,6 +156,7 @@ public:
             return;
         }
         if(modality == "normal"){
+
             for(const auto& sv : _supervoxels){
                 Eigen::VectorXd new_s(3);
                 new_s << sv.second->normal_.normal[0],
