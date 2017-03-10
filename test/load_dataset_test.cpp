@@ -20,11 +20,19 @@ int main(int argc, char** argv){
 
     BabblingDataset::per_iter_rgbd_set_t images = bds.get_per_iter_rgbd_set();
     BabblingDataset::rect_trajectories_set_t rects = bds.get_per_iter_rect_set();
+    BabblingDataset::per_iter_arm_trajectories_t arm_traj = bds.get_per_iter_arm_traj();
 //    BabblingDataset::cloud_trajectories_set_t cloud_data;
 //    bds.extract_cloud_trajectories(cloud_data);
 
 //    auto itr = cloud_data[iteration].begin();
     auto itr = images[iteration].begin();
+
+    for(auto it = arm_traj[iteration].begin(); it != arm_traj[iteration].end(); ++it){
+        for(int i = 0; i < arm_traj[iteration][it->first].size(); i++)
+            std::cout << arm_traj[iteration][it->first][i] << " ";
+        std::cout << std::endl;
+    }
+
     pcl::visualization::CloudViewer viewer("cloud");
     PointCloudT::Ptr cloud(new PointCloudT);
     viewer.runOnVisualizationThread([&](pcl::visualization::PCLVisualizer& vis){
@@ -40,6 +48,8 @@ int main(int argc, char** argv){
     });
     while(!viewer.wasStopped() &&  clouds_end){
         cv::Mat coloured;
+
+
 
 //        images[iteration][itr->first].first.copyTo(coloured);
         itr->second.first.copyTo(coloured);

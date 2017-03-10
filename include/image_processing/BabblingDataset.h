@@ -20,11 +20,22 @@ public:
     typedef std::vector<PointCloudT> cloud_set_t;
     typedef std::map<double,cloud_set_t> cloud_trajectories_t;
     typedef std::map<int,cloud_trajectories_t> cloud_trajectories_set_t;
+
+    /**
+     * @brief rgbd images types
+     */
     typedef std::map<double,std::pair<cv::Mat,cv::Mat>> rgbd_set_t;
     typedef std::map<int,rgbd_set_t> per_iter_rgbd_set_t;
+
+    /**
+     * @brief motion rect types
+     */
     typedef std::vector<cv::Rect> rect_set_t;
     typedef std::map<double,rect_set_t> rect_trajectories_t;
     typedef std::map<int,rect_trajectories_t> rect_trajectories_set_t;
+
+    typedef std::map<double,std::vector<double>> arm_trajectories_t;
+    typedef std::map<int, arm_trajectories_t> per_iter_arm_trajectories_t;
 
     /**
      * @brief default constructor
@@ -106,9 +117,16 @@ public:
      */
     const rect_trajectories_set_t& get_per_iter_rect_set(){return _per_iter_rect_set;}
 
+    /**
+     * @brief get_per_iter_arm_traj
+     * @return
+     */
+    const per_iter_arm_trajectories_t& get_per_iter_arm_traj(){return _per_iter_arm_traj;}
+
 private:
     per_iter_rgbd_set_t _per_iter_rgbd_set;
     rect_trajectories_set_t _per_iter_rect_set;
+    per_iter_arm_trajectories_t _per_iter_arm_traj;
     YAML::Node _data_structure;
     std::map<int,std::string> _iterations_folders;
     YAML::Node _camera_parameter;
@@ -130,10 +148,14 @@ private:
      * @return if success
      */
     bool _load_data_structure(const std::string& meta_data_filename);
-    bool _load_data_iteration(const std::string& foldername, rgbd_set_t& rgbd_set, rect_trajectories_t& rect_traj);
+    bool _load_data_iteration(const std::string& foldername,
+                              rgbd_set_t& rgbd_set,
+                              rect_trajectories_t& rect_traj,
+                              arm_trajectories_t& arm_traj);
     bool _load_motion_rects(const std::string& filename, rect_trajectories_t &rect_traj);
     bool _load_hyperparameters(const YAML::Node& hyperparam);
     bool _load_rgbd_images(const std::string &foldername, const rect_trajectories_t& rects, rgbd_set_t& rgbd_set);
+    bool _load_arm_trajectories(const std::string &filename, arm_trajectories_t& arm_traj);
 
 };
 }

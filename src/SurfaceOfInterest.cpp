@@ -1,5 +1,6 @@
 #include "image_processing/SurfaceOfInterest.h"
 #include "eigen3/Eigen/Core"
+#include "opencv2/ocl/ocl.hpp"
 
 using namespace image_processing;
 
@@ -200,10 +201,7 @@ void SurfaceOfInterest::delete_background(const PointCloudT::Ptr background){
     }
 
     _inputCloud.reset(new PointCloudT(filtered_cloud));
-
 }
-
-
 
 PointCloudT SurfaceOfInterest::getColoredWeightedCloud(const std::string &modality){
 
@@ -227,6 +225,43 @@ PointCloudT SurfaceOfInterest::getColoredWeightedCloud(const std::string &modali
     }
 
     return result;
+}
+
+void SurfaceOfInterest::_color_gradient_descriptors(std::map<uint32_t,Eigen::VectorXd>& og_features ){
+
+    Eigen::MatrixXd gradient_filter_x(3,3);
+    gradient_filter_x << -1, 0, 1,
+                         -2, 0, 2,
+                         -1, 0, 1;
+    Eigen::MatrixXd gradient_filter_y(3,3);
+    gradient_filter_y << -1, -2, -1,
+                          0, 0, 0,
+                          1, 2, 1;
+    Eigen::VectorXd featX(3), featY(3), feat(3);
+    int i = 1, j = 1;
+    for(const auto& sv : _supervoxels){
+        i = 1;
+        j = 1;
+        featX << 0, 0, 0;
+        featY << 0, 0, 0;
+        PointT center = sv.second->centroid_;
+        for(auto it = _adjacency_map.equal_range(sv.first).first;
+            it != _adjacency_map.equal_range(sv.first).second; ++it){
+            PointT pt = _supervoxels[it->second]->centroid_;
+            i += (center.x - pt.x) > 0 ? 1 : -1;
+            j += (center.y - pt.y) > 0 ? 1 : -1;
+            featX(0) += gradient_filter_x(i,j)*pt.r;
+            featX(1) += gradient_filter_x(i,j)*pt.g;
+            featX(2) += gradient_filter_x(i,j)*pt.b;
+            featY(0) += gradient_filter_y(i,j)*pt.r;
+            featY(1) += gradient_filter_y(i,j)*pt.g;
+            featY(2) += gradient_filter_y(i,j)*pt.b;
+        }
+        feat << atan2(featY(0),featX(0)),
+                atan2(featY(1),featX(1)),
+                atan2(featY(2),featX(2));
+        og_features.emplace(sv.first,feat);
+    }
 }
 
 
