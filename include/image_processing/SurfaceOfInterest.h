@@ -46,7 +46,7 @@ public:
         _gen.seed(std::time(0));
         _weights.emplace("color",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
-        _weights.emplace("color_gradient",saliency_map_t());
+//        _weights.emplace("color_gradient",saliency_map_t());
 
     }
 
@@ -58,7 +58,7 @@ public:
         _gen.seed(std::time(0));
         _weights.emplace("color",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
-        _weights.emplace("color_gradient",saliency_map_t());
+//        _weights.emplace("color_gradient",saliency_map_t());
     }
     /**
      * @brief copy constructor
@@ -73,7 +73,7 @@ public:
         _gen.seed(std::time(0));
         _weights.emplace("color",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
-        _weights.emplace("color_gradient",saliency_map_t());
+//        _weights.emplace("color_gradient",saliency_map_t());
     }
     /**
      * @brief constructor with a SupervoxelSet
@@ -169,17 +169,17 @@ public:
             }
             return;
         }
-        if(modality == "color_gradient"){
-            for(const auto& cg_feat : _color_gradients){
-                Eigen::VectorXd new_s(3);
-                new_s << cg_feat.second(0),
-                        cg_feat.second(1),
-                        cg_feat.second(2);
-                _weights["color_gradient"][cg_feat.first] = classifier.compute_estimation(new_s,1);
-            }
-        }
+//        if(modality == "color_gradient"){
+//            for(const auto& cg_feat : _color_gradients){
+//                Eigen::VectorXd new_s(3);
+//                new_s << cg_feat.second(0),
+//                        cg_feat.second(1),
+//                        cg_feat.second(2);
+//                _weights["color_gradient"][cg_feat.first] = classifier.compute_estimation(new_s,1);
+//            }
+//        }
 
-        std::cerr << "SurfaceOfInterest Error: unknow modality" << std::endl;
+        std::cerr << "SurfaceOfInterest Error: unknow modality : " << modality << std::endl;
     }
 
 
