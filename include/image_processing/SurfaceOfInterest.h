@@ -184,9 +184,18 @@ public:
      */
     void delete_background(const PointCloudT::Ptr background);
 
-
+    /**
+     * @brief return a point cloud colored by the weights of the given modality
+     * @param modality
+     */
     PointCloudT getColoredWeightedCloud(const std::string &modality);
 
+    /**
+     * @brief return a map that link a supervoxel to the id of an object
+     * @param modality
+     * @param saliency_threshold
+     */
+    std::map<pcl::Supervoxel<PointT>::Ptr, int> get_supervoxels_clusters(const std::string &modality, double &saliency_threshold);
 
 private :
     std::vector<uint32_t> _labels;
