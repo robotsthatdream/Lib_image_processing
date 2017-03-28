@@ -1,5 +1,6 @@
 #include "image_processing/SurfaceOfInterest.h"
 #include "eigen3/Eigen/Core"
+#include "opencv2/ocl/ocl.hpp"
 
 using namespace image_processing;
 
@@ -200,10 +201,7 @@ void SurfaceOfInterest::delete_background(const PointCloudT::Ptr background){
     }
 
     _inputCloud.reset(new PointCloudT(filtered_cloud));
-
 }
-
-
 
 PointCloudT SurfaceOfInterest::getColoredWeightedCloud(const std::string &modality){
 
