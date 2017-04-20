@@ -46,6 +46,8 @@ public:
         _gen.seed(std::time(0));
         _weights.emplace("color",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
+        _weights.emplace("merged",saliency_map_t());
+
     }
 
     /**
@@ -56,6 +58,7 @@ public:
         _gen.seed(std::time(0));
         _weights.emplace("color",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
+        _weights.emplace("merged",saliency_map_t());
     }
     /**
      * @brief copy constructor
@@ -70,6 +73,7 @@ public:
         _gen.seed(std::time(0));
         _weights.emplace("color",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
+        _weights.emplace("merged",saliency_map_t());
     }
     /**
      * @brief constructor with a SupervoxelSet
@@ -168,7 +172,35 @@ public:
         std::cerr << "SurfaceOfInterest Error: unknow modality : " << modality << std::endl;
     }
 
+    template <typename classifier_t>
+    void compute_weights(std::map<std::string,classifier_t>& classifiers){
 
+        for(const auto& sv : _supervoxels){
+            for(auto& classi: classifiers){
+                  if(classi.first == "color"){
+                      float hsv[3];
+                      tools::rgb2hsv(sv.second->centroid_.r,
+                                     sv.second->centroid_.g,
+                                     sv.second->centroid_.b,
+                                     hsv[0],hsv[1],hsv[2]);
+                      Eigen::VectorXd new_s(3);
+                      new_s << hsv[0],
+                              hsv[1],
+                              hsv[2];
+                      _weights["color"][sv.first] = classi.second.compute_estimation(new_s,1);
+                  }else if(classi.first == "normal"){
+                      Eigen::VectorXd new_s(3);
+                      new_s << sv.second->normal_.normal[0],
+                              sv.second->normal_.normal[1],
+                              sv.second->normal_.normal[2];
+                      _weights["normal"][sv.first] = classi.second.compute_estimation(new_s,1);
+                  }
+            }
+
+            _weights["merged"][sv.first] = std::sqrt(.5*_weights["color"][sv.first]*_weights["color"][sv.first]
+                    +  .5*_weights["normal"][sv.first]*_weights["normal"][sv.first]);
+        }
+    }
     /**
      * @brief choose randomly one soi
      * @param supervoxel
