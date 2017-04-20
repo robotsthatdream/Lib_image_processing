@@ -123,6 +123,29 @@ public:
      */
     const per_iter_arm_trajectories_t& get_per_iter_arm_traj(){return _per_iter_arm_traj;}
 
+    /**
+     * @brief get_workspace
+     * @return
+     */
+    const workspace_t& get_workspace(){return _workspace_parameter;}
+
+    /**
+     * @brief get_path
+     * @return
+     */
+    const std::string get_path(int iteration){
+      return _archive_name;
+    }
+
+    /**
+     * @brief get_iteration_path
+     * @return
+     */
+    const std::string get_iteration_path(int iteration){
+      return _iterations_folders.find(iteration)->second;
+    }
+
+
 private:
     per_iter_rgbd_set_t _per_iter_rgbd_set;
     rect_trajectories_set_t _per_iter_rect_set;
