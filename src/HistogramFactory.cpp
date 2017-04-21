@@ -12,10 +12,16 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
             g = it->g;
             b = it->b;
             tools::rgb2hsv(r,g,b,hsv[0],hsv[1],hsv[2]);
-            int bin;
+            double bin;
             for(int i = 0; i < _dim; i++){
-                bin = (hsv[i] - _bounds(i,0))/(_bounds(i,1)/_bins);
-                _histogram[i](bin)++;
+                bin = (hsv[i] - _bounds(0,i))/(_bounds(1,i)/_bins);
+                if(bin >= 5) bin -= 1;
+                _histogram[i](std::trunc(bin))++;
+            }
+        }
+        for(int i = 0; i < _dim; i++){
+            for(int j = 0; j < _bins; j++){
+                _histogram[i](j) = _histogram[i](j)/sv->voxels_->size();
             }
         }
     }
@@ -27,14 +33,14 @@ double HistogramFactory::chi_squared_distance(const Eigen::VectorXd& hist1, cons
     assert(hist1.rows() == hist2.rows());
 
     double sum = 0;
-    for(int bin1 = 0; bin1 < hist1.rows(); ++bin1){
-        for(int bin2 = 0; bin2 < hist2.rows(); ++bin2){
-            sum += (hist1(bin1) - hist2(bin2))*(hist1(bin1) - hist2(bin2))/
-                    (hist1(bin1)+hist2(bin2));
-        }
+    for(int bin = 0; bin < hist1.rows(); ++bin){
+//        for(int bin2 = 0; bin2 < hist2.rows(); ++bin2){
+            sum += (hist1(bin) - hist2(bin))*(hist1(bin) - hist2(bin))/
+                    (hist1(bin)+hist2(bin));
+//        }
     }
 
 
-    return sum;
+    return sum/((double)hist1.rows());
 }
 

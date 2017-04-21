@@ -571,11 +571,15 @@ void SupervoxelSet::getColoredCloud(PointCloudT& cloud){
         PointCloudT voxels = *((iter->second)->voxels_);
         int r = rand()%255, g = rand()%255, b = rand()%255;
         for(auto pt: voxels){
-            pt.r = r;
-            pt.g = g;
-            pt.b = b;
+            PointT point;
+            point.x = pt.x;
+            point.y = pt.y;
+            point.z = pt.z;
+            point.r = r;
+            point.g = g;
+            point.b = b;
 
-            cloud.push_back(pt);
+            cloud.push_back(point);
         }
     }
 }
