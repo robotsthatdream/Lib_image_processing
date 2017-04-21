@@ -2,7 +2,7 @@
 #define _SURFACE_OF_INTEREST_H
 
 #include "SupervoxelSet.h"
-//#include "TrainingData.hpp"
+#include "HistogramFactory.hpp"
 #include <boost/random.hpp>
 #include <ctime>
 
@@ -46,9 +46,6 @@ public:
         _gen.seed(std::time(0));
         _weights.emplace("color",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
-//        _weights.emplace("color_gradient",saliency_map_t());
-
-
         _weights.emplace("merged",saliency_map_t());
     }
 
@@ -60,9 +57,6 @@ public:
         _gen.seed(std::time(0));
         _weights.emplace("color",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
-//        _weights.emplace("color_gradient",saliency_map_t());
-
-
         _weights.emplace("merged",saliency_map_t());
     }
     /**
@@ -78,9 +72,6 @@ public:
         _gen.seed(std::time(0));
         _weights.emplace("color",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
-//        _weights.emplace("color_gradient",saliency_map_t());
-
-
         _weights.emplace("merged",saliency_map_t());
     }
     /**
@@ -151,18 +142,40 @@ public:
      */
     template <typename classifier_t>
     void compute_weights(const std::string& modality, classifier_t &classifier){
-        if(modality == "color"){
+        if(modality == "color-h"){
             for(const auto& sv : _supervoxels){
-                float hsv[3];
-                tools::rgb2hsv(sv.second->centroid_.r,
-                               sv.second->centroid_.g,
-                               sv.second->centroid_.b,
-                               hsv[0],hsv[1],hsv[2]);
-                Eigen::VectorXd new_s(3);
-                new_s <<sv.second->centroid_.r/255.,
-                        sv.second->centroid_.g/255.,
-                        sv.second->centroid_.b/255.;//hsv[0], hsv[1], hsv[2];
-                _weights["color"][sv.first] = classifier.compute_estimation(new_s,1);
+
+                Eigen::MatrixXd bounds(2,3);
+                bounds << 0,0,0,
+                          1,1,1;
+                HistogramFactory hf(5,3,bounds);
+                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
+                hf.compute(sv.second);
+                _weights["color-h"][sv.first] = classifier.compute_estimation(hf.get_histogram()[0],1);
+            }
+            return;
+        }
+        if(modality == "color-s"){
+            for(const auto& sv : _supervoxels){
+                Eigen::MatrixXd bounds(2,3);
+                bounds << 0,0,0,
+                          1,1,1;
+                HistogramFactory hf(5,3,bounds);
+                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
+                hf.compute(sv.second);
+                _weights["color-s"][sv.first] = classifier.compute_estimation(hf.get_histogram()[1],1);
+            }
+            return;
+        }
+        if(modality == "color-v"){
+            for(const auto& sv : _supervoxels){
+                Eigen::MatrixXd bounds(2,3);
+                bounds << 0,0,0,
+                          1,1,1;
+                HistogramFactory hf(5,3,bounds);
+                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
+                hf.compute(sv.second);
+                _weights["color-v"][sv.first] = classifier.compute_estimation(hf.get_histogram()[2],1);
             }
             return;
         }
@@ -177,16 +190,6 @@ public:
             }
             return;
         }
-//        if(modality == "color_gradient"){
-//            for(const auto& cg_feat : _color_gradients){
-//                Eigen::VectorXd new_s(3);
-//                new_s << cg_feat.second(0),
-//                        cg_feat.second(1),
-//                        cg_feat.second(2);
-//                _weights["color_gradient"][cg_feat.first] = classifier.compute_estimation(new_s,1);
-//            }
-//        }
-
         std::cerr << "SurfaceOfInterest Error: unknow modality : " << modality << std::endl;
     }
 
@@ -229,9 +232,18 @@ public:
      */
     void delete_background(const PointCloudT::Ptr background);
 
-
+    /**
+     * @brief return a point cloud colored by the weights of the given modality
+     * @param modality
+     */
     PointCloudT getColoredWeightedCloud(const std::string &modality);
 
+    /**
+     * @brief return a map that link a supervoxel to the id of an object
+     * @param modality
+     * @param saliency_threshold
+     */
+    std::map<pcl::Supervoxel<PointT>::Ptr, int> get_supervoxels_clusters(const std::string &modality, double &saliency_threshold);
 
 private :
     std::vector<uint32_t> _labels;

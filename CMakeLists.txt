@@ -6,6 +6,7 @@ set(SOURCE_FILES src/DescriptorExtraction.cpp
     src/SupervoxelSet.cpp
     src/SurfaceOfInterest.cpp
     src/BabblingDataset.cpp
+    src/HistogramFactory.cpp
     src/tools.cpp
 )
 
@@ -51,6 +52,6 @@ target_link_libraries(fake_data ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 add_executable(convex_hull_test test/convex_hull_test.cpp)
 target_link_libraries(convex_hull_test  image_processing ${PCL_LIBRARIES} oml_rf yaml-cpp.so ${OpenCV_LIBRARIES})
 
-add_executable(rgb_to_hsv test/rgb_to_hsv.cpp)
-target_link_libraries(rgb_to_hsv  image_processing)
+#add_executable(rgb_to_hsv test/rgb_to_hsv.cpp)
+#target_link_libraries(rgb_to_hsv  image_processing)
 
