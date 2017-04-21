@@ -44,7 +44,9 @@ public:
      */
     SurfaceOfInterest() : SupervoxelSet(){
         _gen.seed(std::time(0));
-        _weights.emplace("color",saliency_map_t());
+        _weights.emplace("colorH",saliency_map_t());
+        _weights.emplace("colorS",saliency_map_t());
+        _weights.emplace("colorV",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
         _weights.emplace("merged",saliency_map_t());
 
@@ -56,7 +58,9 @@ public:
      */
     SurfaceOfInterest(const PointCloudT::Ptr& cloud) : SupervoxelSet(cloud){
         _gen.seed(std::time(0));
-        _weights.emplace("color",saliency_map_t());
+        _weights.emplace("colorH",saliency_map_t());
+        _weights.emplace("colorS",saliency_map_t());
+        _weights.emplace("colorV",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
         _weights.emplace("merged",saliency_map_t());
     }
@@ -71,7 +75,9 @@ public:
         _labels_no_soi(_labels_no_soi)
     {
         _gen.seed(std::time(0));
-        _weights.emplace("color",saliency_map_t());
+        _weights.emplace("colorH",saliency_map_t());
+        _weights.emplace("colorS",saliency_map_t());
+        _weights.emplace("colorV",saliency_map_t());
         _weights.emplace("normal",saliency_map_t());
         _weights.emplace("merged",saliency_map_t());
     }
@@ -143,7 +149,7 @@ public:
      */
     template <typename classifier_t>
     void compute_weights(const std::string& modality, classifier_t &classifier){
-        if(modality == "color-h"){
+        if(modality == "colorH"){
             for(const auto& sv : _supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
@@ -151,11 +157,11 @@ public:
                 HistogramFactory hf(5,3,bounds);
                 classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second);
-                _weights["color-h"][sv.first] = classifier.compute_estimation(hf.get_histogram()[0],1);
+                _weights["colorH"][sv.first] = classifier.compute_estimation(hf.get_histogram()[0],1);
             }
             return;
         }
-        if(modality == "color-s"){
+        if(modality == "colorS"){
             for(const auto& sv : _supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
@@ -163,11 +169,11 @@ public:
                 HistogramFactory hf(5,3,bounds);
                 classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second);
-                _weights["color-s"][sv.first] = classifier.compute_estimation(hf.get_histogram()[1],1);
+                _weights["colorS"][sv.first] = classifier.compute_estimation(hf.get_histogram()[1],1);
             }
             return;
         }
-        if(modality == "color-v"){
+        if(modality == "colorV"){
             for(const auto& sv : _supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
@@ -175,7 +181,7 @@ public:
                 HistogramFactory hf(5,3,bounds);
                 classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second);
-                _weights["color-v"][sv.first] = classifier.compute_estimation(hf.get_histogram()[2],1);
+                _weights["colorV"][sv.first] = classifier.compute_estimation(hf.get_histogram()[2],1);
             }
             return;
         }
@@ -198,28 +204,49 @@ public:
 
         for(const auto& sv : _supervoxels){
             for(auto& classi: classifiers){
-                  if(classi.first == "color"){
-                      float hsv[3];
-                      tools::rgb2hsv(sv.second->centroid_.r,
-                                     sv.second->centroid_.g,
-                                     sv.second->centroid_.b,
-                                     hsv[0],hsv[1],hsv[2]);
-                      Eigen::VectorXd new_s(3);
-                      new_s << hsv[0],
-                              hsv[1],
-                              hsv[2];
-                      _weights["color"][sv.first] = classi.second.compute_estimation(new_s,1);
-                  }else if(classi.first == "normal"){
-                      Eigen::VectorXd new_s(3);
-                      new_s << sv.second->normal_.normal[0],
-                              sv.second->normal_.normal[1],
-                              sv.second->normal_.normal[2];
-                      _weights["normal"][sv.first] = classi.second.compute_estimation(new_s,1);
-                  }
+                if(classi.first == "colorH"){
+                    for(const auto& sv : _supervoxels){
+                        Eigen::MatrixXd bounds(2,3);
+                        bounds << 0,0,0,
+                                  1,1,1;
+                        HistogramFactory hf(5,3,bounds);
+                        classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
+                        hf.compute(sv.second);
+                        _weights["colorH"][sv.first] = classi.second.compute_estimation(hf.get_histogram()[0],1);
+                    }
+                }
+                if(classi.first == "colorS"){
+                    for(const auto& sv : _supervoxels){
+                        Eigen::MatrixXd bounds(2,3);
+                        bounds << 0,0,0,
+                                  1,1,1;
+                        HistogramFactory hf(5,3,bounds);
+                        classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
+                        hf.compute(sv.second);
+                        _weights["colorS"][sv.first] = classi.second.compute_estimation(hf.get_histogram()[1],1);
+                    }
+                }
+                if(classi.first == "colorV"){
+                    for(const auto& sv : _supervoxels){
+                        Eigen::MatrixXd bounds(2,3);
+                        bounds << 0,0,0,
+                                  1,1,1;
+                        HistogramFactory hf(5,3,bounds);
+                        classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
+                        hf.compute(sv.second);
+                        _weights["colorV"][sv.first] = classi.second.compute_estimation(hf.get_histogram()[2],1);
+                    }
+                }else if(classi.first == "normal"){
+                    Eigen::VectorXd new_s(3);
+                    new_s << sv.second->normal_.normal[0],
+                            sv.second->normal_.normal[1],
+                            sv.second->normal_.normal[2];
+                    _weights["normal"][sv.first] = classi.second.compute_estimation(new_s,1);
+                }
             }
 
-            _weights["merged"][sv.first] = std::sqrt(.5*_weights["color"][sv.first]*_weights["color"][sv.first]
-                    +  .5*_weights["normal"][sv.first]*_weights["normal"][sv.first]);
+//            _weights["merged"][sv.first] = std::sqrt(.5*_weights["color"][sv.first]*_weights["color"][sv.first]
+//                    +  .5*_weights["normal"][sv.first]*_weights["normal"][sv.first]);
         }
     }
     /**
