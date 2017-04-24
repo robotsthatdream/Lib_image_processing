@@ -15,13 +15,13 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
             double bin;
             for(int i = 0; i < _dim; i++){
                 bin = (hsv[i] - _bounds(0,i))/(_bounds(1,i)/_bins);
-                if(bin >= 5) bin -= 1;
+                if(bin >= _bins) bin -= 1;
                 _histogram[i](std::trunc(bin))++;
             }
         }
         for(int i = 0; i < _dim; i++){
             for(int j = 0; j < _bins; j++){
-                _histogram[i](j) = _histogram[i](j)/sv->voxels_->size();
+                _histogram[i](j) = _histogram[i](j)/((double)sv->voxels_->size());
             }
         }
     }
@@ -69,6 +69,6 @@ double HistogramFactory::chi_squared_distance(const Eigen::VectorXd& hist1, cons
     }
 
 
-    return sum/((double)hist1.rows());
+    return sum/2.;
 }
 
