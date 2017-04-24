@@ -227,25 +227,24 @@ PointCloudT SurfaceOfInterest::getColoredWeightedCloud(const std::string &modali
     return result;
 }
 
-
 std::map<pcl::Supervoxel<PointT>::Ptr, int> SurfaceOfInterest::get_supervoxels_clusters(const std::string &modality, double &saliency_threshold){
     std::map<pcl::Supervoxel<PointT>::Ptr, int> sv_clusters;
 
     int cluster_id = 0;
 
     std::function<void (uint32_t, int)> _add_supervoxels_to_clusters = [&](uint32_t sv_label, int cluster_id) {
-      double weight = _weights[modality][sv_label];
-      pcl::Supervoxel<PointT>::Ptr sv = _supervoxels.find(sv_label)->second;
-      auto it = sv_clusters.find(sv);
+        double weight = _weights[modality][sv_label];
+        pcl::Supervoxel<PointT>::Ptr sv = _supervoxels.find(sv_label)->second;
+        auto it = sv_clusters.find(sv);
 
-      if (weight > saliency_threshold && it == sv_clusters.end()) {
-          sv_clusters[sv] = cluster_id;
+        if (weight > saliency_threshold && it == sv_clusters.end()) {
+            sv_clusters[sv] = cluster_id;
 
-          for (auto adj_it = _adjacency_map.equal_range(sv_label).first;
-               adj_it != _adjacency_map.equal_range(sv_label).second; adj_it++) {
-              _add_supervoxels_to_clusters(adj_it->second, cluster_id);
-          }
-      }
+            for (auto adj_it = _adjacency_map.equal_range(sv_label).first;
+                 adj_it != _adjacency_map.equal_range(sv_label).second; adj_it++) {
+                _add_supervoxels_to_clusters(adj_it->second, cluster_id);
+            }
+        }
     };
 
     for (auto it = _supervoxels.begin(); it != _supervoxels.end(); it++){
