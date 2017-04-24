@@ -243,6 +243,7 @@ std::map<pcl::Supervoxel<PointT>::Ptr, int> SurfaceOfInterest::get_supervoxels_c
               _add_supervoxels_to_clusters(adj_it->second, cluster_id);
           }
       }
+
     };
 
     for (auto it = _supervoxels.begin(); it != _supervoxels.end(); it++){

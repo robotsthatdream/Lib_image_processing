@@ -206,7 +206,8 @@ public:
                                            classi.second.compute_estimation(_features[sv.first][classi.first]));
             }
         }
-    }
+	}
+
     /**
      * @brief choose randomly one soi
      * @param supervoxel
