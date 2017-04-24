@@ -34,6 +34,11 @@ public:
      * @param type {"color","normal"}
      */
     void compute(const pcl::Supervoxel<PointT>::Ptr& sv, std::string type = "color");
+    /**
+     * @brief compute the rgb color histograms of a open cv image
+     * @param image
+     */
+    void compute(const cv::Mat &image);
 
     /**
      * @brief chi_squared_distance

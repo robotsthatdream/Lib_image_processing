@@ -55,3 +55,5 @@ target_link_libraries(convex_hull_test  image_processing ${PCL_LIBRARIES} oml_rf
 #add_executable(rgb_to_hsv test/rgb_to_hsv.cpp)
 #target_link_libraries(rgb_to_hsv  image_processing)
 
+add_executable(color_hist_test test/color_hist_test.cpp)
+target_link_libraries(color_hist_test  image_processing ${OpenCV_LIBRARIES})
