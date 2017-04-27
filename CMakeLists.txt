@@ -6,7 +6,7 @@ set(SOURCE_FILES src/DescriptorExtraction.cpp
     src/SupervoxelSet.cpp
     src/SurfaceOfInterest.cpp
     src/BabblingDataset.cpp
-	  src/HistogramFactory.cpp
+	src/HistogramFactory.cpp
     src/Object.cpp
     src/tools.cpp
 )
