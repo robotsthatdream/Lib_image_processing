@@ -3,12 +3,18 @@
 
 #include <iterator>
 
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/vector.hpp>
+
 #include "image_processing/pcl_types.h"
+#include "image_processing/pcl_serialization.h"
 
 namespace image_processing{
 
 class Blob{
 public:
+  Blob() {}
+
   Blob(PointCloudT blob_cloud) :
     blob_cloud(blob_cloud), children(std::vector<Blob>()) {}
 
@@ -18,6 +24,8 @@ public:
   ~Blob() {}
 
   void add_child(Blob& blob);
+
+  friend class boost::serialization::access;
 
   template<class Archive>
   void serialize(Archive& ar, const unsigned int version){
@@ -46,6 +54,8 @@ public:
     PointCloudT parent_cloud);
 
   void split(std::vector<Blob>::iterator pos);
+
+  friend class boost::serialization::access;
 
   template<class Archive>
   void serialize(Archive& ar, const unsigned int version){
