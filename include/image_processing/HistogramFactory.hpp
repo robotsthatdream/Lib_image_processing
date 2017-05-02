@@ -29,13 +29,14 @@ public:
 
 
     /**
-     * @brief compute the <type> histogram related to sv
+     * @brief compute the <type> histogram related to sv.
+     * For the color domain the histogram is computed on HSV encoding
      * @param sv
      * @param type {"color","normal"}
      */
     void compute(const pcl::Supervoxel<PointT>::Ptr& sv, std::string type = "color");
     /**
-     * @brief compute the rgb color histograms of a open cv image
+     * @brief compute the RGB color histograms of a open cv image
      * @param image
      */
     void compute(const cv::Mat &image);
