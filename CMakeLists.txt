@@ -16,7 +16,7 @@ add_custom_target(headers SOURCES ${HEADFILES})
 
 #Libraries
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost COMPONENTS filesystem system REQUIRED)
+find_package(Boost 1.54 COMPONENTS filesystem system thread iostreams chrono REQUIRED)
 find_package(OpenCV 2.4.8 REQUIRED COMPONENTS features2d nonfree)
 find_package(PCL 1.7 REQUIRED)
 find_package(VTK REQUIRED)
@@ -33,7 +33,7 @@ install(DIRECTORY include/image_processing/  DESTINATION /usr/local/include/${PR
 file(GLOB_RECURSE src_files src/* include/image_processing/*)
 
 add_library(image_processing ${SOURCE_FILES})
-target_link_libraries(image_processing  ${PCL_LIBRARIES} yaml-cpp.so ${Boost_LIBRARIES})
+target_link_libraries(image_processing  ${PCL_LIBRARIES} yaml-cpp.so ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}
     ARCHIVE DESTINATION /usr/local/lib

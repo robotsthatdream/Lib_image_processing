@@ -27,15 +27,15 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
     }
     if(type == "normal"){
         double normal[_dim];
-        for(auto it = sv->voxels_->begin(); it != sv->voxels_->end(); ++it){
-            normal[0] = it->normal_.normal[0];
-            normal[1] = it->normal_.normal[1];
-            normal[2] = it->normal_.normal[2];
+        for(auto it = sv->normals_->begin(); it != sv->normals_->end(); ++it){
+            normal[0] = it->normal[0];
+            normal[1] = it->normal[1];
+            normal[2] = it->normal[2];
 
             double bin;
             for(int i = 0; i < _dim; i++){
                 bin = (normal[i] - _bounds(0,i))/(_bounds(1,i)/_bins);
-                if(bin >= _bins) biin -= 1;
+                if(bin >= _bins) bin -= 1;
                 _histogram[i](std::trunc(bin))++;
             }
         }
