@@ -2,7 +2,6 @@
 
 #include <opencv2/nonfree/nonfree.hpp>
 #include <opencv2/nonfree/features2d.hpp>
-#include <opencv2/features2d.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 
 using namespace image_processing;

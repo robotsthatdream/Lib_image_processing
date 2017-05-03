@@ -47,7 +47,10 @@ public:
         _weights.emplace("colorH",saliency_map_t());
         _weights.emplace("colorS",saliency_map_t());
         _weights.emplace("colorV",saliency_map_t());
-        _weights.emplace("normal",saliency_map_t());
+        _weights.emplace("normalX",saliency_map_t());
+        _weights.emplace("normalY",saliency_map_t());
+        _weights.emplace("normalZ",saliency_map_t());
+        _weights.emplace("fpfh",saliency_map_t());
         _weights.emplace("merged",saliency_map_t());
     }
 
@@ -60,7 +63,10 @@ public:
         _weights.emplace("colorH",saliency_map_t());
         _weights.emplace("colorS",saliency_map_t());
         _weights.emplace("colorV",saliency_map_t());
-        _weights.emplace("normal",saliency_map_t());
+        _weights.emplace("normalX",saliency_map_t());
+        _weights.emplace("normalY",saliency_map_t());
+        _weights.emplace("normalZ",saliency_map_t());
+        _weights.emplace("fpfh",saliency_map_t());
         _weights.emplace("merged",saliency_map_t());
     }
     /**
@@ -77,7 +83,10 @@ public:
         _weights.emplace("colorH",saliency_map_t());
         _weights.emplace("colorS",saliency_map_t());
         _weights.emplace("colorV",saliency_map_t());
-        _weights.emplace("normal",saliency_map_t());
+        _weights.emplace("normalX",saliency_map_t());
+        _weights.emplace("normalY",saliency_map_t());
+        _weights.emplace("normalZ",saliency_map_t());
+        _weights.emplace("fpfh",saliency_map_t());
         _weights.emplace("merged",saliency_map_t());
     }
     /**
@@ -149,63 +158,64 @@ public:
     template <typename classifier_t>
     void compute_weights(const std::string& modality, classifier_t &classifier){
         if(modality == "colorH"){
+            classifier.set_distance_function(HistogramFactory::chi_squared_distance);
             for(const auto& sv : _supervoxels){
 
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
                           1,1,1;
                 HistogramFactory hf(5,3,bounds);
-                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second);
                 _weights["colorH"][sv.first] = classifier.compute_estimation(hf.get_histogram()[0],1);
             }
             return;
         }
         if(modality == "colorS"){
+            classifier.set_distance_function(HistogramFactory::chi_squared_distance);
             for(const auto& sv : _supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
                           1,1,1;
                 HistogramFactory hf(5,3,bounds);
-                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second);
                 _weights["colorS"][sv.first] = classifier.compute_estimation(hf.get_histogram()[1],1);
             }
             return;
         }
         if(modality == "colorV"){
+            classifier.set_distance_function(HistogramFactory::chi_squared_distance);
+
             for(const auto& sv : _supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
                           1,1,1;
                 HistogramFactory hf(5,3,bounds);
-                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second);
                 _weights["colorV"][sv.first] = classifier.compute_estimation(hf.get_histogram()[2],1);
             }
             return;
         }
         if(modality == "normalX"){
+            classifier.set_distance_function(HistogramFactory::chi_squared_distance);
 
             for(const auto& sv : _supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
                           1,1,1;
                 HistogramFactory hf(5,3,bounds);
-                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second,"normal");
                 _weights["normalX"][sv.first] = classifier.compute_estimation(hf.get_histogram()[0],1);
             }
             return;
         }
         if(modality == "normalY"){
+            classifier.set_distance_function(HistogramFactory::chi_squared_distance);
 
             for(const auto& sv : _supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
                           1,1,1;
                 HistogramFactory hf(5,3,bounds);
-                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second,"normal");
                 _weights["normalY"][sv.first] = classifier.compute_estimation(hf.get_histogram()[1],1);
             }
