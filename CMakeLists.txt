@@ -17,11 +17,11 @@ add_custom_target(headers SOURCES ${HEADFILES})
 #Libraries
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.54 COMPONENTS filesystem system thread iostreams chrono REQUIRED)
-find_package(OpenCV 2.4.8 REQUIRED COMPONENTS features2d nonfree)
+find_package(OpenCV 2.4 REQUIRED COMPONENTS features2d nonfree)
 find_package(PCL 1.7 REQUIRED)
 find_package(VTK REQUIRED)
 
-include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include)
+include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 

@@ -194,7 +194,7 @@ public:
                 HistogramFactory hf(5,3,bounds);
                 classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second,"normal");
-                _weights["normalX"][sv.first] = classifier.compute_estimation(new_s,1);
+                _weights["normalX"][sv.first] = classifier.compute_estimation(hf.get_histogram()[0],1);
             }
             return;
         }
@@ -207,7 +207,7 @@ public:
                 HistogramFactory hf(5,3,bounds);
                 classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second,"normal");
-                _weights["normalY"][sv.first] = classifier.compute_estimation(new_s,1);
+                _weights["normalY"][sv.first] = classifier.compute_estimation(hf.get_histogram()[1],1);
             }
             return;
         }
@@ -219,15 +219,15 @@ public:
                 HistogramFactory hf(5,3,bounds);
                 classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second,"normal");
-                _weights["normalZ"][sv.first] = classifier.compute_estimation(new_s,1);
+                _weights["normalZ"][sv.first] = classifier.compute_estimation(hf.get_histogram()[2],1);
             }
             return;
         }
         if(modality == "fpfh"){
-            PointCloudT centroids;
-            PointCloudN centroids_n;
+            PointCloudT::Ptr centroids(new PointCloudT);
+            PointCloudN::Ptr centroids_n(new PointCloudN);
             std::map<int, uint32_t> centroids_lbl;
-            getCentroidCloud(centroids,centroids_lbl,centroids_n);
+            getCentroidCloud(*centroids,centroids_lbl,*centroids_n);
             pcl::FPFHEstimation<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
             fpfh.setInputCloud(centroids);
             fpfh.setInputNormals(centroids_n);
