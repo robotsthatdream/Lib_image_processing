@@ -200,7 +200,7 @@ public:
 
             for(const auto& sv : _supervoxels){
                 Eigen::MatrixXd bounds(2,3);
-                bounds << 0,0,0,
+                bounds << -1,-1,-1,
                           1,1,1;
                 HistogramFactory hf(5,3,bounds);
                 hf.compute(sv.second,"normal");
@@ -213,7 +213,7 @@ public:
 
             for(const auto& sv : _supervoxels){
                 Eigen::MatrixXd bounds(2,3);
-                bounds << 0,0,0,
+                bounds << -1,-1,-1,
                           1,1,1;
                 HistogramFactory hf(5,3,bounds);
                 hf.compute(sv.second,"normal");
@@ -222,12 +222,13 @@ public:
             return;
         }
         if(modality == "normalZ"){
+            classifier.set_distance_function(HistogramFactory::chi_squared_distance);
+
             for(const auto& sv : _supervoxels){
                 Eigen::MatrixXd bounds(2,3);
-                bounds << 0,0,0,
+                bounds << -1,-1,-1,
                           1,1,1;
                 HistogramFactory hf(5,3,bounds);
-                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
                 hf.compute(sv.second,"normal");
                 _weights["normalZ"][sv.first] = classifier.compute_estimation(hf.get_histogram()[2],1);
             }
@@ -247,15 +248,16 @@ public:
             fpfh.setRadiusSearch (0.05);
 
 
-            pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud;
+            pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
             fpfh.compute(*fpfh_cloud);
             for(auto feat : centroids_lbl){
                 Eigen::VectorXd new_s(33);
                 for(int i = 0; i < 33; ++i){
-                    new_s(33) = fpfh_cloud->points[feat.first].histogram[i];
+                    new_s(i) = fpfh_cloud->points[feat.first].histogram[i];
                 }
                _weights["fpfh"][feat.second] = classifier.compute_estimation(new_s,1);
             }
+            return;
         }
         std::cerr << "SurfaceOfInterest Error: unknow modality : " << modality << std::endl;
     }
@@ -266,41 +268,97 @@ public:
         for(const auto& sv : _supervoxels){
             for(auto& classi: classifiers){
                 if(classi.first == "colorH"){
+                    classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
+
                     for(const auto& sv : _supervoxels){
                         Eigen::MatrixXd bounds(2,3);
                         bounds << 0,0,0,
                                   1,1,1;
                         HistogramFactory hf(5,3,bounds);
-                        classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
                         hf.compute(sv.second);
                         _weights["colorH"][sv.first] = classi.second.compute_estimation(hf.get_histogram()[0],1);
                     }
                 }else if(classi.first == "colorS"){
+                    classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
+
                     for(const auto& sv : _supervoxels){
                         Eigen::MatrixXd bounds(2,3);
                         bounds << 0,0,0,
                                   1,1,1;
                         HistogramFactory hf(5,3,bounds);
-                        classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
                         hf.compute(sv.second);
                         _weights["colorS"][sv.first] = classi.second.compute_estimation(hf.get_histogram()[1],1);
                     }
                 }else if(classi.first == "colorV"){
+                    classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
+
                     for(const auto& sv : _supervoxels){
                         Eigen::MatrixXd bounds(2,3);
                         bounds << 0,0,0,
                                   1,1,1;
                         HistogramFactory hf(5,3,bounds);
-                        classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
                         hf.compute(sv.second);
                         _weights["colorV"][sv.first] = classi.second.compute_estimation(hf.get_histogram()[2],1);
                     }
                 }else if(classi.first == "normalX"){
-                    Eigen::VectorXd new_s(3);
-                    new_s << sv.second->normal_.normal[0],
-                            sv.second->normal_.normal[1],
-                            sv.second->normal_.normal[2];
-                    _weights["normal"][sv.first] = classi.second.compute_estimation(new_s,1);
+                    classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
+
+                    for(const auto& sv : _supervoxels){
+                        Eigen::MatrixXd bounds(2,3);
+                        bounds << -1,-1,-1,
+                                  1,1,1;
+                        HistogramFactory hf(5,3,bounds);
+                        hf.compute(sv.second,"normal");
+                        _weights["normalX"][sv.first] = classi.second.compute_estimation(hf.get_histogram()[0],1);
+                    }
+                }else if(classi.first == "normalY"){
+                    classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
+
+                    for(const auto& sv : _supervoxels){
+                        Eigen::MatrixXd bounds(2,3);
+
+                        bounds << -1,-1,-1,
+                                  1,1,1;
+                        HistogramFactory hf(5,3,bounds);
+                        hf.compute(sv.second,"normal");
+                        _weights["normalY"][sv.first] = classi.second.compute_estimation(hf.get_histogram()[1],1);
+                    }
+                }else if(classi.first == "normalZ"){
+                    classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
+
+                    for(const auto& sv : _supervoxels){
+                        Eigen::MatrixXd bounds(2,3);
+                        bounds << -1,-1,-1,
+                                  1,1,1;
+                        HistogramFactory hf(5,3,bounds);
+                        hf.compute(sv.second,"normal");
+                        _weights["normalZ"][sv.first] = classi.second.compute_estimation(hf.get_histogram()[2],1);
+                    }
+                }else if(classi.first == "fpfh"){
+                    classi.second.set_distance_function(HistogramFactory::chi_squared_distance);
+
+                    PointCloudT::Ptr centroids(new PointCloudT);
+                    PointCloudN::Ptr centroids_n(new PointCloudN);
+                    std::map<int, uint32_t> centroids_lbl;
+                    getCentroidCloud(*centroids,centroids_lbl,*centroids_n);
+                    pcl::FPFHEstimation<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
+                    fpfh.setInputCloud(centroids);
+                    fpfh.setInputNormals(centroids_n);
+
+                    pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
+                    fpfh.setSearchMethod(tree);
+                    fpfh.setRadiusSearch (0.05);
+
+
+                    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
+                    fpfh.compute(*fpfh_cloud);
+                    for(auto feat : centroids_lbl){
+                        Eigen::VectorXd new_s(33);
+                        for(int i = 0; i < 33; ++i){
+                            new_s(33) = fpfh_cloud->points[feat.first].histogram[i];
+                        }
+                       _weights["fpfh"][feat.second] = classi.second.compute_estimation(new_s,1);
+                    }
                 }
             }
 

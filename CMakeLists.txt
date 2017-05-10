@@ -40,23 +40,23 @@ install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION /usr/local/lib)
 
 #test and example code
-add_executable(load_dataset_test test/load_dataset_test.cpp)
-target_link_libraries(load_dataset_test image_processing ${PCL_LIBRARIES} yaml-cpp.so ${OpenCV_LIBRARIES})
+#add_executable(load_dataset_test test/load_dataset_test.cpp)
+#target_link_libraries(load_dataset_test image_processing ${PCL_LIBRARIES} yaml-cpp.so ${OpenCV_LIBRARIES})
 
-add_executable(test_rgb_reconstruct test/test_rgb_reconstruct.cpp)
-target_link_libraries(test_rgb_reconstruct image_processing ${PCL_LIBRARIES} yaml-cpp.so ${OpenCV_LIBRARIES})
+#add_executable(test_rgb_reconstruct test/test_rgb_reconstruct.cpp)
+#target_link_libraries(test_rgb_reconstruct image_processing ${PCL_LIBRARIES} yaml-cpp.so ${OpenCV_LIBRARIES})
 
-add_executable(fake_data test/fake_data.cpp)
-target_link_libraries(fake_data ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
+#add_executable(fake_data test/fake_data.cpp)
+#target_link_libraries(fake_data ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
-add_executable(convex_hull_test test/convex_hull_test.cpp)
-target_link_libraries(convex_hull_test  image_processing ${PCL_LIBRARIES} oml_rf yaml-cpp.so ${OpenCV_LIBRARIES})
+#add_executable(convex_hull_test test/convex_hull_test.cpp)
+#target_link_libraries(convex_hull_test  image_processing ${PCL_LIBRARIES} oml_rf yaml-cpp.so ${OpenCV_LIBRARIES})
 
-#add_executable(rgb_to_hsv test/rgb_to_hsv.cpp)
-#target_link_libraries(rgb_to_hsv  image_processing)
+##add_executable(rgb_to_hsv test/rgb_to_hsv.cpp)
+##target_link_libraries(rgb_to_hsv  image_processing)
 
-add_executable(color_hist_test test/color_hist_test.cpp)
-target_link_libraries(color_hist_test  image_processing ${OpenCV_LIBRARIES})
+#add_executable(color_hist_test test/color_hist_test.cpp)
+#target_link_libraries(color_hist_test  image_processing ${OpenCV_LIBRARIES})
 
-add_executable(color_hist_supervoxel test/color_hist_supervoxel.cpp)
-target_link_libraries(color_hist_supervoxel  image_processing ${OpenCV_LIBRARIES})
+#add_executable(color_hist_supervoxel test/color_hist_supervoxel.cpp)
+#target_link_libraries(color_hist_supervoxel  image_processing ${OpenCV_LIBRARIES})

@@ -14,7 +14,7 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
             tools::rgb2hsv(r,g,b,hsv[0],hsv[1],hsv[2]);
             double bin;
             for(int i = 0; i < _dim; i++){
-                bin = (hsv[i] - _bounds(0,i))/(_bounds(1,i)/_bins);
+                bin = (hsv[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
                 if(bin >= _bins) bin -= 1;
                 _histogram[i](std::trunc(bin))++;
             }
@@ -34,7 +34,7 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
 
             double bin;
             for(int i = 0; i < _dim; i++){
-                bin = (normal[i] - _bounds(0,i))/(_bounds(1,i)/_bins);
+                bin = (normal[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
                 if(bin >= _bins) bin -= 1;
                 _histogram[i](std::trunc(bin))++;
             }
