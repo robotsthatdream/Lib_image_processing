@@ -221,6 +221,8 @@ public:
 
     std::map<std::string,saliency_map_t> get_weights(){return _weights;}
 
+
+
 private :
     std::vector<uint32_t> _labels;
     std::vector<uint32_t> _labels_no_soi;
