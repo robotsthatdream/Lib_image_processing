@@ -139,53 +139,32 @@ public:
      */
     template <typename classifier_t>
     void compute_weights(const std::string& modality, classifier_t &classifier){
-        if(modality == "color-h"){
-            for(const auto& sv : _supervoxels){
-                Eigen::MatrixXd bounds(2,3);
-                bounds << 0,0,0,
-                          1,1,1;
-                HistogramFactory hf(5,3,bounds);
-                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
-                hf.compute(sv.second);
-                _weights["color-h"][sv.first] = classifier.compute_estimation(hf.get_histogram()[0],1);
-            }
-            return;
-        }
-        if(modality == "color-s"){
-            for(const auto& sv : _supervoxels){
-                Eigen::MatrixXd bounds(2,3);
-                bounds << 0,0,0,
-                          1,1,1;
-                HistogramFactory hf(5,3,bounds);
-                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
-                hf.compute(sv.second);
-                _weights["color-s"][sv.first] = classifier.compute_estimation(hf.get_histogram()[1],1);
-            }
-            return;
-        }
-        if(modality == "color-v"){
-            for(const auto& sv : _supervoxels){
-                Eigen::MatrixXd bounds(2,3);
-                bounds << 0,0,0,
-                          1,1,1;
-                HistogramFactory hf(5,3,bounds);
-                classifier.set_distance_function(HistogramFactory::chi_squared_distance);
-                hf.compute(sv.second);
-                _weights["color-v"][sv.first] = classifier.compute_estimation(hf.get_histogram()[2],1);
-            }
-            return;
-        }
-        if(modality == "normal"){
+        if(modality == "color"){
+                    for(const auto& sv : _supervoxels){
+                        float hsv[3];
+                        tools::rgb2hsv(sv.second->centroid_.r,
+                                       sv.second->centroid_.g,
+                                       sv.second->centroid_.b,
+                                       hsv[0],hsv[1],hsv[2]);
+                        Eigen::VectorXd new_s(3);
+                        new_s << hsv[0],
+                                hsv[1],
+                                hsv[2];
+                        _weights["color"][sv.first] = classifier.compute_estimation(new_s,1);
+                    }
+                    return;
+                }
+                if(modality == "normal"){
 
-            for(const auto& sv : _supervoxels){
-                Eigen::VectorXd new_s(3);
-                new_s << sv.second->normal_.normal[0],
-                        sv.second->normal_.normal[1],
-                        sv.second->normal_.normal[2];
-                _weights["normal"][sv.first] = classifier.compute_estimation(new_s,1);
-            }
-            return;
-        }
+                    for(const auto& sv : _supervoxels){
+                        Eigen::VectorXd new_s(3);
+                        new_s << sv.second->normal_.normal[0],
+                                sv.second->normal_.normal[1],
+                                sv.second->normal_.normal[2];
+                        _weights["normal"][sv.first] = classifier.compute_estimation(new_s,1);
+                    }
+                    return;
+                }
         std::cerr << "SurfaceOfInterest Error: unknow modality : " << modality << std::endl;
     }
 
@@ -216,6 +195,8 @@ public:
      * @param saliency_threshold
      */
     std::map<pcl::Supervoxel<PointT>::Ptr, int> get_supervoxels_clusters(const std::string &modality, double &saliency_threshold);
+
+    std::map<std::string,saliency_map_t> get_weights(){return _weights;}
 
 private :
     std::vector<uint32_t> _labels;
