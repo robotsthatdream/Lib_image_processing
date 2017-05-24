@@ -237,6 +237,10 @@ public:
 
     std::map<std::string,relevance_map_t> get_weights(){return _weights;}
 
+    Objects get_objects(const std::string &modality, double &saliency_threshold);
+    
+
+
     void neighbor_bluring(const std::string& modality, double cst, int lbl);
     void adaptive_threshold(const std::string& modality, int lbl);
     pcl::PointCloud<pcl::PointXYZI> cumulative_relevance_map(std::vector<pcl::PointCloud<pcl::PointXYZI>> list_weights);

@@ -305,25 +305,27 @@ pcl::PointCloud<pcl::PointXYZI> SurfaceOfInterest::cumulative_relevance_map(std:
     return output_cloud;
 }
 
-Objects SurfaceOfInterest::get_objects(const std::string &modality, double &saliency_threshold){
-    Objects objs;
+
+std::vector<Object> SurfaceOfInterest::get_objects(const std::string &modality, double &saliency_threshold){
+    std::vector<Object> objs;
 
     std::map<pcl::Supervoxel<PointT>::Ptr, int> clusters = get_supervoxels_clusters(modality, saliency_threshold);
 
     int current_id = -1;
-    PointCloudT current_cloud;
+    PointCloudT::Ptr current_cloud;
 
     for (auto it = clusters.begin(); it != clusters.end(); it++){
         if (current_id == it->second){
-            current_cloud += *(it->first->voxels_);
+            *current_cloud += *(it->first->voxels_);
         }
         else {
             if (current_id != -1) {
-                objs.add(current_cloud);
+                Object obj(*current_cloud);
+                objs.push_back(obj);
             }
             current_id = it->second;
-            current_cloud = *(new PointCloudT());
-            current_cloud += *(it->first->voxels_);
+            current_cloud.reset(new PointCloudT());
+            *current_cloud += *(it->first->voxels_);
         }
     }
     return objs;
