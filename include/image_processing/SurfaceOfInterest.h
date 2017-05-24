@@ -220,7 +220,9 @@ public:
      */
     std::map<pcl::Supervoxel<PointT>::Ptr, int> get_supervoxels_clusters(const std::string &modality, double &saliency_threshold);
 
-    std::map<std::string,saliency_map_t> get_weights(){return _weights;}
+    Objects get_objects(const std::string &modality, double &saliency_threshold);
+    
+	std::map<std::string,saliency_map_t> get_weights(){return _weights;}
 
 
 
