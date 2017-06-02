@@ -34,7 +34,7 @@ public:
      * @param sv
      * @param type {"color","normal"}
      */
-    void compute(const pcl::Supervoxel<PointT>::Ptr& sv, std::string type = "color");
+    void compute(const pcl::Supervoxel<PointT>::ConstPtr& sv, std::string type = "color");
     /**
      * @brief compute the RGB color histograms of a open cv image
      * @param image

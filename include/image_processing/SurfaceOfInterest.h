@@ -259,6 +259,37 @@ public:
             }
             return;
         }
+        if(modality == "merged"){
+            for(const auto& sv : _supervoxels){
+                Eigen::MatrixXd bounds_c(2,3);
+                bounds_c << 0,0,0,
+                          1,1,1;
+
+                Eigen::MatrixXd bounds_n(2,3);
+                bounds_n << -1,-1,-1,
+                          1,1,1;
+                HistogramFactory hf_color(5,3,bounds_c);
+                HistogramFactory hf_normal(5,3,bounds_n);
+                hf_color.compute(sv.second);
+                hf_normal.compute(sv.second,"normal");
+
+                Eigen::VectorXd sample(30);
+                int k = 0 , l = 0;
+                for(int i = 0; i < 15; i++){
+                    sample(i) = hf_color.get_histogram()[k](l);
+                    k = (k+1)%3;
+                    l = (l+1)%5;
+                }
+                l = 0; k = 0;
+                for(int i = 15; i < 30; i++){
+                    sample(i) = hf_normal.get_histogram()[k](l);
+                    k = (k+1)%3;
+                    l = (l+1)%5;
+                }
+                _weights["merged"][sv.first] = classifier.compute_estimation(sample,1);
+            }
+            return;
+        }
         std::cerr << "SurfaceOfInterest Error: unknow modality : " << modality << std::endl;
     }
 
@@ -392,6 +423,8 @@ public:
      * @param saliency_threshold
      */
     std::map<pcl::Supervoxel<PointT>::Ptr, int> get_supervoxels_clusters(const std::string &modality, double &saliency_threshold);
+
+    std::map<std::string,saliency_map_t> get_weights(){return _weights;}
 
 private :
     std::vector<uint32_t> _labels;

@@ -2,7 +2,7 @@
 
 using namespace image_processing;
 
-void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::Ptr &sv, std::string type){
+void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::ConstPtr &sv, std::string type){
 
     if(type == "color"){
         double r,g,b;
