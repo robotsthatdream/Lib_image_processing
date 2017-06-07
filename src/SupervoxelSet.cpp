@@ -4,8 +4,11 @@
 #include <boost/random.hpp>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/model_outlier_removal.h>
+#include <image_processing/features.hpp>
 
 using namespace image_processing;
+
+const std::map<std::string, function_t> features_fct::fct_map = features_fct::create_map();
 
 void workspace_t::filter(PointCloudT::Ptr cloud){
 
@@ -489,42 +492,15 @@ pcl::PointXYZ SupervoxelSet::globalPosition(){
     return result;
 }
 
-void SupervoxelSet::_color_gradient_descriptors(){
 
-    Eigen::MatrixXd gradient_filter_x(3,3);
-    gradient_filter_x << -1, 0, 1,
-                         -2, 0, 2,
-                         -1, 0, 1;
-    Eigen::MatrixXd gradient_filter_y(3,3);
-    gradient_filter_y << -1, -2, -1,
-                          0, 0, 0,
-                          1, 2, 1;
-    Eigen::VectorXd featX(3), featY(3), feat(3);
-    int i = 1, j = 1;
+void SupervoxelSet::compute_feature(const std::string& name){
+    Eigen::VectorXd feat;
     for(const auto& sv : _supervoxels){
-        i = 1;
-        j = 1;
-        featX << 0, 0, 0;
-        featY << 0, 0, 0;
-        PointT center = sv.second->centroid_;
-        for(auto it = _adjacency_map.equal_range(sv.first).first;
-            it != _adjacency_map.equal_range(sv.first).second; ++it){
-            PointT pt = _supervoxels[it->second]->centroid_;
-            i += (center.x - pt.x) > 0 ? 1 : -1;
-            j += (center.y - pt.y) > 0 ? 1 : -1;
-            featX(0) += gradient_filter_x(i,j)*pt.r;
-            featX(1) += gradient_filter_x(i,j)*pt.g;
-            featX(2) += gradient_filter_x(i,j)*pt.b;
-            featY(0) += gradient_filter_y(i,j)*pt.r;
-            featY(1) += gradient_filter_y(i,j)*pt.g;
-            featY(2) += gradient_filter_y(i,j)*pt.b;
-        }
-        feat << atan2(featY(0),featX(0)),
-                atan2(featY(1),featX(1)),
-                atan2(featY(2),featX(2));
-        _color_gradients.emplace(sv.first,feat);
+        feat = features_fct::fct_map.at(name)(sv.second);
+        _features[sv.first].emplace(name,feat);
     }
 }
+
 
 void SupervoxelSet::getCentroidCloud(PointCloudT &centroids, std::map<int,uint32_t> &centroidsLabel, PointCloudN &centroid_normals){
 

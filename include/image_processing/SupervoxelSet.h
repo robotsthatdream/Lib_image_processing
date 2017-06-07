@@ -65,6 +65,7 @@ public :
 
     typedef std::shared_ptr<SupervoxelSet> Ptr;
     typedef const std::shared_ptr<SupervoxelSet> ConstPtr;
+    typedef std::map<uint32_t,std::map<std::string,Eigen::VectorXd>> features_t;
 
     SupervoxelSet(){
         init<supervoxel>();
@@ -186,6 +187,8 @@ public :
      * @param cloud
      */
     void substract(SupervoxelSet &cloud);
+
+    void compute_feature(const std::string& name);
     //---------------------------------------------------------
 
     //SETTERS & GETTERS----------------------------------------
@@ -249,7 +252,7 @@ public :
      */
     const pcl::Supervoxel<PointT>::Ptr& at(uint32_t label) const {return _supervoxels.at(label);}
 
-    const std::map<uint32_t,Eigen::VectorXd>& get_color_gradients(){return _color_gradients;}
+    Eigen::VectorXd get_feature(uint32_t lbl,std::string name){return _features[lbl][name];}
     //---------------------------------------------------------
 
 protected:
@@ -262,7 +265,7 @@ protected:
     SupervoxelArray _supervoxels;
     AdjacencyMap _adjacency_map;
     double _seed_resolution;
-    std::map<uint32_t,Eigen::VectorXd> _color_gradients;
+    features_t _features;
 
 };
 
