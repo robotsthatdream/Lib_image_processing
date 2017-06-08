@@ -1,8 +1,12 @@
+#include <limits>
+#include <cmath>
+
 #include "image_processing/Objects.h"
 
 using namespace image_processing;
 
-void Object::update_cloud(PointCloudT current_cloud) {
+void Object::update_cloud(PointCloudT current_cloud)
+{
   // extract features comparing current and previous cloud
   // std::vector<double> feature;
   // features.push_back(feature);
