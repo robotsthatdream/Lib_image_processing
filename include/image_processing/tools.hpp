@@ -3,7 +3,12 @@
 
 #include "pcl_types.h"
 #include <Eigen/Core>
+#include <pcl/point_types.h>
 #include <pcl/surface/convex_hull.h>
+#include <pcl/search/kdtree.h>
+
+#include "pcl_types.h"
+#include "SupervoxelSet.h"
 
 namespace image_processing{
 namespace tools{
