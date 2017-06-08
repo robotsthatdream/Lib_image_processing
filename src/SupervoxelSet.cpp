@@ -49,39 +49,8 @@ void workspace_t::filter(PointCloudT::Ptr cloud){
 
 bool SupervoxelSet::computeSupervoxel(workspace_t& workspace){
 
-    pcl::PassThrough<PointT> passFilter;
 
-    if(workspace.with_sphere){
-        pcl::ModelCoefficients sphere_coeff;
-        sphere_coeff.values.resize (4);
-        sphere_coeff.values[0] = workspace.sphere.x;
-        sphere_coeff.values[1] = workspace.sphere.y;
-        sphere_coeff.values[2] = workspace.sphere.z;
-        sphere_coeff.values[3] = workspace.sphere.radius;
-
-        pcl::ModelOutlierRemoval<PointT> sphere_filter;
-        sphere_filter.setModelCoefficients (sphere_coeff);
-        sphere_filter.setNegative(true);
-        sphere_filter.setThreshold (workspace.sphere.threshold);
-        sphere_filter.setModelType (pcl::SACMODEL_SPHERE);
-        sphere_filter.setInputCloud (_inputCloud);
-        sphere_filter.filter(*_inputCloud);
-    }
-
-    passFilter.setInputCloud(_inputCloud);
-    passFilter.setFilterFieldName("x");
-    passFilter.setFilterLimits(workspace.area[0],workspace.area[1]);
-    passFilter.filter(*_inputCloud);
-
-    passFilter.setInputCloud(_inputCloud);
-    passFilter.setFilterFieldName("y");
-    passFilter.setFilterLimits(workspace.area[2],workspace.area[3]);
-    passFilter.filter(*_inputCloud);
-
-    passFilter.setInputCloud(_inputCloud);
-    passFilter.setFilterFieldName("z");
-    passFilter.setFilterLimits(workspace.area[4],workspace.area[5]);
-    passFilter.filter(*_inputCloud);
+    workspace.filter(_inputCloud);
 
     //input cloud
     if(_inputCloud->empty()){
@@ -125,7 +94,7 @@ bool SupervoxelSet::computeSupervoxel(){
     assert(_supervoxels.size() != 0);
     _extractor->getSupervoxelAdjacency(_adjacency_map);
 
-    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl; 
+    std::cout << "Found " << _supervoxels.size() << " supervoxels" << std::endl;
     return true;
 }
 
