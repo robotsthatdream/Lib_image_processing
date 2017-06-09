@@ -5,8 +5,8 @@
 #include "HistogramFactory.hpp"
 #include <boost/random.hpp>
 #include <ctime>
-#include <pcl/features/fpfh.h>
 #include <image_processing/features.hpp>
+#include <tbb/tbb.h>
 
 namespace image_processing {
 
@@ -152,11 +152,20 @@ public:
         else
             _weights[modality] = saliency_map_t();
 
-
+        std::vector<uint32_t> lbls;
         for(const auto& sv : _supervoxels){
-            _weights[modality].emplace(sv.first,
-                    classifier.compute_estimation(_features[sv.first][modality],1));
+            lbls.push_back(sv.first);
+            _weights[modality].emplace(sv.first,0);
         }
+
+        tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
+                          [&](const tbb::blocked_range<size_t>& r){
+            for(size_t i = r.begin(); i != r.end(); ++i){
+                _weights[modality][lbls[i]] = classifier.compute_estimation(
+                            _features[lbls[i]][modality],1);
+            }
+        });
+
     }
 
     template <typename classifier_t>

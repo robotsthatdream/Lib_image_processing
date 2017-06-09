@@ -494,13 +494,8 @@ pcl::PointXYZ SupervoxelSet::globalPosition(){
 
 
 void SupervoxelSet::compute_feature(const std::string& name){
-    Eigen::VectorXd feat;
-    for(const auto& sv : _supervoxels){
-        feat = features_fct::fct_map.at(name)(sv.second);
-        _features[sv.first].emplace(name,feat);
-    }
+    features_fct::fct_map.at(name)(_supervoxels,_features);
 }
-
 
 void SupervoxelSet::getCentroidCloud(PointCloudT &centroids, std::map<int,uint32_t> &centroidsLabel, PointCloudN &centroid_normals){
 
