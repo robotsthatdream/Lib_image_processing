@@ -213,16 +213,7 @@ public:
      */
     PointCloudT getColoredWeightedCloud(const std::string &modality);
 
-    /**
-     * @brief return a map that link a supervoxel to the id of an object
-     * @param modality
-     * @param saliency_threshold
-     */
-    std::map<pcl::Supervoxel<PointT>::Ptr, int> get_supervoxels_clusters(const std::string &modality, double &saliency_threshold);
-
-    Objects get_objects(const std::string &modality, double &saliency_threshold);
-    
-	std::map<std::string,saliency_map_t> get_weights(){return _weights;}
+	  std::map<std::string,saliency_map_t> get_weights(){return _weights;}
 
 
 
