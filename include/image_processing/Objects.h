@@ -16,45 +16,45 @@
 
 namespace image_processing{
 
-class Object{
-public:
-  Object() {}
-
-  Object(PointCloudT object_cloud) :
-    object_cloud(object_cloud) {}
-
-  Object(const Object& object) :
-    object_cloud(object.object_cloud), features(object.features) {}
-
-  ~Object() {}
-
-  void update_cloud(PointCloudT current_cloud);
-
-  friend class boost::serialization::access;
-
-  template<class Archive>
-  void serialize(Archive& ar, const unsigned int version){
-      ar & object_cloud & features;
-  }
-
-  PointCloudT object_cloud;
-  std::vector<std::vector<double>> features;
-};
+// class Object{
+// public:
+//   Object() {}
+//
+//   Object(PointCloudT object_cloud) :
+//     object_cloud(object_cloud) {}
+//
+//   Object(const Object& object) :
+//     object_cloud(object.object_cloud), features(object.features) {}
+//
+//   ~Object() {}
+//
+//   void update_cloud(PointCloudT current_cloud);
+//
+//   friend class boost::serialization::access;
+//
+//   template<class Archive>
+//   void serialize(Archive& ar, const unsigned int version){
+//       ar & object_cloud & features;
+//   }
+//
+//   PointCloudT object_cloud;
+//   std::vector<std::vector<double>> features;
+// };
 
 
 template<class classifier_t>
-class ObjectHyp{
+class Object{
 public:
 
-  ObjectHyp() {}
+  Object() {}
 
-  ObjectHyp(classifier_t classifier, features_extractor_t features_extractor) :
+  Object(classifier_t classifier, features_extractor_t features_extractor) :
     _classifier(classifier), _features_extractor(features_extractor) {}
 
-  ObjectHyp(const ObjectHyp& obj) :
+  Object(const Object& obj) :
     _classifier(obj._classifier), _features_extractor(obj._features_extractor) {}
 
-  ~ObjectHyp() {}
+  ~Object() {}
 
   classifier_t get_classifier() {return _classifier;}
 
@@ -87,7 +87,7 @@ private:
 
 
 template<typename classifier_t>
-SaliencyMap ObjectHyp<classifier_t>::get_saliency_map(SupervoxelSet& supervoxels)
+SaliencyMap Object<classifier_t>::get_saliency_map(SupervoxelSet& supervoxels)
 {
   SaliencyMap weights;
 
@@ -102,7 +102,7 @@ SaliencyMap ObjectHyp<classifier_t>::get_saliency_map(SupervoxelSet& supervoxels
 }
 
 template<typename classifier_t>
-void ObjectHyp<classifier_t>::set_initial(SupervoxelSet& initial_supervoxels,
+void Object<classifier_t>::set_initial(SupervoxelSet& initial_supervoxels,
                                           uint32_t initial_label)
 {
   SupervoxelArray hyp;
@@ -122,12 +122,22 @@ void ObjectHyp<classifier_t>::set_initial(SupervoxelSet& initial_supervoxels,
   _initial_cloud = PointCloudT::Ptr(new PointCloudT);
   for (const auto& sv : _initial_hyp)
   {
-    *_initial_cloud += *(sv.second->voxels_);
+    for (const auto& pt : *(sv.second->voxels_))
+    {
+      PointT new_pt;
+      new_pt.x = pt.x;
+      new_pt.y = pt.y;
+      new_pt.z = pt.z;
+      new_pt.r = pt.r;
+      new_pt.g = pt.g;
+      new_pt.b = pt.b;
+      _initial_cloud->push_back(new_pt);
+    }
   }
 }
 
 template<typename classifier_t>
-void ObjectHyp<classifier_t>::set_current(SupervoxelSet& current_supervoxels,
+void Object<classifier_t>::set_current(SupervoxelSet& current_supervoxels,
                                           Eigen::Affine3f& transformation)
 {
   // update transformed initial cloud
@@ -184,7 +194,17 @@ void ObjectHyp<classifier_t>::set_current(SupervoxelSet& current_supervoxels,
   _current_cloud = PointCloudT::Ptr(new PointCloudT);
   for (const auto& sv : _current_hyp)
   {
-    *_current_cloud += *(sv.second->voxels_);
+    for (const auto& pt : *(sv.second->voxels_))
+    {
+      PointT new_pt;
+      new_pt.x = pt.x;
+      new_pt.y = pt.y;
+      new_pt.z = pt.z;
+      new_pt.r = pt.r;
+      new_pt.g = pt.g;
+      new_pt.b = pt.b;
+      _initial_cloud->push_back(new_pt);
+    }
   }
 }
 
