@@ -237,8 +237,8 @@ public:
 
     std::map<std::string,relevance_map_t> get_weights(){return _weights;}
 
-    Objects get_objects(const std::string &modality, double &saliency_threshold);
     
+
 
 
     void neighbor_bluring(const std::string& modality, double cst, int lbl);
