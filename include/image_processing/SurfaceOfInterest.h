@@ -10,6 +10,7 @@
 
 namespace image_processing {
 
+
 typedef struct SvFeature{
 
     SvFeature(){}
@@ -206,7 +207,40 @@ public:
                                            classi.second.compute_estimation(_features[sv.first][classi.first]));
             }
         }
-	}
+  	}
+
+    /**
+     * @brief methode compute and return the weight of each supervoxels.
+     * All weights are between 0 and 1.
+     * @param modality of used features
+     * @param classifier
+     */
+    template <typename classifier_t>
+    saliency_map_t compute_saliency_map(const std::string& modality, classifier_t &classifier){
+        saliency_map_t map;
+
+        if(_features.begin()->second.find(modality) == _features.begin()->second.end()){
+            std::cerr << "SurfaceOfInterest Error: unknow modality : " << modality << std::endl;
+            return map;
+        }
+
+
+        std::vector<uint32_t> lbls;
+        for(const auto& sv : _supervoxels){
+            lbls.push_back(sv.first);
+            map.emplace(sv.first,0);
+        }
+
+        tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
+                          [&](const tbb::blocked_range<size_t>& r){
+            for(size_t i = r.begin(); i != r.end(); ++i){
+                map[lbls[i]] = classifier.compute_estimation(
+                            _features[lbls[i]][modality],1);
+            }
+        });
+
+        return map;
+    }
 
     /**
      * @brief choose randomly one soi
@@ -239,12 +273,67 @@ public:
 
     
 
+    PointCloudT getColoredWeightedCloud(const std::string &modality);
 
 
     void neighbor_bluring(const std::string& modality, double cst, int lbl);
     void adaptive_threshold(const std::string& modality, int lbl);
     pcl::PointCloud<pcl::PointXYZI> cumulative_relevance_map(std::vector<pcl::PointCloud<pcl::PointXYZI>> list_weights);
+    /**
+     * @brief return region of salient supervoxels for the given modality and threshold
+     * @param modality
+     * @param saliency threshold
+     */
+    std::vector<std::vector<uint32_t>> extract_regions(const std::string &modality, double saliency_threshold)
+    {
+        std::vector<uint32_t> label_set;
+        std::vector<std::vector<uint32_t>> regions;
 
+        std::function<void (std::vector<uint32_t>&, uint32_t)> _add_supervoxels_to_region = [&](std::vector<uint32_t>& region, uint32_t sv_label) {
+            double weight = _weights[modality][sv_label];
+            auto it = find(label_set.begin(), label_set.end(), sv_label);
+
+            if (weight > saliency_threshold && it == label_set.end()) {
+                label_set.push_back(sv_label);
+                region.push_back(sv_label);
+
+                for (auto adj_it = _adjacency_map.equal_range(sv_label).first;
+                     adj_it != _adjacency_map.equal_range(sv_label).second; adj_it++) {
+                    _add_supervoxels_to_region(region, adj_it->second);
+                }
+            }
+        };
+
+        for (auto it = _supervoxels.begin(); it != _supervoxels.end(); it++){
+            std::vector<uint32_t> region;
+            _add_supervoxels_to_region(region, it->first);
+
+            if (region.size() > 0) {
+                regions.push_back(region);
+            }
+        }
+
+        return regions;
+    }
+
+    /**
+     * @brief return non salient supervoxels for the given modality and threshold
+     * @param modality
+     * @param saliency threshold
+     */
+    std::vector<uint32_t> extract_background(const std::string &modality, double saliency_threshold)
+    {
+        std::vector<uint32_t> background;
+
+        for (auto it = _supervoxels.begin(); it != _supervoxels.end(); it++){
+            double weight = _weights[modality][it->first];
+            if (weight < saliency_threshold) {
+                background.push_back(it->first);
+            }
+        }
+
+        return background;
+    }
 
 private :
     std::vector<uint32_t> _labels;

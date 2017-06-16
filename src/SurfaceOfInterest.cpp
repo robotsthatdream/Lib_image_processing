@@ -307,3 +307,26 @@ pcl::PointCloud<pcl::PointXYZI> SurfaceOfInterest::cumulative_relevance_map(std:
 
 
 
+//PointCloudT SurfaceOfInterest::getColoredWeightedCloud(saliency_map_t &map){
+
+//    PointCloudT result;
+
+//    for(const auto& e : map){
+//        pcl::Supervoxel<PointT>::Ptr current_sv = _supervoxels[e.first];
+//        float c = 255.*e.second;
+//        uint8_t color = c;
+
+//        for(auto v : *(current_sv->voxels_)){
+//            PointT pt;
+//            pt.x = v.x;
+//            pt.y = v.y;
+//            pt.z = v.z;
+//            pt.r = color;
+//            pt.g = color;
+//            pt.b = color;
+//            result.push_back(pt);
+//        }
+//    }
+
+//    return result;
+//}

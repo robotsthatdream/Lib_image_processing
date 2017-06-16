@@ -17,8 +17,6 @@ typedef pcl::PointCloud<pcl::PointXYZ> PointCloudXYZ;
 typedef std::map<uint32_t, pcl::Supervoxel<PointT>::Ptr> SupervoxelArray;
 typedef std::multimap<uint32_t, uint32_t> AdjacencyMap;
 typedef std::map<uint32_t, std::vector<cv::Point2f>> Superpixels;
-typedef std::map<uint32_t, double> SaliencyMap;
-typedef std::function<Eigen::VectorXd(pcl::Supervoxel<PointT>::Ptr)> features_extractor_t;
 
 }
 
