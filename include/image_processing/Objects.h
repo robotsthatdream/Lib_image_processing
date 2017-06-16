@@ -2,6 +2,7 @@
 #define _OBJECTS_H
 
 #include <iterator>
+#include <cstdio>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/vector.hpp>
@@ -11,7 +12,7 @@
 #include "image_processing/tools.hpp"
 #include "image_processing/pcl_types.h"
 #include "image_processing/pcl_serialization.h"
-#include "image_processing/SupervoxelSet.h"
+#include "image_processing/SurfaceOfInterest.h"
 
 
 namespace image_processing{
@@ -48,24 +49,23 @@ public:
 
   Object() {}
 
-  Object(classifier_t classifier, features_extractor_t features_extractor) :
-    _classifier(classifier), _features_extractor(features_extractor) {}
+  Object(classifier_t classifier, std::string modality) :
+    _classifier(classifier), _modality(modality) {}
 
   Object(const Object& obj) :
-    _classifier(obj._classifier), _features_extractor(obj._features_extractor) {}
+    _classifier(obj._classifier), _modality(obj._modality) {}
 
   ~Object() {}
 
   classifier_t get_classifier() {return _classifier;}
 
-  SaliencyMap get_saliency_map(SupervoxelSet& supervoxels);
+  std::string get_modality() {return _modality;}
 
-  void set_initial(SupervoxelSet& initial_supervoxels,
-                   uint32_t initial_label);
+  void set_initial(SurfaceOfInterest& initial_surface);
 
   PointCloudT::Ptr get_initial_cloud() {return _initial_cloud;}
 
-  void set_current(SupervoxelSet& current_supervoxels,
+  void set_current(SurfaceOfInterest& current_surface,
                    Eigen::Affine3f& transformation);
 
   PointCloudT::Ptr get_transformed_initial_cloud() {return _transformed_initial_cloud;}
@@ -75,48 +75,44 @@ public:
 private:
 
   classifier_t _classifier;
-  features_extractor_t _features_extractor;
+  std::string _modality;
 
   SupervoxelArray _initial_hyp;
+  saliency_map_t _initial_map;
   PointCloudT::Ptr _initial_cloud;
 
   SupervoxelArray _current_hyp;
+  saliency_map_t _current_map;
   PointCloudT::Ptr _transformed_initial_cloud;
   PointCloudT::Ptr _current_cloud;
 };
 
-
 template<typename classifier_t>
-SaliencyMap Object<classifier_t>::get_saliency_map(SupervoxelSet& supervoxels)
+void Object<classifier_t>::set_initial(SurfaceOfInterest& initial_surface)
 {
-  SaliencyMap weights;
+  _initial_hyp.clear();
 
-  SupervoxelArray svs = supervoxels.getSupervoxels();
-  for (const auto& sv : svs)
+  _initial_map = initial_surface.compute_saliency_map(_modality, _classifier);
+
+  std::vector<uint32_t> candidates;
+  for (const auto& e : _initial_map)
   {
-    Eigen::VectorXd features = _features_extractor(sv.second);
-    weights[sv.first] = _classifier.compute_estimation(features, 1);
+    if (e.second > 0.5) {
+      candidates.push_back(e.first);
+    }
   }
 
-  return weights;
-}
+  std::cout << candidates.size() << " candidates among " << _initial_map.size() << '\n';
 
-template<typename classifier_t>
-void Object<classifier_t>::set_initial(SupervoxelSet& initial_supervoxels,
-                                          uint32_t initial_label)
-{
-  SupervoxelArray hyp;
+  SupervoxelArray svs = initial_surface.getSupervoxels();
+  uint32_t initial_label = candidates[rand() % candidates.size()];
+  std::vector<uint32_t> labels = initial_surface.getNeighbor(initial_label);
 
-  SupervoxelArray svs = initial_supervoxels.getSupervoxels();
-  std::vector<uint32_t> labels = initial_supervoxels.getNeighbor(initial_label);
-
-  hyp[initial_label] = svs[initial_label];
+  _initial_hyp[initial_label] = svs[initial_label];
   for (size_t i = 0; i < labels.size(); i++)
   {
-    hyp[labels[i]] = svs[labels[i]];
+    _initial_hyp[labels[i]] = svs[labels[i]];
   }
-
-  _initial_hyp = hyp;
 
   // update initial cloud
   _initial_cloud = PointCloudT::Ptr(new PointCloudT);
@@ -137,20 +133,23 @@ void Object<classifier_t>::set_initial(SupervoxelSet& initial_supervoxels,
 }
 
 template<typename classifier_t>
-void Object<classifier_t>::set_current(SupervoxelSet& current_supervoxels,
-                                          Eigen::Affine3f& transformation)
+void Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
+                                       Eigen::Affine3f& transformation)
 {
   // update transformed initial cloud
   _transformed_initial_cloud = PointCloudT::Ptr(new PointCloudT);
   pcl::transformPointCloud<PointT>(*_initial_cloud, *_transformed_initial_cloud, transformation);
 
-  SupervoxelArray hyp;
+  _current_hyp.clear();
 
-  SupervoxelArray svs = current_supervoxels.getSupervoxels();
-  uint32_t min_label = 0;
-  double min_distance = std::numeric_limits<double>::max();
+  _current_map = current_surface.compute_saliency_map(_modality, _classifier);
+
+  SupervoxelArray svs = current_surface.getSupervoxels();
   for (const auto& initial_sv : _initial_hyp)
   {
+    uint32_t min_label = 0;
+    double min_distance = std::numeric_limits<double>::max();
+
     // find closest current supervoxels in image plan
     for (const auto& current_sv : svs)
     {
@@ -176,19 +175,17 @@ void Object<classifier_t>::set_current(SupervoxelSet& current_supervoxels,
 
       double coherence = tools::cloud_distance(transformed_initial_sv, *(min_sv->voxels_));
       if (coherence < 0.01) {
-        Eigen::VectorXd features = _features_extractor(initial_sv.second);
+        Eigen::VectorXd features = current_surface.get_feature(initial_sv.first, _modality);
         _classifier.add(features, 1);
 
-        hyp[min_label] = min_sv;
+        _current_hyp[min_label] = min_sv;
       }
       else {
-        Eigen::VectorXd features = _features_extractor(initial_sv.second);
+        Eigen::VectorXd features = current_surface.get_feature(initial_sv.first, _modality);
         _classifier.add(features, 0);
       }
     }
   }
-
-  _current_hyp = hyp;
 
   // update current cloud
   _current_cloud = PointCloudT::Ptr(new PointCloudT);

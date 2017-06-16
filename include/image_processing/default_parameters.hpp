@@ -7,11 +7,7 @@ namespace parameters{
 
     struct supervoxel{
         static constexpr bool use_transform = false;
-<<<<<<< HEAD
-        static constexpr float voxel_resolution = 0.005f;
-=======
-        static constexpr float voxel_resolution = 0.001f;
->>>>>>> added ObjectHyp class
+        static constexpr float voxel_resolution = 0.008f;
         static constexpr float color_importance = 0.2f;
         static constexpr float spatial_importance = 0.4f;
         static constexpr float normal_importance = 0.4f;
