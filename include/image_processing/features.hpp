@@ -188,7 +188,7 @@ struct features_fct{
                 HistogramFactory hf(5,3,bounds);
                 hf.compute(sv.second);
 
-                sample.resize(15);
+                Eigen::VectorXd sample(15);
                 int k = 0 , l = 0;
                 for(int i = 0; i < 15; i++){
                     sample(i) = hf.get_histogram()[k](l);
