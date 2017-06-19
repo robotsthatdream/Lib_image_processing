@@ -19,6 +19,34 @@ struct features_fct{
         std::map<std::string,function_t> map;
         map.emplace("merged",
                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+
+            PointCloudT::Ptr centroids(new PointCloudT);
+            PointCloudN::Ptr centroids_n(new PointCloudN);
+            std::map<uint32_t, int> centroids_lbl;
+
+            int i = 0;
+            for(auto it = supervoxels.begin()
+                ; it != supervoxels.end(); it++){
+                pcl::Supervoxel<PointT>::Ptr supervoxel = it->second;
+                centroids->push_back(supervoxel->centroid_);
+                centroids_n->push_back(supervoxel->normal_);
+                centroids_lbl.insert(std::pair<uint32_t,int>(it->first,i));
+                i++;
+            }
+
+            pcl::FPFHEstimation<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
+            fpfh.setInputCloud(centroids);
+            fpfh.setInputNormals(centroids_n);
+
+            pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
+            fpfh.setSearchMethod(tree);
+            fpfh.setRadiusSearch (0.05);
+
+
+            pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
+            fpfh.compute(*fpfh_cloud);
+
+
             for(const auto& sv : supervoxels){
                 Eigen::VectorXd sample;
 
@@ -34,7 +62,7 @@ struct features_fct{
                 hf_color.compute(sv.second);
                 hf_normal.compute(sv.second,"normal");
 
-                sample.resize(30);
+                sample.resize(63);
                 int k = 0 , l = 0;
                 for(int i = 0; i < 15; i++){
                     sample(i) = hf_color.get_histogram()[k](l);
@@ -47,7 +75,46 @@ struct features_fct{
                     k = (k+1)%3;
                     l = (l+1)%5;
                 }
+
+                for(int i = 30; i < 63; ++i){
+                    sample(i) = fpfh_cloud->points[centroids_lbl[sv.first]].histogram[i]/100.;
+                }
+
                 features[sv.first]["merged"] = sample;
+            }
+        });
+
+        map.emplace("colorNormalHist",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            for(const auto& sv : supervoxels){
+                Eigen::VectorXd sample;
+
+                Eigen::MatrixXd bounds_c(2,3);
+                bounds_c << 0,0,0,
+                        1,1,1;
+
+                Eigen::MatrixXd bounds_n(2,3);
+                bounds_n << -1,-1,-1,
+                        1,1,1;
+                HistogramFactory hf_color(5,3,bounds_c);
+                HistogramFactory hf_normal(5,3,bounds_n);
+                hf_color.compute(sv.second);
+                hf_normal.compute(sv.second,"normal");
+
+                sample.resize(33);
+                int k = 0 , l = 0;
+                for(int i = 0; i < 15; i++){
+                    sample(i) = hf_color.get_histogram()[k](l);
+                    k = (k+1)%3;
+                    l = (l+1)%5;
+                }
+                l = 0; k = 0;
+                for(int i = 15; i < 30; i++){
+                    sample(i) = hf_normal.get_histogram()[k](l);
+                    k = (k+1)%3;
+                    l = (l+1)%5;
+                }
+                features[sv.first]["colorNormalHist"] = sample;
             }
         });
 
@@ -156,6 +223,26 @@ struct features_fct{
                 HistogramFactory hf(5,3,bounds);
                 hf.compute(sv.second,"normal");
                 features[sv.first]["normalZ"] = hf.get_histogram()[2];
+            }
+        });
+
+        map.emplace("normalHist",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            for(const auto& sv: supervoxels){
+                Eigen::MatrixXd bounds(2,3);
+                bounds << -1,-1,-1,
+                        1,1,1;
+                HistogramFactory hf(5,3,bounds);
+                hf.compute(sv.second,"normal");
+
+                Eigen::VectorXd sample(15);
+                int k = 0 , l = 0;
+                for(int i = 0; i < 15; i++){
+                    sample(i) = hf.get_histogram()[k](l);
+                    k = (k+1)%3;
+                    l = (l+1)%5;
+                }
+                features[sv.first]["normalHist"] = sample;
             }
         });
 
