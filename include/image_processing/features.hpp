@@ -179,6 +179,26 @@ struct features_fct{
             }
         });
 
+        map.emplace("colorHist",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            for(const auto& sv: supervoxels){
+                Eigen::MatrixXd bounds(2,3);
+                bounds << 0,0,0,
+                        1,1,1;
+                HistogramFactory hf(5,3,bounds);
+                hf.compute(sv.second);
+
+                sample.resize(15);
+                int k = 0 , l = 0;
+                for(int i = 0; i < 15; i++){
+                    sample(i) = hf.get_histogram()[k](l);
+                    k = (k+1)%3;
+                    l = (l+1)%5;
+                }
+                features[sv.first]["colorHist"] = sample;
+            }
+        });
+
         map.emplace("normal",
                     [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
@@ -278,6 +298,38 @@ struct features_fct{
                 for(int i = 0; i < 33; ++i){
                    features[feat.second]["fpfh"](i) = fpfh_cloud->points[feat.first].histogram[i]/100.;
                 }
+            }
+        });
+
+        map.emplace("colorHSVNormal",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            for(const auto& sv : supervoxels){
+                float hsv[3];
+                tools::rgb2hsv(sv.second->centroid_.r,
+                               sv.second->centroid_.g,
+                               sv.second->centroid_.b,
+                               hsv[0],hsv[1],hsv[2]);
+
+                Eigen::VectorXd new_s(6);
+                new_s << sv.second->normal_.normal[0],
+                        sv.second->normal_.normal[1],
+                        sv.second->normal_.normal[2]
+                        , hsv[0], hsv[1], hsv[2];
+                features[sv.first]["colorHSVnormal"] = new_s;
+            }
+        });
+
+        map.emplace("colorHSVNormal",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            for(const auto& sv : supervoxels){
+                Eigen::VectorXd new_s(6);
+                new_s << sv.second->normal_.normal[0],
+                        sv.second->normal_.normal[1],
+                        sv.second->normal_.normal[2],
+                        sv.second->centroid_.r,
+                        sv.second->centroid_.g,
+                        sv.second->centroid_.b;
+                features[sv.first]["colorHSVnormal"] = new_s;
             }
         });
 
