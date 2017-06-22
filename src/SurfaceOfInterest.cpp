@@ -9,7 +9,7 @@ bool SurfaceOfInterest::generate(workspace_t &workspace){
     if(!computeSupervoxel(workspace))
 	return false;
 
-    init_weights("merged");
+    init_weights("random");
     return true;
 }
 
@@ -18,7 +18,7 @@ bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, workspace_t &
     if(!computeSupervoxel(workspace))
 	return false;
 
-    init_weights("merged",0.);
+    init_weights("keyPts",0.);
     find_soi(key_pts);
     return true;
 }
@@ -29,7 +29,7 @@ bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, workspace_t 
     if(!computeSupervoxel(workspace))
 	return false;
 
-    init_weights("merged");
+    init_weights("expert");
     return true;
 }
 
@@ -40,7 +40,7 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
     std::map<int, uint32_t> centroids_label;
     _labels.clear();
     _labels_no_soi.clear();
-    _weights["merged"].clear();
+    _weights["keyPts"].clear();
     getCentroidCloud(centr, centroids_label);
     PointCloudXYZ::Ptr centroids(new PointCloudXYZ);
     for(int i = 0; i < centr.size(); i++){
@@ -79,7 +79,7 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
 
 
     for(auto it = result.begin(); it != result.end(); it++)
-        _weights["merged"].emplace(it->first,1.);
+        _weights["keyPts"].emplace(it->first,1.);
 
 
 //    for(auto it = no_result.begin(); it != no_result.end(); it++)

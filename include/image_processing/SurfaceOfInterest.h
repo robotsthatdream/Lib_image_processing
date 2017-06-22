@@ -43,7 +43,8 @@ public:
      * @brief default constructor
      */
     SurfaceOfInterest() : SupervoxelSet(){
-        _gen.seed(std::time(0));
+        srand(time(NULL));
+        _gen.seed(rand());
     }
 
     /**
@@ -51,7 +52,8 @@ public:
      * @param input cloud
      */
     SurfaceOfInterest(const PointCloudT::Ptr& cloud) : SupervoxelSet(cloud){
-        _gen.seed(std::time(0));
+        srand(time(NULL));
+        _gen.seed(rand());
     }
     /**
      * @brief copy constructor
@@ -61,10 +63,10 @@ public:
         SupervoxelSet(soi),
         _weights(soi._weights),
         _labels(soi._labels),
-        _labels_no_soi(_labels_no_soi)
+        _labels_no_soi(_labels_no_soi),
+        _gen(soi._gen)
     {
-        _gen.seed(std::time(0));
-//        _weights.emplace("colorH",saliency_map_t());
+        //        _weights.emplace("colorH",saliency_map_t());
 //        _weights.emplace("colorS",saliency_map_t());
 //        _weights.emplace("colorV",saliency_map_t());
 //        _weights.emplace("normalX",saliency_map_t());
@@ -78,7 +80,8 @@ public:
      * @param super
      */
     SurfaceOfInterest(const SupervoxelSet& super) : SupervoxelSet(super){
-        _gen.seed(std::time(0));
+        srand(time(NULL));
+        _gen.seed(rand());
     }
 
     /**

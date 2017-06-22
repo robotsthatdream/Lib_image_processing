@@ -101,7 +101,7 @@ struct features_fct{
                 hf_color.compute(sv.second);
                 hf_normal.compute(sv.second,"normal");
 
-                sample.resize(33);
+                sample.resize(30);
                 int k = 0 , l = 0;
                 for(int i = 0; i < 15; i++){
                     sample(i) = hf_color.get_histogram()[k](l);
@@ -315,11 +315,11 @@ struct features_fct{
                         sv.second->normal_.normal[1],
                         sv.second->normal_.normal[2]
                         , hsv[0], hsv[1], hsv[2];
-                features[sv.first]["colorHSVnormal"] = new_s;
+                features[sv.first]["colorHSVNormal"] = new_s;
             }
         });
 
-        map.emplace("colorHSVNormal",
+        map.emplace("colorRGBNormal",
                     [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 Eigen::VectorXd new_s(6);
@@ -329,7 +329,7 @@ struct features_fct{
                         sv.second->centroid_.r,
                         sv.second->centroid_.g,
                         sv.second->centroid_.b;
-                features[sv.first]["colorHSVnormal"] = new_s;
+                features[sv.first]["colorRGBNormal"] = new_s;
             }
         });
 
