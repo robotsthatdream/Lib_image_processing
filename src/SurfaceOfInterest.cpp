@@ -373,28 +373,3 @@ std::vector<uint32_t> SurfaceOfInterest::extract_background(const std::string &m
 
     return background;
 }
-
-std::vector<Object> SurfaceOfInterest::get_objects(const std::string &modality, double &saliency_threshold, int &points_threshold){
-    std::vector<Object> objs;
-
-    std::map<pcl::Supervoxel<PointT>::Ptr, int> clusters = get_supervoxels_clusters(modality, saliency_threshold);
-
-    int current_id = -1;
-    PointCloudT::Ptr current_cloud;
-
-    for (auto it = clusters.begin(); it != clusters.end(); it++){
-        if (current_id == it->second){
-            *current_cloud += *(it->first->voxels_);
-        }
-        else {
-            if (current_id != -1 && current_cloud->size() > points_threshold) {
-                Object obj(*current_cloud);
-                objs.push_back(obj);
-            }
-            current_id = it->second;
-            current_cloud.reset(new PointCloudT());
-            *current_cloud += *(it->first->voxels_);
-        }
-    }
-    return objs;
-}

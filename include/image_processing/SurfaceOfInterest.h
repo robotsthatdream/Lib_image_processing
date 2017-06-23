@@ -302,19 +302,7 @@ public:
      * @param saliency threshold
      * @return a vector of supervoxels' labels that are not salient
      */
-    std::vector<uint32_t> extract_background(const std::string &modality, double saliency_threshold)
-    {
-        std::vector<uint32_t> background;
-
-        for (auto it = _supervoxels.begin(); it != _supervoxels.end(); it++){
-            double weight = _weights[modality][it->first];
-            if (weight < saliency_threshold) {
-                background.push_back(it->first);
-            }
-        }
-
-        return background;
-    }
+    std::vector<uint32_t> extract_background(const std::string &modality, double saliency_threshold);
 
 private :
     std::vector<uint32_t> _labels;
