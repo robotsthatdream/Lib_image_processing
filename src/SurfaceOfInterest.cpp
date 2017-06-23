@@ -250,3 +250,71 @@ PointCloudT SurfaceOfInterest::getColoredWeightedCloud(saliency_map_t &map){
 
     return result;
 }
+
+std::vector<std::vector<uint32_t>> SurfaceOfInterest::extract_regions(const std::string &modality, double saliency_threshold)
+{
+    std::vector<uint32_t> label_set;
+    std::vector<std::vector<uint32_t>> regions;
+
+    std::function<void (std::vector<uint32_t>&, uint32_t)> _add_supervoxels_to_region = [&](std::vector<uint32_t>& region, uint32_t sv_label) {
+        double weight = _weights[modality][sv_label];
+        auto it = find(label_set.begin(), label_set.end(), sv_label);
+
+        if (weight > saliency_threshold && it == label_set.end()) {
+            label_set.push_back(sv_label);
+            region.push_back(sv_label);
+
+            for (auto adj_it = _adjacency_map.equal_range(sv_label).first;
+                 adj_it != _adjacency_map.equal_range(sv_label).second; adj_it++) {
+                _add_supervoxels_to_region(region, adj_it->second);
+            }
+        }
+    };
+
+    for (auto it = _supervoxels.begin(); it != _supervoxels.end(); it++){
+        std::vector<uint32_t> region;
+        _add_supervoxels_to_region(region, it->first);
+
+        if (region.size() > 0) {
+            regions.push_back(region);
+        }
+    }
+
+    return regions;
+}
+
+std::vector<uint32_t> SurfaceOfInterest::get_region_at(const std::string &modality, double saliency_threshold, Eigen::Vector4d center)
+{
+    std::vector<std::vector<uint32_t>> regions = extract_regions(modality, saliency_threshold);
+
+    std::vector<uint32_t> closest_region;
+    double closest_d = std::numeric_limits<double>::max();
+    for (const auto& region : regions) {
+        Eigen::Vector4d r_center;
+        pcl::compute3DCentroid<PointT>(get_cloud(region), r_center);
+        double dx = r_center[0] - center[0];
+        double dy = r_center[1] - center[1];
+        double dz = r_center[2] - center[2];
+        double d = dx*dx + dy*dy + dz*dz;
+        if (d < closest_d) {
+            closest_region = region;
+            closest_d = d;
+        }
+    }
+
+    return closest_region;
+}
+
+std::vector<uint32_t> SurfaceOfInterest::extract_background(const std::string &modality, double saliency_threshold)
+{
+    std::vector<uint32_t> background;
+
+    for (auto it = _supervoxels.begin(); it != _supervoxels.end(); it++){
+        double weight = _weights[modality][it->first];
+        if (weight < saliency_threshold) {
+            background.push_back(it->first);
+        }
+    }
+
+    return background;
+}

@@ -252,60 +252,29 @@ public:
 	  std::map<std::string,saliency_map_t> get_weights(){return _weights;}
 
     /**
-     * @brief return region of salient supervoxels for the given modality and threshold
+     * @brief return regions of salient supervoxels for the given modality and threshold
      * @param modality
      * @param saliency threshold
+     * @return a vector of region (a region is a vector of supervoxels' labels)
      */
-    std::vector<std::vector<uint32_t>> extract_regions(const std::string &modality, double saliency_threshold)
-    {
-        std::vector<uint32_t> label_set;
-        std::vector<std::vector<uint32_t>> regions;
+    std::vector<std::vector<uint32_t>> extract_regions(const std::string &modality, double saliency_threshold);
 
-        std::function<void (std::vector<uint32_t>&, uint32_t)> _add_supervoxels_to_region = [&](std::vector<uint32_t>& region, uint32_t sv_label) {
-            double weight = _weights[modality][sv_label];
-            auto it = find(label_set.begin(), label_set.end(), sv_label);
-
-            if (weight > saliency_threshold && it == label_set.end()) {
-                label_set.push_back(sv_label);
-                region.push_back(sv_label);
-
-                for (auto adj_it = _adjacency_map.equal_range(sv_label).first;
-                     adj_it != _adjacency_map.equal_range(sv_label).second; adj_it++) {
-                    _add_supervoxels_to_region(region, adj_it->second);
-                }
-            }
-        };
-
-        for (auto it = _supervoxels.begin(); it != _supervoxels.end(); it++){
-            std::vector<uint32_t> region;
-            _add_supervoxels_to_region(region, it->first);
-
-            if (region.size() > 0) {
-                regions.push_back(region);
-            }
-        }
-
-        return regions;
-    }
+    /**
+     * @brief return the closest region for the given center
+     * @param modality
+     * @param saliency threshold
+     * @param center
+     * @return a vector of supervoxels' labels that are in the closest region
+     */
+    std::vector<uint32_t> get_region_at(const std::string &modality, double saliency_threshold, Eigen::Vector4d center);
 
     /**
      * @brief return non salient supervoxels for the given modality and threshold
      * @param modality
      * @param saliency threshold
+     * @return a vector of supervoxels' labels that are not salient
      */
-    std::vector<uint32_t> extract_background(const std::string &modality, double saliency_threshold)
-    {
-        std::vector<uint32_t> background;
-
-        for (auto it = _supervoxels.begin(); it != _supervoxels.end(); it++){
-            double weight = _weights[modality][it->first];
-            if (weight < saliency_threshold) {
-                background.push_back(it->first);
-            }
-        }
-
-        return background;
-    }
+    std::vector<uint32_t> extract_background(const std::string &modality, double saliency_threshold);
 
 private :
     std::vector<uint32_t> _labels;
