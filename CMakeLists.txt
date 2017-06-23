@@ -7,7 +7,7 @@ set(SOURCE_FILES src/DescriptorExtraction.cpp
     src/SurfaceOfInterest.cpp
     src/BabblingDataset.cpp
 	  src/HistogramFactory.cpp
-    src/Objects.cpp
+    src/Object.cpp
     src/tools.cpp
 )
 

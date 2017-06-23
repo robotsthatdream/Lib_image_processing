@@ -545,3 +545,16 @@ void SupervoxelSet::getColoredCloud(PointCloudT& cloud){
         }
     }
 }
+
+PointCloudT SupervoxelSet::get_cloud(std::vector<uint32_t> sv_list){
+    PointCloudT cloud;
+
+    for (const auto& label : sv_list){
+        for (const auto& pt : *(_supervoxels[label]->voxels_)){
+            PointT n_pt(pt);
+            cloud.push_back(n_pt);
+        }
+    }
+
+    return cloud;
+}

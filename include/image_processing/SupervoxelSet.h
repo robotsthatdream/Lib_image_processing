@@ -79,10 +79,10 @@ public :
     typedef std::map<uint32_t,std::map<std::string,Eigen::VectorXd>> features_t;
 
     SupervoxelSet(){
-//        init<supervoxel>();
+        init<supervoxel>();
     }
     SupervoxelSet(const PointCloudT::Ptr& cloud) : _inputCloud(cloud){
-//        init<supervoxel>();
+        init<supervoxel>();
     }
     SupervoxelSet(const SupervoxelSet& super) :
         _inputCloud(super._inputCloud),
@@ -303,6 +303,13 @@ public :
 
     const std::map<std::string, Eigen::VectorXd>& get_features(uint32_t lbl){return _features[lbl];}
     Eigen::VectorXd get_feature(uint32_t lbl,std::string name){return _features[lbl][name];}
+
+    /**
+     * @brief extract the cloud from a list of supervoxels
+     * @param sv_list : list of supervoxels' labels
+     * @return PointCloudT
+     */
+    PointCloudT get_cloud(std::vector<uint32_t> sv_list);
     //---------------------------------------------------------
 
 protected:

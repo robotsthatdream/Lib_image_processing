@@ -1,7 +1,4 @@
-#include <limits>
-#include <cmath>
-
-#include "image_processing/Objects.h"
+#include "image_processing/Object.h"
 
 using namespace image_processing;
 
