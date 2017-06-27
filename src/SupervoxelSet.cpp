@@ -317,9 +317,17 @@ void SupervoxelSet::remove(uint32_t label){
 }
 
 void SupervoxelSet::clear(){
-    for(auto it = _supervoxels.begin();it != _supervoxels.end();it++){
+//    for(auto it = _supervoxels.begin();it != _supervoxels.end();it++){
+//        std::cout << "remove !" << std::endl;
+//        remove(it->first);
+//    }
+
+    auto it = _supervoxels.begin();
+    while(it != _supervoxels.end()){
         remove(it->first);
+        it = _supervoxels.begin();
     }
+
     _extractor.reset(new pcl::SupervoxelClustering<PointT>(supervoxel::voxel_resolution,supervoxel::seed_resolution,supervoxel::use_transform));
 }
 

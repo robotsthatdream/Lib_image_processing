@@ -66,14 +66,16 @@ struct features_fct{
                 int k = 0 , l = 0;
                 for(int i = 0; i < 15; i++){
                     sample(i) = hf_color.get_histogram()[k](l);
-                    k = (k+1)%3;
                     l = (l+1)%5;
+                    if(l == 0)
+                        k++;
                 }
                 l = 0; k = 0;
                 for(int i = 15; i < 30; i++){
                     sample(i) = hf_normal.get_histogram()[k](l);
-                    k = (k+1)%3;
                     l = (l+1)%5;
+                    if(l == 0)
+                        k++;
                 }
 
                 for(int i = 30; i < 63; ++i){
@@ -96,23 +98,25 @@ struct features_fct{
                 Eigen::MatrixXd bounds_n(2,3);
                 bounds_n << -1,-1,-1,
                         1,1,1;
-                HistogramFactory hf_color(5,3,bounds_c);
+                HistogramFactory hf_color(10,3,bounds_c);
                 HistogramFactory hf_normal(5,3,bounds_n);
                 hf_color.compute(sv.second);
                 hf_normal.compute(sv.second,"normal");
 
-                sample.resize(30);
+                sample.resize(45);
                 int k = 0 , l = 0;
-                for(int i = 0; i < 15; i++){
+                for(int i = 0; i < 30; i++){
                     sample(i) = hf_color.get_histogram()[k](l);
-                    k = (k+1)%3;
-                    l = (l+1)%5;
+                    l = (l+1)%10;
+                    if(l == 0)
+                        k++;
                 }
                 l = 0; k = 0;
-                for(int i = 15; i < 30; i++){
+                for(int i = 30; i < 45; i++){
                     sample(i) = hf_normal.get_histogram()[k](l);
-                    k = (k+1)%3;
                     l = (l+1)%5;
+                    if(l == 0)
+                        k++;
                 }
                 features[sv.first]["colorNormalHist"] = sample;
             }
@@ -185,15 +189,16 @@ struct features_fct{
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
                         1,1,1;
-                HistogramFactory hf(5,3,bounds);
+                HistogramFactory hf(10,3,bounds);
                 hf.compute(sv.second);
 
-                Eigen::VectorXd sample(15);
+                Eigen::VectorXd sample(30);
                 int k = 0 , l = 0;
-                for(int i = 0; i < 15; i++){
+                for(int i = 0; i < 30; i++){
                     sample(i) = hf.get_histogram()[k](l);
-                    k = (k+1)%3;
-                    l = (l+1)%5;
+                    l = (l+1)%10;
+                    if(l == 0)
+                        k++;
                 }
                 features[sv.first]["colorHist"] = sample;
             }
@@ -259,8 +264,9 @@ struct features_fct{
                 int k = 0 , l = 0;
                 for(int i = 0; i < 15; i++){
                     sample(i) = hf.get_histogram()[k](l);
-                    k = (k+1)%3;
                     l = (l+1)%5;
+                    if(l == 0)
+                        k++;
                 }
                 features[sv.first]["normalHist"] = sample;
             }
