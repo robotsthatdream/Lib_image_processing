@@ -30,6 +30,11 @@ namespace tools{
  * @param output cloud
  */
     void cloudRGB2HSV(const PointCloudT::Ptr input, PointCloudHSV::Ptr output);
+
+    void rgb2Lab(int r, int g, int b, float& L, float& a, float& b2);
+
+
+
 }//tools
 }//image_processing
 

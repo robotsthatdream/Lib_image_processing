@@ -74,6 +74,21 @@ void HistogramFactory::compute(const cv::Mat& image){
 
 }
 
+void HistogramFactory::compute(const std::vector<Eigen::VectorXd>& data){
+    double bin;
+    for(const auto& v: data){
+        for(int i = 0; i < _dim; ++i){
+            bin = (v[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
+            if(bin >= _bins) bin -= 1;
+            _histogram[i](std::trunc(bin))++;
+        }
+    }
+    for(int i = 0; i < _dim; i++){
+        for(int j = 0; j < _bins; j++){
+            _histogram[i](j) = _histogram[i](j)/((double)data.size());
+        }
+    }
+}
 
 double HistogramFactory::chi_squared_distance(const Eigen::VectorXd& hist1, const Eigen::VectorXd &hist2){
 

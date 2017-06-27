@@ -42,6 +42,12 @@ public:
     void compute(const cv::Mat &image);
 
     /**
+     * @brief compute the histograms of the set (data) of vectors according to the dim and the number of bins.
+     * @param set of vectors
+     */
+    void compute(const std::vector<Eigen::VectorXd>& data);
+
+    /**
      * @brief chi_squared_distance
      * @param hist1
      * @param hist2
