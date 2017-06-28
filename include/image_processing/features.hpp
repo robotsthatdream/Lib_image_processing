@@ -181,15 +181,17 @@ struct features_fct{
                for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
                    float Lab[3];
                    tools::rgb2Lab(it->r,it->g,it->b,Lab[0],Lab[1],Lab[2]);
-                   data.push_back(Eigen::VectorXd(3));
-                   data.back()[0] = Lab[0];
-                   data.back()[1] = Lab[1];
-                   data.back()[2] = Lab[2];
+                   Eigen::VectorXd vect(3);
+                   vect(0) = Lab[0];
+                   vect(1) = Lab[1];
+                   vect[2] = Lab[2];
+                   data.push_back(vect);
                }
                Eigen::MatrixXd bounds(2,3);
-               bounds << 0,0,0,
+               bounds << 0,-1,-1,
                        1,1,1;
                HistogramFactory hf(5,3,bounds);
+               hf.compute(data);
 
                Eigen::VectorXd sample(15);
                int k = 0 , l = 0;
