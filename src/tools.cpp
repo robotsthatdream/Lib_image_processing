@@ -150,16 +150,22 @@ void image_processing::tools::rgb2Lab(int r, int g, int b, float& L, float& a, f
     if (L > 100)
         L = 100.0f;
 
+    L = L/100.0f;
+
     a = 500.0f * (vx - vy);
     if (a > 120)
         a = 120.0f;
     else if (a <- 120)
         a = -120.0f;
 
+    a = a/120.0f;
+
     b2 = 200.0f * (vy - vz);
     if (b2 > 120)
         b2 = 120.0f;
     else if (b2<- 120)
         b2 = -120.0f;
+
+    b2 = b2/120.0f;
 }
 
