@@ -205,6 +205,79 @@ struct features_fct{
            }
         });
 
+        map.emplace("colorL",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            for(const auto& sv: supervoxels){
+                std::vector<Eigen::VectorXd> data;
+                for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
+                    float Lab[3];
+                    tools::rgb2Lab(it->r,it->g,it->b,Lab[0],Lab[1],Lab[2]);
+                    Eigen::VectorXd vect(3);
+                    vect(0) = Lab[0];
+                    vect(1) = Lab[1];
+                    vect[2] = Lab[2];
+                    data.push_back(vect);
+                }
+                Eigen::MatrixXd bounds(2,3);
+                bounds << 0,-1,-1,
+                        1,1,1;
+                HistogramFactory hf(5,3,bounds);
+                hf.compute(data);
+
+                Eigen::VectorXd sample(5);
+                sample = hf.get_histogram()[0];
+                features[sv.first]["colorL"] = sample;
+            }
+        });
+
+        map.emplace("colora",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            for(const auto& sv: supervoxels){
+                std::vector<Eigen::VectorXd> data;
+                for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
+                    float Lab[3];
+                    tools::rgb2Lab(it->r,it->g,it->b,Lab[0],Lab[1],Lab[2]);
+                    Eigen::VectorXd vect(3);
+                    vect(0) = Lab[0];
+                    vect(1) = Lab[1];
+                    vect[2] = Lab[2];
+                    data.push_back(vect);
+                }
+                Eigen::MatrixXd bounds(2,3);
+                bounds << 0,-1,-1,
+                        1,1,1;
+                HistogramFactory hf(5,3,bounds);
+                hf.compute(data);
+
+                Eigen::VectorXd sample(5);
+                sample = hf.get_histogram()[1];
+                features[sv.first]["colora"] = sample;
+            }
+        });
+        map.emplace("colorb",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            for(const auto& sv: supervoxels){
+                std::vector<Eigen::VectorXd> data;
+                for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
+                    float Lab[3];
+                    tools::rgb2Lab(it->r,it->g,it->b,Lab[0],Lab[1],Lab[2]);
+                    Eigen::VectorXd vect(3);
+                    vect(0) = Lab[0];
+                    vect(1) = Lab[1];
+                    vect[2] = Lab[2];
+                    data.push_back(vect);
+                }
+                Eigen::MatrixXd bounds(2,3);
+                bounds << 0,-1,-1,
+                        1,1,1;
+                HistogramFactory hf(5,3,bounds);
+                hf.compute(data);
+
+                Eigen::VectorXd sample(5);
+                sample = hf.get_histogram()[2];
+                features[sv.first]["colorb"] = sample;
+            }
+        });
 
         map.emplace("colorLabNormalHist",
                     [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
