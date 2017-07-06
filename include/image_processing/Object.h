@@ -10,8 +10,8 @@
 #include <boost/serialization/vector.hpp>
 
 #include <pcl/common/transforms.h>
-#include <pcl/tracking/approx_nearest_pair_point_cloud_coherence.h>
-#include <pcl/tracking/nearest_pair_point_cloud_coherence.h>
+#include <pcl/registration/icp.h>
+#include <pcl/octree/octree_search.h>
 #include <pcl/tracking/coherence.h>
 #include <pcl/tracking/distance_coherence.h>
 #include <pcl/tracking/hsv_color_coherence.h>
@@ -62,23 +62,9 @@ public:
 
   PointCloudT::Ptr get_current_cloud() {return _current_cloud;}
 
+  PointCloudT::Ptr get_result_cloud() {return _result_cloud;}
+
 private:
-
-  class _Coherence : public NearestPairPointCloudCoherence<PointT>
-  {
-  public:
-
-    bool initCompute()
-    {
-      return NearestPairPointCloudCoherence::initCompute();
-    }
-
-    void computeCoherence (const PointCloudT::Ptr &cloud, const pcl::IndicesPtr &indices, float &w_j)
-    {
-      NearestPairPointCloudCoherence::computeCoherence(cloud, indices, w_j);
-    }
-
-  };
 
   classifier_t _classifier;
   std::string _saliency_modality;
@@ -93,6 +79,7 @@ private:
   saliency_map_t _current_map;
   PointCloudT::Ptr _transformed_initial_cloud;
   PointCloudT::Ptr _current_cloud;
+  PointCloudT::Ptr _result_cloud;
 };
 
 template<typename classifier_t>
@@ -121,58 +108,73 @@ void Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
                                        Eigen::Affine3f& transformation)
 {
   // set transformation (transformation's origin is the center of initial cloud)
-  Eigen::Vector4f c_initial;
+  Eigen::Vector4d c_initial;
   Eigen::Affine3f trans = Eigen::Affine3f::Identity();
   pcl::compute3DCentroid<PointT>(*_initial_cloud, c_initial);
   trans.translation().matrix() = Eigen::Vector3f(c_initial[0], c_initial[1], c_initial[2]);
 
   transformation = transformation * trans.inverse();
 
-
-  // set target cloud
-  PointCloudT::Ptr target_cloud = PointCloudT::Ptr(new PointCloudT);
-  SupervoxelArray svs = current_surface.getSupervoxels();
-  for (const auto& sv : svs)
-  {
-    for (const auto& pt : *(sv.second->voxels_))
-    {
-      PointT n_pt(pt);
-      target_cloud->push_back(n_pt);
-    }
-  }
-
-
-  // set coherence
-  _Coherence coherence;
-
-  boost::shared_ptr<DistanceCoherence<PointT> > distance_coherence
-    = boost::shared_ptr<DistanceCoherence<PointT> >(new DistanceCoherence<PointT>());
-  coherence.addPointCoherence(distance_coherence);
-
-  boost::shared_ptr<HSVColorCoherence<PointT> > color_coherence
-    = boost::shared_ptr<HSVColorCoherence<PointT> >(new HSVColorCoherence<PointT>());
-  coherence.addPointCoherence(color_coherence);
-
-  // boost::shared_ptr<NormalCoherence<PointT> > normal_coherence
-  //   = boost::shared_ptr<NormalCoherence<PointT> >(new NormalCoherence<PointT>());
-  // coherence.addPointCoherence(normal_coherence);
-
-  boost::shared_ptr<pcl::search::Octree<PointT> > search (new pcl::search::Octree<PointT>(0.01));
-  coherence.setSearchMethod(search);
-  coherence.setMaximumDistance(0.01);
-  coherence.setTargetCloud(target_cloud);
-  coherence.initCompute();
-
-
-  // update transformed initial cloud
+  // first update of transformed initial cloud
   _transformed_initial_cloud = PointCloudT::Ptr(new PointCloudT);
   pcl::transformPointCloud<PointT>(*_initial_cloud, *_transformed_initial_cloud, transformation);
-  _current_map = current_surface.compute_saliency_map(_modality, _classifier);
 
+  // align cloud to improve the correspondance
+  PointCloudT aligned_initial_cloud;
+  pcl::IterativeClosestPoint<PointT, PointT> icp;
+  icp.setInputCloud(_transformed_initial_cloud);
+  icp.setInputTarget(_current_cloud);
+  icp.setMaximumIterations(25);
+  icp.setTransformationEpsilon(1e-9);
+  icp.setMaxCorrespondenceDistance(0.05);
+  icp.setEuclideanFitnessEpsilon(1);
 
-  // gathering training samples
+  icp.align(aligned_initial_cloud);
+
+  // tracking has failed ?
+  if (!icp.hasConverged()){
+    std::cerr << "image processing : tracking might have failed (icp has not converged)" << std::endl;
+    return;
+  }
+
+  Eigen::Affine3f icp_trans;
+  icp_trans.matrix() = icp.getFinalTransformation();
+
+  transformation = icp_trans * transformation;
+
+  // real update of transformed initial cloud
+  _transformed_initial_cloud = PointCloudT::Ptr(new PointCloudT);
+  pcl::transformPointCloud<PointT>(*_initial_cloud, *_transformed_initial_cloud, transformation);
+  Eigen::Vector4d c_transformed_initial;
+  pcl::compute3DCentroid(*_transformed_initial_cloud, c_transformed_initial);
+
+  // set current hypothesis, cloud and map
   _current_hyp.clear();
   _current_cloud = PointCloudT::Ptr(new PointCloudT);
+  SupervoxelArray svs = current_surface.getSupervoxels();
+  std::vector<uint32_t> region = current_surface.get_region_at(_saliency_modality, 0.5, c_transformed_initial);
+  for (const auto& label : region)
+  {
+    _current_hyp[label] = svs[label];
+    for (const auto& pt : *(svs[label]->voxels_))
+    {
+      PointT n_pt(pt);
+      _current_cloud->push_back(n_pt);
+    }
+  }
+  _current_map = current_surface.compute_saliency_map(_modality, _classifier);
+
+  // set coherence and search methods
+  DistanceCoherence<PointT> distance_coherence;
+  HSVColorCoherence<PointT> color_coherence;
+  // NormalCoherence<PointT> normal_coherence;
+
+  pcl::octree::OctreePointCloudSearch<PointT> octree(0.001);
+  octree.setInputCloud(_current_cloud);
+  octree.addPointsFromInputCloud();
+
+  // gathering training samples
+  _result_cloud = PointCloudT::Ptr(new PointCloudT);
   std::vector<Eigen::VectorXd> samples;
   std::vector<uint32_t> labels;
   int n_pos = 0;
@@ -185,17 +187,34 @@ void Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
     // transform the initial supervoxel
     PointCloudT::Ptr transformed_initial_sv = PointCloudT::Ptr(new PointCloudT);
     pcl::transformPointCloud<PointT>(*(initial_sv.second->voxels_), *transformed_initial_sv, transformation);
-    Eigen::Vector4d center;
-    pcl::compute3DCentroid<PointT>(*transformed_initial_sv, center);
 
-    float coherence_w = 0;
-    pcl::IndicesPtr indices;
-    coherence.computeCoherence(transformed_initial_sv, indices, coherence_w);
-    coherence_w /= transformed_initial_sv->size();
+    // compute coherence
+    double w = 0;
+    int nb_pt;
+    for (auto& pt : transformed_initial_sv->points)
+    {
+      std::vector<int> point_idx;
+      std::vector<float> point_distance;
+      octree.nearestKSearch(pt, 1, point_idx, point_distance);
+
+      if (point_distance[0] < 0.005) {
+        double w_pt = 1;
+        w_pt *= distance_coherence.compute(pt, _current_cloud->points[point_idx[0]]);
+        w_pt *= color_coherence.compute(pt, _current_cloud->points[point_idx[0]]);
+        // w_pt *= normal_coherence.compute(pt, _current_cloud->points[point_idx[0]]);
+
+        w += w_pt;
+        nb_pt += 1;
+      }
+    }
+    w /= nb_pt;
+    if (transformed_initial_sv->size() > 2*nb_pt) {
+      w = 0;
+    }
 
     // check coherence;
-    std::cout << "sv coherence : " << coherence_w << '\n';
-    if (coherence_w < - 0.90) {
+    std::cout << "sv coherence : " << w << "(" << nb_pt << "/" << transformed_initial_sv->size() << ")" << std::endl;
+    if (w > 0.90) {
       Eigen::VectorXd features = current_surface.get_feature(initial_sv.first, _modality);
       samples.push_back(features);
       labels.push_back(1);
@@ -210,7 +229,7 @@ void Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
         new_pt.r = 0;
         new_pt.g = 255;
         new_pt.b = 0;
-        _current_cloud->push_back(new_pt);
+        _result_cloud->push_back(new_pt);
       }
     }
     else {
@@ -228,13 +247,13 @@ void Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
         new_pt.r = 255;
         new_pt.g = 0;
         new_pt.b = 0;
-        _current_cloud->push_back(new_pt);
+        _result_cloud->push_back(new_pt);
       }
     }
   }
 
   // the object has moved ?
-  Eigen::Vector4f c_current;
+  Eigen::Vector4d c_current;
   pcl::compute3DCentroid<PointT>(*_transformed_initial_cloud, c_current);
   if ((c_initial - c_current).norm() < 0.03) {
     std::cerr << "image processing : object mouvement is less then 3 cm" << std::endl;
