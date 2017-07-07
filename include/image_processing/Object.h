@@ -101,6 +101,15 @@ void Object<classifier_t>::set_initial(SurfaceOfInterest& initial_surface)
       _initial_cloud->push_back(new_pt);
     }
   }
+
+  // supervoxels that do not belong to the hypothesis are negative examples
+  for (const auto& sv : svs)
+  {
+    if (_initial_hyp.count(sv.first) == 0) {
+      Eigen::VectorXd features = initial_surface.get_feature(sv.first, _modality);
+      _classifier.fit(features, 0);
+    }
+  }
 }
 
 template<typename classifier_t>
@@ -209,7 +218,7 @@ void Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
     }
     w /= nb_pt;
     if (transformed_initial_sv->size() > 2*nb_pt) {
-      w = 0;
+      w = -1;
     }
 
     // check coherence;
@@ -232,7 +241,7 @@ void Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
         _result_cloud->push_back(new_pt);
       }
     }
-    else {
+    else if (w >= 0) {
       Eigen::VectorXd features = current_surface.get_feature(initial_sv.first, _modality);
       samples.push_back(features);
       labels.push_back(0);
@@ -246,6 +255,19 @@ void Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
         new_pt.z = pt.z;
         new_pt.r = 255;
         new_pt.g = 0;
+        new_pt.b = 0;
+        _result_cloud->push_back(new_pt);
+      }
+    }
+    else {
+      for (const auto& pt : *transformed_initial_sv)
+      {
+        PointT new_pt;
+        new_pt.x = pt.x;
+        new_pt.y = pt.y;
+        new_pt.z = pt.z;
+        new_pt.r = 255;
+        new_pt.g = 255;
         new_pt.b = 0;
         _result_cloud->push_back(new_pt);
       }
