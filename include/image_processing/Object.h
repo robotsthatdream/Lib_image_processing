@@ -103,13 +103,20 @@ void Object<classifier_t>::recover_center(SurfaceOfInterest& surface)
     }
   }
 
-  SupervoxelArray svs = surface.getSupervoxels();
-  pcl::compute3DCentroid(*(svs[max_label]->voxels_), _center);
+  if (max_saliency > 0) {
+    SupervoxelArray svs = surface.getSupervoxels();
+    pcl::compute3DCentroid(*(svs[max_label]->voxels_), _center);
+  }
+  else {
+    std::cerr << "object hypothesis : object's center could not be recovered" << std::endl;
+  }
 }
 
 template<typename classifier_t>
 bool Object<classifier_t>::set_initial(SurfaceOfInterest& initial_surface)
 {
+  _initial_hyp.clear();
+  _initial_cloud = PointCloudT::Ptr(new PointCloudT);
   _initial_map = initial_surface.compute_saliency_map(_modality, _classifier);
 
   std::vector<uint32_t> initial_region = initial_surface.get_region_at(_saliency_modality, 0.5, _center);
@@ -120,8 +127,6 @@ bool Object<classifier_t>::set_initial(SurfaceOfInterest& initial_surface)
   }
 
   SupervoxelArray svs = initial_surface.getSupervoxels();
-  _initial_hyp.clear();
-  _initial_cloud = PointCloudT::Ptr(new PointCloudT);
   for (const auto& label : initial_region)
   {
     _initial_hyp[label] = svs[label];
@@ -131,10 +136,11 @@ bool Object<classifier_t>::set_initial(SurfaceOfInterest& initial_surface)
       _initial_cloud->push_back(new_pt);
     }
   }
+  pcl::compute3DCentroid<PointT>(*_initial_cloud, _center);
 
   // supervoxels that do not belong to the hypothesis are negative examples
-  std::vector<Eigen::VectorXd> features;
-  std::vector<int> labels;
+  std::vector<Eigen::VectorXd> features(0);
+  std::vector<int> labels(0);
   for (const auto& sv : svs)
   {
     if (_initial_hyp.count(sv.first) == 0) {
@@ -151,6 +157,14 @@ template<typename classifier_t>
 bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
                                        Eigen::Affine3f& transformation)
 {
+  _transformed_initial_cloud = PointCloudT::Ptr(new PointCloudT);
+
+  _current_hyp.clear();
+  _current_cloud = PointCloudT::Ptr(new PointCloudT);
+  _current_map = current_surface.compute_saliency_map(_modality, _classifier);
+
+  _result_cloud = PointCloudT::Ptr(new PointCloudT);
+
   // set transformation (transformation's origin is the center of initial cloud)
   Eigen::Vector4d c_initial;
   Eigen::Affine3f trans = Eigen::Affine3f::Identity();
@@ -160,21 +174,18 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
   transformation = transformation * trans.inverse();
 
   // first update of transformed initial cloud
-  _transformed_initial_cloud = PointCloudT::Ptr(new PointCloudT);
   pcl::transformPointCloud<PointT>(*_initial_cloud, *_transformed_initial_cloud, transformation);
   Eigen::Vector4d c_transformed_initial;
   pcl::compute3DCentroid(*_transformed_initial_cloud, c_transformed_initial);
 
   // set current hypothesis, cloud and map
-  _current_hyp.clear();
-  _current_cloud = PointCloudT::Ptr(new PointCloudT);
   SupervoxelArray svs = current_surface.getSupervoxels();
-  std::vector<uint32_t> region = current_surface.get_region_at(_saliency_modality, 0.5, c_transformed_initial);
-  if (region.size() == 0) {
+  std::vector<uint32_t> current_region = current_surface.get_region_at(_saliency_modality, 0.5, c_transformed_initial);
+  if (current_region.size() == 0) {
     std::cerr << "object hypothesis : current region empty" << std::endl;
     return false;
   }
-  for (const auto& label : region)
+  for (const auto& label : current_region)
   {
     _current_hyp[label] = svs[label];
     for (const auto& pt : *(svs[label]->voxels_))
@@ -183,7 +194,6 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
       _current_cloud->push_back(n_pt);
     }
   }
-  _current_map = current_surface.compute_saliency_map(_modality, _classifier);
 
   // align cloud to improve the correspondance
   PointCloudT aligned_initial_cloud;
@@ -211,7 +221,7 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
   // update the current center of the object
   _transformed_initial_cloud = PointCloudT::Ptr(new PointCloudT);
   pcl::transformPointCloud<PointT>(*_initial_cloud, *_transformed_initial_cloud, transformation);
-  pcl::compute3DCentroid(*_transformed_initial_cloud, _center);
+  pcl::compute3DCentroid(*_transformed_initial_cloud, c_transformed_initial);
 
   // set coherence and search methods
   DistanceCoherence<PointT> distance_coherence;
@@ -223,24 +233,20 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
   octree.addPointsFromInputCloud();
 
   // gathering training samples
-  _result_cloud = PointCloudT::Ptr(new PointCloudT);
-  std::vector<Eigen::VectorXd> samples;
-  std::vector<uint32_t> labels;
+  std::vector<Eigen::VectorXd> samples(0);
+  std::vector<int> labels(0);
   int n_pos = 0;
   int n_neg = 0;
   for (const auto& initial_sv : _initial_hyp)
   {
-    uint32_t min_label = 0;
-    double min_d = std::numeric_limits<double>::max();
-
     // transform the initial supervoxel
     PointCloudT::Ptr transformed_initial_sv = PointCloudT::Ptr(new PointCloudT);
     pcl::transformPointCloud<PointT>(*(initial_sv.second->voxels_), *transformed_initial_sv, transformation);
 
     // compute coherence
     double w = 0;
-    int nb_pt;
-    for (auto& pt : transformed_initial_sv->points)
+    int nb_pt = 0;
+    for (auto& pt : *transformed_initial_sv)
     {
       std::vector<int> point_idx;
       std::vector<float> point_distance;
@@ -257,6 +263,8 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
       }
     }
     w /= nb_pt;
+
+    // check occlusion
     if (transformed_initial_sv->size() > 2*nb_pt) {
       w = -1;
     }
@@ -316,11 +324,13 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
 
   // the object has moved ?
   Eigen::Vector4d c_current;
-  pcl::compute3DCentroid<PointT>(*_transformed_initial_cloud, c_current);
+  pcl::compute3DCentroid(*_transformed_initial_cloud, c_current);
   if ((c_initial - c_current).norm() < 0.03) {
     std::cerr << "object hypothesis : object mouvement is less then 3 cm" << std::endl;
     return false;
   }
+
+  _center = c_current;
 
   // the tracking did not fail ?
   if (n_pos < n_neg) {
@@ -329,10 +339,7 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
   }
 
   // update model
-  for (size_t i = 0; i < samples.size(); i++)
-  {
-    _classifier.fit(samples[i], labels[i]);
-  }
+  _classifier.fit_batch(samples, labels);
 
   return true;
 }
