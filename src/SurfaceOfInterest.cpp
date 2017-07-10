@@ -342,22 +342,28 @@ std::vector<uint32_t> SurfaceOfInterest::get_region_at(const std::string &modali
 {
     std::vector<std::vector<uint32_t>> regions = extract_regions(modality, saliency_threshold);
 
-    std::vector<uint32_t> closest_region;
-    double closest_d = std::numeric_limits<double>::max();
-    for (const auto& region : regions) {
-        Eigen::Vector4d r_center;
-        pcl::compute3DCentroid<PointT>(get_cloud(region), r_center);
-        double dx = r_center[0] - center[0];
-        double dy = r_center[1] - center[1];
-        double dz = r_center[2] - center[2];
-        double d = dx*dx + dy*dy + dz*dz;
-        if (d < closest_d) {
-            closest_region = region;
-            closest_d = d;
+    if (regions.size() > 0) {
+        int closest_id;
+        double closest_d = std::numeric_limits<double>::max();
+        for (int i = 0; i < regions.size(); i++) {
+            Eigen::Vector4d r_center;
+            pcl::compute3DCentroid<PointT>(get_cloud(regions[i]), r_center);
+            double dx = r_center[0] - center[0];
+            double dy = r_center[1] - center[1];
+            double dz = r_center[2] - center[2];
+            double d = dx*dx + dy*dy + dz*dz;
+            if (d < closest_d) {
+                closest_id = i;
+                closest_d = d;
+            }
         }
-    }
 
-    return closest_region;
+        return regions[closest_id];
+    }
+    else {
+        std::vector<uint32_t> empty_region;
+        return empty_region;
+    }
 }
 
 std::vector<uint32_t> SurfaceOfInterest::extract_background(const std::string &modality, double saliency_threshold, int class_lbl)
