@@ -1,7 +1,6 @@
 #ifndef _TOOLS_HPP
 #define _TOOLS_HPP
 
-#include "pcl_types.h"
 #include <Eigen/Core>
 #include <pcl/point_types.h>
 #include <pcl/surface/convex_hull.h>
