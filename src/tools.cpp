@@ -5,7 +5,6 @@
 //using namespace image_processing;
 
 
-
 bool image_processing::tools::extract_convex_hull(pcl::PointCloud<PointT>::ConstPtr cloud,  std::vector<Eigen::Vector3d>& vertex_list){
     pcl::ConvexHull<PointT> hull_extractor;
     pcl::PointCloud<PointT> hull_cloud;
@@ -199,4 +198,3 @@ void image_processing::tools::rgb2Lab(int r, int g, int b, float& L, float& a, f
     a = a/300.0f;
     b2 = b2/300.0f;
 }
-
