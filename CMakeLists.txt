@@ -28,7 +28,7 @@ add_definitions(${PCL_DEFINITIONS})
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 set(LIBRARY_OUTPUT_PATH lib/${CMAKE_BUILD_TYPE})
 
-install(DIRECTORY include/image_processing/  DESTINATION /usr/local/include/${PROJECT_NAME})
+install(DIRECTORY include/image_processing/  DESTINATION include/${PROJECT_NAME})
 
 file(GLOB_RECURSE src_files src/* include/image_processing/*)
 
@@ -36,8 +36,8 @@ add_library(image_processing ${SOURCE_FILES})
 target_link_libraries(image_processing  ${PCL_LIBRARIES} yaml-cpp.so ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}
-    ARCHIVE DESTINATION /usr/local/lib
-    LIBRARY DESTINATION /usr/local/lib)
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib)
 
 #test and example code
 #add_executable(load_dataset_test test/load_dataset_test.cpp)
