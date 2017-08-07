@@ -90,6 +90,31 @@ void HistogramFactory::compute(const std::vector<Eigen::VectorXd>& data){
     }
 }
 
+void HistogramFactory::compute_multi_dim(const std::vector<Eigen::VectorXd>& data){
+    double bin[_dim];
+    int d = 1, index = 0;
+    for(int i = 0; i < _dim; i++) d = d*_bins;
+    _histogram[0] = Eigen::VectorXd(d);
+    for(const auto& v: data){
+        for(int i = 0; i < _dim; i++){
+            bin[i] = (v[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
+            if(bin[i] >= _bins) bin[i] -= 1;
+            int n = std::trunc(bin[i]);
+            for(int k = 0; k < n ; k++){
+                int fact = 1;
+                for(int j = 0; j < i; j++)
+                    fact = fact * _bins;
+                index += fact;
+            }
+        }
+        _histogram[0](index)++;
+    }
+    for(int j = 0; j < d; j++){
+        _histogram[0](j) = _histogram[0](j)/((double)data.size());
+    }
+
+}
+
 double HistogramFactory::chi_squared_distance(const Eigen::VectorXd& hist1, const Eigen::VectorXd &hist2){
 
     assert(hist1.rows() == hist2.rows());

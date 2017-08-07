@@ -48,6 +48,12 @@ public:
     void compute(const std::vector<Eigen::VectorXd>& data);
 
     /**
+     * @brief compute_multi_dim
+     * @param data
+     */
+    void compute_multi_dim(const std::vector<Eigen::VectorXd>& data);
+
+    /**
      * @brief chi_squared_distance
      * @param hist1
      * @param hist2

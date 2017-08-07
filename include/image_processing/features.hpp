@@ -458,6 +458,19 @@ struct features_fct{
             }
         });
 
+        map.emplace("normalHistLarge",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            for(const auto& sv: supervoxels){
+                Eigen::MatrixXd bounds(2,3);
+                bounds << -1,-1,-1,
+                        1,1,1;
+                HistogramFactory hf(5,3,bounds);
+                hf.compute(sv.second,"normal");
+
+                features[sv.first]["normalHistLarge"] = hf.get_histogram()[0];
+            }
+        };
+
         map.emplace("fpfh",
                     [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
             PointCloudT::Ptr centroids(new PointCloudT);
