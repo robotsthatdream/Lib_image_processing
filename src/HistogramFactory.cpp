@@ -3,6 +3,7 @@
 using namespace image_processing;
 
 void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::ConstPtr &sv, std::string type){
+    _histogram = _histogram_t(_dim,Eigen::VectorXd::Zero(_bins));
 
     if(type == "color"){
         double r,g,b;
@@ -49,6 +50,8 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
 
 
 void HistogramFactory::compute(const cv::Mat& image){
+    _histogram = _histogram_t(_dim,Eigen::VectorXd::Zero(_bins));
+
     int image_chan = image.channels();
     uchar rgb[_dim];
     double bin;
@@ -75,6 +78,8 @@ void HistogramFactory::compute(const cv::Mat& image){
 }
 
 void HistogramFactory::compute(const std::vector<Eigen::VectorXd>& data){
+    _histogram = _histogram_t(_dim,Eigen::VectorXd::Zero(_bins));
+
     double bin;
     for(const auto& v: data){
         for(int i = 0; i < _dim; ++i){
@@ -91,10 +96,12 @@ void HistogramFactory::compute(const std::vector<Eigen::VectorXd>& data){
 }
 
 void HistogramFactory::compute_multi_dim(const std::vector<Eigen::VectorXd>& data){
+
+
     double bin[_dim];
     int d = 1, index = 0;
     for(int i = 0; i < _dim; i++) d = d*_bins;
-    _histogram[0] = Eigen::VectorXd(d);
+    _histogram = _histogram_t(1,Eigen::VectorXd::Zero(d));
     for(const auto& v: data){
         for(int i = 0; i < _dim; i++){
             bin[i] = (v[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
