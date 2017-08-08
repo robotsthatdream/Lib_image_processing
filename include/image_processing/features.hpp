@@ -496,6 +496,7 @@ struct features_fct{
         });
 
 
+
         map.emplace("fpfh",
                     [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             PointCloudT::Ptr centroids(new PointCloudT);
