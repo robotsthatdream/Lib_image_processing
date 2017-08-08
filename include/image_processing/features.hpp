@@ -469,7 +469,7 @@ struct features_fct{
 
                 features[sv.first]["normalHistLarge"] = hf.get_histogram()[0];
             }
-        };
+        });
 
         map.emplace("fpfh",
                     [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
