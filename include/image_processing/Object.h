@@ -144,8 +144,12 @@ bool Object<classifier_t>::set_initial(SurfaceOfInterest& initial_surface)
   for (const auto& sv : svs)
   {
     if (_initial_hyp.count(sv.first) == 0) {
-      features.push_back(initial_surface.get_feature(sv.first, _modality));
-      labels.push_back(0);
+      Eigen::VectorXd ft = initial_surface.get_feature(sv.first, _modality);
+      double p = _classifier.compute_estimation(ft, 1);
+      if (p > 0.1 && p < 0.5) {
+        features.push_back(ft);
+        labels.push_back(0);
+      }
     }
   }
   _classifier.fit_batch(features, labels);
@@ -290,9 +294,9 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
       }
     }
     else if (w >= 0) {
-      Eigen::VectorXd features = current_surface.get_feature(initial_sv.first, _modality);
-      samples.push_back(features);
-      labels.push_back(0);
+      // Eigen::VectorXd features = current_surface.get_feature(initial_sv.first, _modality);
+      // samples.push_back(features);
+      // labels.push_back(0);
       n_neg += 1;
 
       for (const auto& pt : *transformed_initial_sv)
