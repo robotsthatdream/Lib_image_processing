@@ -138,21 +138,19 @@ bool Object<classifier_t>::set_initial(SurfaceOfInterest& initial_surface)
   }
   pcl::compute3DCentroid<PointT>(*_initial_cloud, _center);
 
-  // supervoxels that do not belong to the hypothesis are negative examples
-  std::vector<Eigen::VectorXd> features(0);
-  std::vector<int> labels(0);
-  for (const auto& sv : svs)
-  {
-    if (_initial_hyp.count(sv.first) == 0) {
-      Eigen::VectorXd ft = initial_surface.get_feature(sv.first, _modality);
-      double p = _classifier.compute_estimation(ft, 1);
-      if (p > 0.1 && p < 0.5) {
-        features.push_back(ft);
+  // init : supervoxels that do not belong to the hypothesis are negative examples
+  if (_classifier.dataset_size() < 200) {
+    std::vector<Eigen::VectorXd> features(0);
+    std::vector<int> labels(0);
+    for (const auto& sv : svs)
+    {
+      if (_initial_hyp.count(sv.first) == 0) {
+        features.push_back(initial_surface.get_feature(sv.first, _modality));
         labels.push_back(0);
       }
     }
+    _classifier.fit_batch(features, labels);
   }
-  _classifier.fit_batch(features, labels);
 
   return true;
 }
