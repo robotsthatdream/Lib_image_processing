@@ -78,6 +78,7 @@ private:
   SupervoxelArray _initial_hyp;
   saliency_map_t _initial_map;
   PointCloudT::Ptr _initial_cloud;
+  std::map<uint32_t, Eigen::VectorXd> _initial_features;
 
   SupervoxelArray _current_hyp;
   saliency_map_t _current_map;
@@ -93,19 +94,27 @@ void Object<classifier_t>::recover_center(SurfaceOfInterest& surface)
 
   saliency_map_t map = surface.compute_saliency_map(_modality, _classifier);
 
-  uint32_t max_label = 0;
-  double max_saliency = 0;
-  for (const auto& entry : map)
+  std::vector<std::set<uint32_t>> regions = surface.extract_regions(_saliency_modality, 0.5);
+
+  size_t best_i = 0;
+  double best_saliency = 0.0;
+  for (size_t i = 0; i < regions.size(); i++)
   {
-    if (entry.second > max_saliency) {
-      max_label = entry.first;
-      max_saliency = entry.second;
+    double saliency = 0.0;
+    for (const auto& sv : regions[i])
+    {
+      saliency += map[sv];
+    }
+    saliency /= regions[i].size();
+
+    if (saliency > best_saliency) {
+      best_saliency = saliency;
+      best_i = i;
     }
   }
 
-  if (max_saliency > 0) {
-    SupervoxelArray svs = surface.getSupervoxels();
-    pcl::compute3DCentroid(*(svs[max_label]->voxels_), _center);
+  if (regions.size() > 0) {
+    pcl::compute3DCentroid(surface.get_cloud(regions[best_i]), _center);
   }
   else {
     std::cerr << "object hypothesis : object's center could not be recovered" << std::endl;
@@ -116,21 +125,23 @@ template<typename classifier_t>
 bool Object<classifier_t>::set_initial(SurfaceOfInterest& initial_surface)
 {
   _initial_hyp.clear();
+  _initial_features.clear();
   _initial_cloud = PointCloudT::Ptr(new PointCloudT);
   _initial_map = initial_surface.compute_saliency_map(_modality, _classifier);
 
-  std::vector<uint32_t> initial_region = initial_surface.get_region_at(_saliency_modality, 0.5, _center);
+  std::vector<std::set<uint32_t>> regions = initial_surface.extract_regions(_saliency_modality, 0.5);
+  size_t id = initial_surface.get_closest_region(regions, _center);
 
-  if (initial_region.size() == 0) {
+  if (regions[id].size() == 0) {
     std::cerr << "object hypothesis : initial region empty" << std::endl;
     return false;
   }
 
   SupervoxelArray svs = initial_surface.getSupervoxels();
-  for (const auto& label : initial_region)
+  for (const auto& sv_label : regions[id])
   {
-    _initial_hyp[label] = svs[label];
-    for (const auto& pt : *(svs[label]->voxels_))
+    _initial_hyp[sv_label] = svs[sv_label];
+    for (const auto& pt : *(svs[sv_label]->voxels_))
     {
       PointT new_pt(pt);
       _initial_cloud->push_back(new_pt);
@@ -138,19 +149,29 @@ bool Object<classifier_t>::set_initial(SurfaceOfInterest& initial_surface)
   }
   pcl::compute3DCentroid<PointT>(*_initial_cloud, _center);
 
-  // init : supervoxels that do not belong to the hypothesis are negative examples
-  if (_classifier.dataset_size() < 200) {
-    std::vector<Eigen::VectorXd> features(0);
-    std::vector<int> labels(0);
-    for (const auto& sv : svs)
-    {
-      if (_initial_hyp.count(sv.first) == 0) {
-        features.push_back(initial_surface.get_feature(sv.first, _modality));
+
+  // Add other regions as negative examples to the classifier
+  // Prepare the features vector for 'set_current'
+  std::vector<Eigen::VectorXd> features(0);
+  std::vector<int> labels(0);
+  for (size_t i = 0; i < regions.size(); i++)
+  {
+    if (i != id) {
+      for (const auto& sv_label : regions[i])
+      {
+        features.push_back(initial_surface.get_feature(sv_label, _modality));
         labels.push_back(0);
       }
     }
-    _classifier.fit_batch(features, labels);
+    else {
+      for (const auto& sv_label : regions[i])
+      {
+        _initial_features[sv_label] = initial_surface.get_feature(sv_label, _modality);
+      }
+    }
   }
+
+  _classifier.fit_batch(features, labels);
 
   return true;
 }
@@ -182,12 +203,14 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
 
   // set current hypothesis, cloud and map
   SupervoxelArray svs = current_surface.getSupervoxels();
-  std::vector<uint32_t> current_region = current_surface.get_region_at(_saliency_modality, 0.5, c_transformed_initial);
-  if (current_region.size() == 0) {
+  std::vector<std::set<uint32_t>> regions = current_surface.extract_regions(_saliency_modality, 0.5);
+  size_t id = current_surface.get_closest_region(regions, c_transformed_initial);
+
+  if (regions[id].size() == 0) {
     std::cerr << "object hypothesis : current region empty" << std::endl;
     return false;
   }
-  for (const auto& label : current_region)
+  for (const auto& label : regions[id])
   {
     _current_hyp[label] = svs[label];
     for (const auto& pt : *(svs[label]->voxels_))
@@ -274,8 +297,7 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
     // check coherence;
     std::cout << "sv coherence : " << w << "(" << nb_pt << "/" << transformed_initial_sv->size() << ")" << std::endl;
     if (w > 0.90) {
-      Eigen::VectorXd features = current_surface.get_feature(initial_sv.first, _modality);
-      samples.push_back(features);
+      samples.push_back(_initial_features[initial_sv.first]);
       labels.push_back(1);
       n_pos += 1;
 
@@ -292,8 +314,7 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
       }
     }
     else if (w >= 0) {
-      // Eigen::VectorXd features = current_surface.get_feature(initial_sv.first, _modality);
-      // samples.push_back(features);
+      // samples.push_back(_initial_features[initial_sv.first]);
       // labels.push_back(0);
       n_neg += 1;
 

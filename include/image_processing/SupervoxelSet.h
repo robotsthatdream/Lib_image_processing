@@ -305,11 +305,11 @@ public :
     Eigen::VectorXd get_feature(uint32_t lbl,std::string name){return _features[lbl][name];}
 
     /**
-     * @brief extract the cloud from a list of supervoxels
-     * @param sv_list : list of supervoxels' labels
+     * @brief extract the cloud from a set of supervoxels
+     * @param supervoxels : set of supervoxels' labels
      * @return PointCloudT
      */
-    PointCloudT get_cloud(std::vector<uint32_t> sv_list);
+    PointCloudT get_cloud(const std::set<uint32_t> supervoxels);
     //---------------------------------------------------------
 
 protected:

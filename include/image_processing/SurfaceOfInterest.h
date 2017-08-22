@@ -283,26 +283,25 @@ public:
      * @brief return regions of salient supervoxels for the given modality and threshold
      * @param modality
      * @param saliency threshold
-     * @return a vector of region (a region is a vector of supervoxels' labels)
+     * @return a set of region (a region is a vector of supervoxels' labels)
      */
-    std::vector<std::vector<uint32_t>> extract_regions(const std::string &modality, double saliency_threshold);
+    std::vector<std::set<uint32_t>> extract_regions(const std::string &modality, double saliency_threshold);
 
     /**
      * @brief return the closest region for the given center
-     * @param modality
-     * @param saliency threshold
+     * @param vector of regions
      * @param center
-     * @return a vector of supervoxels' labels that are in the closest region
+     * @return the indice of the closest region in the input vector or -1 if the input vector is empty
      */
-    std::vector<uint32_t> get_region_at(const std::string &modality, double saliency_threshold, Eigen::Vector4d center);
+    size_t get_closest_region(const std::vector<std::set<uint32_t>> regions, const Eigen::Vector4d center);
 
     /**
      * @brief return non salient supervoxels for the given modality and threshold
      * @param modality
      * @param saliency threshold
-     * @return a vector of supervoxels' labels that are not salient
+     * @return a set of supervoxels' labels that are not salient
      */
-    std::vector<uint32_t> extract_background(const std::string &modality, double saliency_threshold);
+    std::set<uint32_t> extract_background(const std::string &modality, double saliency_threshold);
 
 private :
     std::vector<uint32_t> _labels;
