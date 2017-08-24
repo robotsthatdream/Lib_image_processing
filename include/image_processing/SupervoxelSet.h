@@ -302,12 +302,19 @@ public :
     const pcl::Supervoxel<PointT>::Ptr& at(uint32_t label) const {return _supervoxels.at(label);}
 
     const std::map<std::string, Eigen::VectorXd>& get_features(uint32_t lbl){return _features[lbl];}
+
+    /**
+     *@brief get the feature vector of a supervoxel for a given modality.
+     *@param lbl : uint32_t
+     *@param name : std::string
+     *@return Eigen::VectorXd
+     */
     Eigen::VectorXd get_feature(uint32_t lbl,std::string name){return _features[lbl][name];}
 
     /**
-     * @brief extract the cloud from a set of supervoxels
-     * @param supervoxels : set of supervoxels' labels
-     * @return PointCloudT
+     *@brief extract the cloud from a set of supervoxels label
+     *@param supervoxels : std::set<uint32_t>
+     *@return PointCloudT
      */
     PointCloudT get_cloud(const std::set<uint32_t> supervoxels);
     //---------------------------------------------------------

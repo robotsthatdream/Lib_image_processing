@@ -257,8 +257,9 @@ public:
     void delete_background(const PointCloudT::Ptr background);
 
     /**
-     * @brief return a point cloud colored by the weights of the given modality
+     * @brief compute the pointcloud colored by the weights of the given modality
      * @param modality
+     * @return the pointcloud colored by the weights of the given modality
      */
     pcl::PointCloud<pcl::PointXYZI> getColoredWeightedCloud(const std::string &modality,int lbl);
 
@@ -269,26 +270,28 @@ public:
      */
     std::map<pcl::Supervoxel<PointT>::Ptr, int> get_supervoxels_clusters(const std::string &modality, double &saliency_threshold,int lbl);
 
+    /**
+     * @brief get the weights of all modality
+     * @return the weights of all modality
+     */
     std::map<std::string,relevance_map_t> get_weights(){return _weights;}
 
     
-
-    PointCloudT getColoredWeightedCloud(const std::string &modality);
 
 
     void neighbor_bluring(const std::string& modality, double cst, int lbl);
     void adaptive_threshold(const std::string& modality, int lbl);
     pcl::PointCloud<pcl::PointXYZI> cumulative_relevance_map(std::vector<pcl::PointCloud<pcl::PointXYZI>> list_weights);
     /**
-     * @brief return regions of salient supervoxels for the given modality and threshold
+     * @brief compute regions of salient supervoxels for the given modality and threshold
      * @param modality
      * @param saliency threshold
-     * @return a set of region (a region is a vector of supervoxels' labels)
+     * @return a set of regions (a region is a vector of supervoxels' labels)
      */
     std::vector<std::set<uint32_t>> extract_regions(const std::string &modality, double saliency_threshold);
 
     /**
-     * @brief return the closest region for the given center
+     * @brief compute the closest region in a vector for the given center
      * @param vector of regions
      * @param center
      * @return the indice of the closest region in the input vector or -1 if the input vector is empty
@@ -296,7 +299,7 @@ public:
     size_t get_closest_region(const std::vector<std::set<uint32_t>> regions, const Eigen::Vector4d center);
 
     /**
-     * @brief return non salient supervoxels for the given modality and threshold
+     * @brief compute non salient supervoxels for the given modality and threshold
      * @param modality
      * @param saliency threshold
      * @return a set of supervoxels' labels that are not salient
