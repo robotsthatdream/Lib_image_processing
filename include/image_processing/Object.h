@@ -43,29 +43,88 @@ public:
 
   ~Object() {}
 
+  /**
+   *@brief Get the classifier of the object.
+   *@return the classifier
+   */
   classifier_t get_classifier() {return _classifier;}
 
+  /**
+   *@brief Get the saliency modality used by the object.
+   *@return the saliency modality
+   */
   std::string get_saliency_modality() {return _saliency_modality;}
 
+  /**
+   *@brief Get the modality used by the classifier of the object.
+   *@return the modality of the classifier
+   */
   std::string get_modality() {return _modality;}
 
+  /**
+   *@brief Set the current center of the object.
+   *@param the object center (the 4th value of the vector is not used)
+   */
   void set_center(Eigen::Vector4d center) {_center = center;}
 
+  /**
+   *@brief Get the current center of the object.
+   *@return the object center (the 4th value of the vector is not used)
+   */
   Eigen::Vector4d get_center() {return _center;}
 
+  /**
+   *@brief Try to recover the center of the object thanks to the object classifier.
+   *@param the current surface of interrest with precomputed features for both modalities
+   */
   void recover_center(SurfaceOfInterest& surface);
 
+  /**
+   *@brief Set the initial surface. Update object's model with negative examples
+   *       from other salient regions of the surface.
+   *@param the initial surface of interrest with precomputed features for both modalities
+   *@return true if the initialisation was successful, false otherwise
+   */
   bool set_initial(SurfaceOfInterest& initial_surface);
 
+  /**
+   *@brief Get the initial pointcloud of the object hypothesis.
+   *       Must be called after set_initial.
+   *@return the pointcloud of the object in the initial scene
+   */
   PointCloudT::Ptr get_initial_cloud() {return _initial_cloud;}
 
+  /**
+   *@brief Set the final surface.
+   *       Must be called after set_initial.
+   *@param the current surface of interrest with precomputed features for both modalities
+   *@param the transformation between initial and final scene returned by the tracker
+   *@return true if the tracking was successful (and model updated), false otherwise
+   */
   bool set_current(SurfaceOfInterest& current_surface,
                    Eigen::Affine3f& transformation);
 
+  /**
+   *@brief Get the transformed initial pointcloud of the object hypothesis.
+   *       Must be called after set_current.
+   *@return the transformed pointcloud of the object from initial scene to the current
+   */
   PointCloudT::Ptr get_transformed_initial_cloud() {return _transformed_initial_cloud;}
 
+  /**
+   *@brief Get the current pointcloud of the object hypothesis.
+   *       Must be called after set_current.
+   *@return the current pointcloud of the object int the current scene
+   */
   PointCloudT::Ptr get_current_cloud() {return _current_cloud;}
 
+  /**
+   *@brief Get the result pointcloud of the initial object hypothesis where the
+   *       supervoxels successfuly tracked are green, occluded ones are orange
+   *       and the failed ones are red.
+   *       Must be called after set_current.
+   *@return the current pointcloud of the object int the current scene
+   */
   PointCloudT::Ptr get_result_cloud() {return _result_cloud;}
 
 private:
