@@ -145,6 +145,27 @@ public:
     template <typename classifier_t>
     void compute_weights(const std::string& modality, classifier_t &classifier){
 
+        if(modality == "merge"){
+            if(_weights.find(modality) != _weights.end())
+                _weights[modality].clear();
+            else
+                _weights[modality] = saliency_map_t();
+
+            std::vector<uint32_t> lbls;
+            for(const auto& sv : _supervoxels){
+                lbls.push_back(sv.first);
+                _weights[modality].emplace(sv.first,0);
+            }
+            tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
+                              [&](const tbb::blocked_range<size_t>& r){
+                for(size_t i = r.begin(); i != r.end(); ++i){
+                    _weights[modality][lbls[i]] = classifier.compute_estimation(
+                                _features[lbls[i]],1.);
+                }
+            });
+            return;
+        }
+
         if(_features.begin()->second.find(modality) == _features.begin()->second.end()){
             std::cerr << "SurfaceOfInterest Error: unknow modality : " << modality << std::endl;
             return;

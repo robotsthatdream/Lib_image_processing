@@ -461,15 +461,51 @@ struct features_fct{
         map.emplace("normalHistLarge",
                     [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
+                std::vector<Eigen::VectorXd> data;
+                for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
+                    float HSV[3];
+                    tools::rgb2hsv(it->r,it->g,it->b,HSV[0],HSV[1],HSV[2]);
+                    Eigen::VectorXd vect(3);
+                    vect(0) = HSV[0];
+                    vect(1) = HSV[1];
+                    vect[2] = HSV[2];
+                    data.push_back(vect);
+                }
+
                 Eigen::MatrixXd bounds(2,3);
                 bounds << -1,-1,-1,
                         1,1,1;
                 HistogramFactory hf(5,3,bounds);
-                hf.compute(sv.second,"normal");
+                hf.compute_multi_dim(data);
 
                 features[sv.first]["normalHistLarge"] = hf.get_histogram()[0];
             }
         });
+
+        map.emplace("colorLabHistLarge",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            for(const auto& sv: supervoxels){
+                std::vector<Eigen::VectorXd> data;
+                for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
+                    float Lab[3];
+                    tools::rgb2Lab(it->r,it->g,it->b,Lab[0],Lab[1],Lab[2]);
+                    Eigen::VectorXd vect(3);
+                    vect(0) = Lab[0];
+                    vect(1) = Lab[1];
+                    vect[2] = Lab[2];
+                    data.push_back(vect);
+                }
+
+                Eigen::MatrixXd bounds(2,3);
+                bounds << 0,-1,-1,
+                        1,1,1;
+                HistogramFactory hf(5,3,bounds);
+                hf.compute_multi_dim(data);
+
+                features[sv.first]["colorLabHistLarge"] = hf.get_histogram()[0];
+            }
+        });
+
 
         map.emplace("fpfh",
                     [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){

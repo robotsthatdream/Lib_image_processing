@@ -252,6 +252,7 @@ public :
      */
     const pcl::Supervoxel<PointT>::Ptr& at(uint32_t label) const {return _supervoxels.at(label);}
 
+    const std::map<std::string, Eigen::VectorXd>& get_features(uint32_t lbl){return _features[lbl];}
     Eigen::VectorXd get_feature(uint32_t lbl,std::string name){return _features[lbl][name];}
     //---------------------------------------------------------
 

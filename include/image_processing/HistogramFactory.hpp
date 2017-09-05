@@ -20,7 +20,6 @@ public:
 
     HistogramFactory(int bins, int dim, Eigen::MatrixXd bounds) :
         _bins(bins), _dim(dim), _bounds(bounds){
-        _histogram = _histogram_t(_dim,Eigen::VectorXd::Zero(_bins));
     }
     HistogramFactory(const HistogramFactory& HF)
         : _bins(HF._bins), _dim(HF._dim), _bounds(HF._bounds),
