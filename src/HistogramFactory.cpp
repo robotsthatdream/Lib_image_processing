@@ -33,6 +33,7 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
             normal[1] = it->normal[1];
             normal[2] = it->normal[2];
 
+
             double bin;
             for(int i = 0; i < _dim; i++){
                 bin = (normal[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
