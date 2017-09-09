@@ -12,6 +12,11 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
             r = it->r;
             g = it->g;
             b = it->b;
+
+            if(r != r || g != g || b != b)
+                continue;
+
+
             tools::rgb2hsv(r,g,b,hsv[0],hsv[1],hsv[2]);
             double bin;
             for(int i = 0; i < _dim; i++){
@@ -33,6 +38,8 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
             normal[1] = it->normal[1];
             normal[2] = it->normal[2];
 
+            if(normal[0] != normal[0] || normal[1] != normal[1] || normal[2] != normal[2])
+                continue;
 
             double bin;
             for(int i = 0; i < _dim; i++){
@@ -63,6 +70,9 @@ void HistogramFactory::compute(const cv::Mat& image){
             rgb[1] = image_rowPtr[j*image_chan + 1];
             rgb[2] = image_rowPtr[j*image_chan + 0];
 
+            if(rgb[0] != rgb[0] || rgb[1] != rgb[1] || rgb[2] != rgb[2])
+                continue;
+
             for(int i = 0; i < _dim; i++){
                 bin = (rgb[i] - _bounds(0,i))/(_bounds(1,i)/_bins);
                 if(bin >= _bins) bin -= 1;
@@ -84,6 +94,9 @@ void HistogramFactory::compute(const std::vector<Eigen::VectorXd>& data){
     double bin;
     for(const auto& v: data){
         for(int i = 0; i < _dim; ++i){
+            if(v[i] != v[i])
+                continue;
+
             bin = (v[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
             if(bin >= _bins) bin -= 1;
             _histogram[i](std::trunc(bin))++;
