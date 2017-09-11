@@ -6,12 +6,12 @@ namespace image_processing {
 namespace parameters{
 
     struct camera{
-      static constexpr float depth_princ_pt_x = 315.5;
-      static constexpr float depth_princ_pt_y = 235.5;
-      static constexpr float rgb_princ_pt_x = 319.5;
-      static constexpr float rgb_princ_pt_y = 239.5;
-      static constexpr float focal_length_x = 570.3422241210938;
-      static constexpr float focal_length_y = 570.3422241210938;
+      static constexpr float depth_princ_pt_x = 479.75;
+      static constexpr float depth_princ_pt_y = 269.75;
+      static constexpr float rgb_princ_pt_x = 479.75;
+      static constexpr float rgb_princ_pt_y = 269.75;
+      static constexpr float focal_length_x = 540.68603515625;
+      static constexpr float focal_length_y = 540.68603515625;
     };
 
     struct supervoxel{
