@@ -63,6 +63,17 @@ class SupervoxelSet{
 public :
 
 
+    struct camera_param{
+        float depth_princ_pt_x;
+        float depth_princ_pt_y;
+        float rgb_princ_pt_x;
+        float rgb_princ_pt_y;
+        float focal_length_x;
+        float focal_length_y;
+        float height;
+        float width;
+    };
+
     typedef std::shared_ptr<SupervoxelSet> Ptr;
     typedef const std::shared_ptr<SupervoxelSet> ConstPtr;
     typedef std::map<uint32_t,std::map<std::string,Eigen::VectorXd>> features_t;
@@ -85,6 +96,16 @@ public :
         _extractor->setColorImportance(Param::color_importance);
         _extractor->setSpatialImportance(Param::spatial_importance);
         _extractor->setNormalImportance(Param::normal_importance);
+
+        _cam_param.depth_princ_pt_x = Param::depth_princ_pt_x;
+        _cam_param.depth_princ_pt_y = Param::depth_princ_pt_y;
+        _cam_param.focal_length_x = Param::focal_length_x;
+        _cam_param.focal_length_y = Param::focal_length_y;
+        _cam_param.rgb_princ_pt_x = Param::rgb_princ_pt_x;
+        _cam_param.rgb_princ_pt_y = Param::rgb_princ_pt_y;
+        _cam_param.height = Param::height;
+        _cam_param.width = Param::width;
+
     }
 
     //METHODES-------------------------------------------------
@@ -267,6 +288,8 @@ protected:
     AdjacencyMap _adjacency_map;
     double _seed_resolution;
     features_t _features;
+
+    camera_param _cam_param;
 
 };
 

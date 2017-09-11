@@ -407,10 +407,10 @@ Superpixels SupervoxelSet::to_superpixels(){
             float px = pt_vx.x;
             float py = pt_vx.y;
             float pz = pt_vx.z;
-            float x = camera::focal_length_x*pt_vx.x/pt_vx.z
-                    + camera::rgb_princ_pt_x;
-            float y = camera::focal_length_y*pt_vx.y/pt_vx.z
-                    + camera::rgb_princ_pt_y;
+            float x = _cam_param.focal_length_x*pt_vx.x/pt_vx.z
+                    + _cam_param.rgb_princ_pt_x;
+            float y = _cam_param.focal_length_y*pt_vx.y/pt_vx.z
+                    + _cam_param.rgb_princ_pt_y;
 
             pts.push_back(cv::Point2f(x,y));
         }
@@ -446,14 +446,14 @@ void SupervoxelSet::supervoxel_to_mask(uint32_t lbl, cv::Mat &mask){
     //TODO replace hardcode values by smart values.
 
     PointCloudT::Ptr sv = _supervoxels.at(lbl)->voxels_;
-    mask = cv::Mat::zeros(960,540,CV_8U);
+    mask = cv::Mat::zeros(_cam_param.width,_cam_param.height,CV_8U);
     for(int i = 0; i < sv->size(); i++){
         PointT pt = sv->at(i);
 
-        int p_x = camera::focal_length_x*pt.x/pt.z
-                + camera::rgb_princ_pt_x;
-        int p_y = camera::focal_length_y*pt.y/pt.z
-                + camera::rgb_princ_pt_y;
+        int p_x = _cam_param.focal_length_x*pt.x/pt.z
+                + _cam_param.rgb_princ_pt_x;
+        int p_y = _cam_param.focal_length_y*pt.y/pt.z
+                + _cam_param.rgb_princ_pt_y;
 
         for(int k = -2; k <= 2;k++){
             if(p_y+k >= mask.rows || p_y+k <= 0)

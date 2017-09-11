@@ -5,15 +5,6 @@ namespace image_processing {
 
 namespace parameters{
 
-    struct camera{
-      static constexpr float depth_princ_pt_x = 479.75;
-      static constexpr float depth_princ_pt_y = 269.75;
-      static constexpr float rgb_princ_pt_x = 479.75;
-      static constexpr float rgb_princ_pt_y = 269.75;
-      static constexpr float focal_length_x = 540.68603515625;
-      static constexpr float focal_length_y = 540.68603515625;
-    };
-
     struct supervoxel{
         static constexpr bool use_transform = false;
         static constexpr float voxel_resolution = 0.008f;
@@ -21,6 +12,15 @@ namespace parameters{
         static constexpr float spatial_importance = 0.4f;
         static constexpr float normal_importance = 0.4f;
         static constexpr float seed_resolution = 0.05f;
+
+        static constexpr float depth_princ_pt_x = 479.75;
+        static constexpr float depth_princ_pt_y = 269.75;
+        static constexpr float rgb_princ_pt_x = 479.75;
+        static constexpr float rgb_princ_pt_y = 269.75;
+        static constexpr float focal_length_x = 540.68603515625;
+        static constexpr float focal_length_y = 540.68603515625;
+        static constexpr float height = 540;
+        static constexpr float width = 960;
     };
 
     /**
