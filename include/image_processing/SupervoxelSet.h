@@ -88,7 +88,8 @@ public :
         _inputCloud(super._inputCloud),
         _supervoxels(super._supervoxels),
         _adjacency_map(super._adjacency_map),
-        _extractor(_extractor){}
+        _extractor(super._extractor),
+        _cam_param(super._cam_param){}
 
     template <typename Param>
     void init(){
