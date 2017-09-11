@@ -27,7 +27,7 @@ public:
       cv::Mat descriptor; /**< a one dimensional vertical vector */
     };
 
-    DescriptorExtraction(){init<parameters::camera>();}
+    DescriptorExtraction(){init<parameters::supervoxel>();}
     DescriptorExtraction(const cv::Mat& input,const std::string& type);
 
     template <typename Param>

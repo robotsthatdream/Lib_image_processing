@@ -10,7 +10,7 @@ DescriptorExtraction::DescriptorExtraction(const cv::Mat &input, const std::stri
   : _input_image(input),
     _type(type)
 {
-    init<parameters::camera>();
+    init<parameters::supervoxel>();
     if(_type.compare("SIFT") == 0){
       _detector = new cv::SiftFeatureDetector();
       _extractor = new cv::SiftDescriptorExtractor();
