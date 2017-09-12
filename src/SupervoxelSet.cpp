@@ -446,7 +446,7 @@ void SupervoxelSet::supervoxel_to_mask(uint32_t lbl, cv::Mat &mask){
     //TODO replace hardcode values by smart values.
 
     PointCloudT::Ptr sv = _supervoxels.at(lbl)->voxels_;
-    mask = cv::Mat::zeros(_cam_param.width,_cam_param.height,CV_8U);
+    mask = cv::Mat::zeros(_cam_param.height,_cam_param.width,CV_8U);
     for(int i = 0; i < sv->size(); i++){
         PointT pt = sv->at(i);
 
