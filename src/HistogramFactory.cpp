@@ -13,13 +13,14 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
             g = it->g;
             b = it->b;
 
-            if(r != r || g != g || b != b)
-                continue;
-
-
             tools::rgb2hsv(r,g,b,hsv[0],hsv[1],hsv[2]);
             double bin;
             for(int i = 0; i < _dim; i++){
+                if(hsv[i] != hsv[i] || (fabs(hsv[i]) > 10e3))
+                    continue;
+                if(fabs(hsv[i]) <= 10e-4)
+                    hsv[i] = 0;
+
                 bin = (hsv[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
                 if(bin >= _bins) bin -= 1;
                 _histogram[i](std::trunc(bin))++;
@@ -38,11 +39,13 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
             normal[1] = it->normal[1];
             normal[2] = it->normal[2];
 
-            if(normal[0] != normal[0] || normal[1] != normal[1] || normal[2] != normal[2])
-                continue;
-
             double bin;
             for(int i = 0; i < _dim; i++){
+                if(normal[i] != normal[i] || (fabs(normal[i]) > 10e3))
+                    continue;
+                if(fabs(normal[i]) <= 10e-4)
+                    normal[i] = 0;
+
                 bin = (normal[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
                 if(bin >= _bins) bin -= 1;
                 _histogram[i](std::trunc(bin))++;
@@ -70,10 +73,12 @@ void HistogramFactory::compute(const cv::Mat& image){
             rgb[1] = image_rowPtr[j*image_chan + 1];
             rgb[2] = image_rowPtr[j*image_chan + 0];
 
-            if(rgb[0] != rgb[0] || rgb[1] != rgb[1] || rgb[2] != rgb[2])
-                continue;
-
             for(int i = 0; i < _dim; i++){
+                if(rgb[i] != rgb[i] || (fabs(rgb[i]) > 10e3))
+                    continue;
+                if(fabs(rgb[i]) <= 10e-4)
+                    rgb[i] = 0;
+
                 bin = (rgb[i] - _bounds(0,i))/(_bounds(1,i)/_bins);
                 if(bin >= _bins) bin -= 1;
                 _histogram[i](std::trunc(bin))++;
@@ -94,8 +99,10 @@ void HistogramFactory::compute(const std::vector<Eigen::VectorXd>& data){
     double bin;
     for(const auto& v: data){
         for(int i = 0; i < _dim; ++i){
-            if(v[i] != v[i])
+            if(v[i] != v[i]  || (fabs(v[i]) > 10e3))
                 continue;
+            if(fabs(v[i]) <= 10e-4)
+                v[i] = 0;
 
             bin = (v[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
             if(bin >= _bins) bin -= 1;
@@ -118,6 +125,12 @@ void HistogramFactory::compute_multi_dim(const std::vector<Eigen::VectorXd>& dat
     _histogram = _histogram_t(1,Eigen::VectorXd::Zero(d));
     for(const auto& v: data){
         for(int i = 0; i < _dim; i++){
+
+            if(v[i] != v[i]  || (fabs(v[i]) > 10e3))
+                continue;
+            if(fabs(v[i]) <= 10e-4)
+                v[i] = 0;
+
             bin[i] = (v[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
             if(bin[i] >= _bins) bin[i] -= 1;
             int n = std::trunc(bin[i]);
