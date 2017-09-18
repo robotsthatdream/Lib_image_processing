@@ -4,6 +4,11 @@
 #include <opencv2/opencv.hpp>
 #include <fstream>
 #include <ctime>
+#include <image_processing/pcl_types.h>
+#include <pcl/octree/octree_pointcloud_changedetector.h>
+#include <pcl/segmentation/supervoxel_clustering.h>
+
+namespace image_processing{
 
 /**
  * @brief The MotionDetection class
@@ -50,6 +55,8 @@ public:
      */
     void detect_MOG_depth(cv::Mat& depth_frame_16UC1);
 
+    bool detect_on_cloud(const pcl::Supervoxel<PointT>& sv, int threshold = 0,double dist_thres = 10.);
+
     /**
      * @brief setInputFrames
      * @param vector of 2 successives frames
@@ -93,6 +100,7 @@ public:
 
 private :
     std::vector<cv::Mat> _frames;
+    std::vector<PointCloudT::Ptr> _cloud_frames;
     std::vector<cv::Mat> _results;
     std::vector<cv::Rect> _resultsRects;
 
@@ -124,5 +132,6 @@ private :
      */
     void denoise_depth(cv::Mat& depth_frame_16UC1);
 };
+}
 
 #endif //MOTION_DETECTION_H

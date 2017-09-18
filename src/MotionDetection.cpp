@@ -1,6 +1,9 @@
 #include "image_processing/MotionDetection.h"
 
-bool MotionDetection::detect(cv::Mat& diff, cv::Mat& mask, int thre)
+
+using namespace image_processing;
+
+bool MotionDetection::detect(cv::Mat& diff, int thre)
 {
     if (_frames.size() != 2) {
         std::cerr << "detect : need exactly 2 frames" << std::endl;
@@ -11,7 +14,6 @@ bool MotionDetection::detect(cv::Mat& diff, cv::Mat& mask, int thre)
     cv::Mat previous = _frames[0].clone();
 
     diff = cv::Mat::zeros(current.rows, current.cols, current.type());
-    cv::Mat diff2 = cv::Mat::zeros(current.rows, current.cols, current.type());
 
     //conversion color to grayscale
     if(previous.channels() == 3)
@@ -20,8 +22,8 @@ bool MotionDetection::detect(cv::Mat& diff, cv::Mat& mask, int thre)
         cv::cvtColor(current, current, cv::COLOR_BGR2GRAY);
 
     //gaussian blur to eliminate some noise
-//    cv::GaussianBlur(previous, previous, cv::Size(3, 3), 0);
-//    cv::GaussianBlur(current, current, cv::Size(3, 3), 0);
+    cv::GaussianBlur(previous, previous, cv::Size(3, 3), 0);
+    cv::GaussianBlur(current, current, cv::Size(3, 3), 0);
 
 
     //compute the difference between the two frame to detect a motion
@@ -31,10 +33,8 @@ bool MotionDetection::detect(cv::Mat& diff, cv::Mat& mask, int thre)
     //binarisation of the difference image
     cv::adaptiveThreshold(diff, diff, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 5, 2);
 
-//    diff.copyTo(diff2,mask);
 
     _resultsRects = motion_to_ROIs(diff,thre);
-//    diff2.copyTo(diff);
 
     //clustering of the bounding boxes to assemble the parted objects
 
@@ -117,6 +117,48 @@ void MotionDetection::detect_MOG_depth(cv::Mat& depth_frame_16UC1)
     cv::threshold(motion_mask, motion_mask, 0, 255, CV_THRESH_BINARY);
 
     _resultsRects = motion_to_ROIs(motion_mask);
+}
+
+bool MotionDetection::detect_on_cloud(const pcl::Supervoxel<PointT>& sv,int threshold, double dist_thres){
+    std::vector<int> index;
+    float dist, min_dist, mean_dist;
+
+    pcl::octree::OctreePointCloudChangeDetector<PointT> octree(32.0f);
+
+    octree.setInputCloud(_cloud_frames[0]);
+    octree.addPointsFromInputCloud();
+
+    octree.switchBuffers();
+
+    octree.setInputCloud(_cloud_frames[1]);
+    octree.addPointsFromInputCloud();
+
+    octree.getPointIndicesFromNewVoxels(index);
+
+    if(index.size() < threshold)
+        return false;
+
+    std::function<double(double,double,double,double,double,double)> distance =
+            [](double x1, double x2, double y1, double y2, double z1, double z2) -> double {
+        return sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) + (z1 - z2)*(z1 - z2));
+    };
+
+    min_dist = distance(_cloud_frames[1]->points[index[0]].x,sv.centroid_.x,
+                    _cloud_frames[1]->points[index[0]].y,sv.centroid_.y,
+                    _cloud_frames[1]->points[index[0]].z,sv.centroid_.z);
+
+    for(int i : index){
+        dist = distance(_cloud_frames[1]->points[i].x,sv.centroid_.x,
+                        _cloud_frames[1]->points[i].y,sv.centroid_.y,
+                        _cloud_frames[1]->points[i].z,sv.centroid_.z);
+        if(min_dist > dist)
+            min_dist = dist;
+    }
+
+    if(min_dist < dist_thres)
+        return true;
+
+    return false;
 }
 
 void MotionDetection::save_results(const std::string& folder, int counter)
