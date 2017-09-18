@@ -96,15 +96,16 @@ void HistogramFactory::compute(const cv::Mat& image){
 void HistogramFactory::compute(const std::vector<Eigen::VectorXd>& data){
     _histogram = _histogram_t(_dim,Eigen::VectorXd::Zero(_bins));
 
-    double bin;
+    double bin, val;
     for(const auto& v: data){
         for(int i = 0; i < _dim; ++i){
-            if(v[i] != v[i]  || (fabs(v[i]) > 10e3))
+            val = v[i];
+            if(val != val  || (fabs(val) > 10e3))
                 continue;
-            if(fabs(v[i]) <= 10e-4)
-                v[i] = 0;
+            if(fabs(val) <= 10e-4)
+                val = 0;
 
-            bin = (v[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
+            bin = (val - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
             if(bin >= _bins) bin -= 1;
             _histogram[i](std::trunc(bin))++;
         }
@@ -119,19 +120,19 @@ void HistogramFactory::compute(const std::vector<Eigen::VectorXd>& data){
 void HistogramFactory::compute_multi_dim(const std::vector<Eigen::VectorXd>& data){
 
 
-    double bin[_dim];
+    double bin[_dim],val;
     int d = 1, index = 0;
     for(int i = 0; i < _dim; i++) d = d*_bins;
     _histogram = _histogram_t(1,Eigen::VectorXd::Zero(d));
-    for(const auto& v: data){
+    for(auto& v: data){
         for(int i = 0; i < _dim; i++){
-
-            if(v[i] != v[i]  || (fabs(v[i]) > 10e3))
+            val = v[i];
+            if(val != val  || (fabs(val) > 10e3))
                 continue;
-            if(fabs(v[i]) <= 10e-4)
-                v[i] = 0;
+            if(fabs(val) <= 10e-4)
+                val = 0;
 
-            bin[i] = (v[i] - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
+            bin[i] = (val - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
             if(bin[i] >= _bins) bin[i] -= 1;
             int n = std::trunc(bin[i]);
             for(int k = 0; k < n ; k++){

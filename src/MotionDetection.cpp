@@ -1,6 +1,6 @@
 #include "image_processing/MotionDetection.h"
 
-bool MotionDetection::detect(cv::Mat& diff, int thre)
+bool MotionDetection::detect(cv::Mat& diff, cv::Mat& mask, int thre)
 {
     if (_frames.size() != 2) {
         std::cerr << "detect : need exactly 2 frames" << std::endl;
@@ -11,6 +11,7 @@ bool MotionDetection::detect(cv::Mat& diff, int thre)
     cv::Mat previous = _frames[0].clone();
 
     diff = cv::Mat::zeros(current.rows, current.cols, current.type());
+    cv::Mat diff2 = cv::Mat::zeros(current.rows, current.cols, current.type());
 
     //conversion color to grayscale
     if(previous.channels() == 3)
@@ -19,8 +20,8 @@ bool MotionDetection::detect(cv::Mat& diff, int thre)
         cv::cvtColor(current, current, cv::COLOR_BGR2GRAY);
 
     //gaussian blur to eliminate some noise
-    cv::GaussianBlur(previous, previous, cv::Size(3, 3), 0);
-    cv::GaussianBlur(current, current, cv::Size(3, 3), 0);
+//    cv::GaussianBlur(previous, previous, cv::Size(3, 3), 0);
+//    cv::GaussianBlur(current, current, cv::Size(3, 3), 0);
 
 
     //compute the difference between the two frame to detect a motion
@@ -30,8 +31,10 @@ bool MotionDetection::detect(cv::Mat& diff, int thre)
     //binarisation of the difference image
     cv::adaptiveThreshold(diff, diff, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 5, 2);
 
+//    diff.copyTo(diff2,mask);
 
     _resultsRects = motion_to_ROIs(diff,thre);
+//    diff2.copyTo(diff);
 
     //clustering of the bounding boxes to assemble the parted objects
 
