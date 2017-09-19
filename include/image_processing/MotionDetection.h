@@ -38,7 +38,7 @@ public:
      * @brief detects motions as ROIs in a frame.
      * @param image with the contours of mobiles _elements
      */
-    bool detect(cv::Mat& diff, cv::Mat& mask, int thre);
+    bool detect(cv::Mat& diff, int thre);
 
     /**
      * @brief Builds motion mask from current frame. Simple difference between background and current frame.
@@ -55,7 +55,7 @@ public:
      */
     void detect_MOG_depth(cv::Mat& depth_frame_16UC1);
 
-    bool detect_on_cloud(const pcl::Supervoxel<PointT>& sv, int threshold = 0,double dist_thres = 10.);
+    bool detect_on_cloud(const std::vector<double>& sv_center, int threshold = 0,double dist_thres = 0.01);
 
     /**
      * @brief setInputFrames
@@ -63,6 +63,13 @@ public:
      */
     void setInputFrames(const std::vector<cv::Mat>& f)
     { _frames = f; }
+
+    void setInputClouds(const PointCloudT::Ptr& cloud1,const PointCloudT::Ptr& cloud2)
+    {
+        _cloud_frames.resize(2);
+        _cloud_frames[0] = cloud1;
+        _cloud_frames[1] = cloud2;
+    }
 
     /**
      * @brief rect_clustering : Fonction for clustering the bound rectangle of detected object.

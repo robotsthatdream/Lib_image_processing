@@ -119,7 +119,7 @@ void MotionDetection::detect_MOG_depth(cv::Mat& depth_frame_16UC1)
     _resultsRects = motion_to_ROIs(motion_mask);
 }
 
-bool MotionDetection::detect_on_cloud(const pcl::Supervoxel<PointT>& sv,int threshold, double dist_thres){
+bool MotionDetection::detect_on_cloud(const std::vector<double>& sv_center,int threshold, double dist_thres){
     std::vector<int> index;
     float dist, min_dist, mean_dist;
 
@@ -143,14 +143,14 @@ bool MotionDetection::detect_on_cloud(const pcl::Supervoxel<PointT>& sv,int thre
         return sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) + (z1 - z2)*(z1 - z2));
     };
 
-    min_dist = distance(_cloud_frames[1]->points[index[0]].x,sv.centroid_.x,
-                    _cloud_frames[1]->points[index[0]].y,sv.centroid_.y,
-                    _cloud_frames[1]->points[index[0]].z,sv.centroid_.z);
+    min_dist = distance(_cloud_frames[1]->points[index[0]].x,sv_center[0],
+                    _cloud_frames[1]->points[index[0]].y,sv_center[1],
+                    _cloud_frames[1]->points[index[0]].z,sv_center[2]);
 
     for(int i : index){
-        dist = distance(_cloud_frames[1]->points[i].x,sv.centroid_.x,
-                        _cloud_frames[1]->points[i].y,sv.centroid_.y,
-                        _cloud_frames[1]->points[i].z,sv.centroid_.z);
+        dist = distance(_cloud_frames[1]->points[i].x,sv_center[0],
+                        _cloud_frames[1]->points[i].y,sv_center[1],
+                        _cloud_frames[1]->points[i].z,sv_center[2]);
         if(min_dist > dist)
             min_dist = dist;
     }
