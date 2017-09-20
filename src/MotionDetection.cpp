@@ -135,7 +135,7 @@ bool MotionDetection::detect_on_cloud(const std::vector<double>& sv_center,int t
 
     octree.getPointIndicesFromNewVoxels(index);
 
-    if(index.size() < threshold)
+    if(index.size() <= threshold)
         return false;
 
     std::function<double(double,double,double,double,double,double)> distance =

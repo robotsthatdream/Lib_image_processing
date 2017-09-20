@@ -67,6 +67,7 @@ public:
     void setInputClouds(const PointCloudT::Ptr& cloud1,const PointCloudT::Ptr& cloud2)
     {
         _cloud_frames.resize(2);
+
         _cloud_frames[0] = cloud1;
         _cloud_frames[1] = cloud2;
     }
