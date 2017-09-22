@@ -119,43 +119,59 @@ void MotionDetection::detect_MOG_depth(cv::Mat& depth_frame_16UC1)
     _resultsRects = motion_to_ROIs(motion_mask);
 }
 
-bool MotionDetection::detect_on_cloud(const std::vector<double>& sv_center,int threshold, double dist_thres){
+bool MotionDetection::detect_on_cloud(const std::vector<double>& sv_center, PointCloudXYZ& diff_cloud ,int threshold, double dist_thres, double mean_thres, double octree_res){
     std::vector<int> index;
-    float dist, min_dist, mean_dist;
+    double dist, min_dist, mean_dist = 0;
 
-    pcl::octree::OctreePointCloudChangeDetector<PointT> octree(32.0f);
-
-    octree.setInputCloud(_cloud_frames[0]);
-    octree.addPointsFromInputCloud();
-
-    octree.switchBuffers();
+    pcl::octree::OctreePointCloudChangeDetector<PointT> octree(octree_res);
 
     octree.setInputCloud(_cloud_frames[1]);
     octree.addPointsFromInputCloud();
 
+    octree.switchBuffers();
+
+    octree.setInputCloud(_cloud_frames[0]);
+    octree.addPointsFromInputCloud();
+
     octree.getPointIndicesFromNewVoxels(index);
 
-    if(index.size() <= threshold)
+    if(index.size() <= threshold){
+        std::cout << "no difference !" << std::endl;
         return false;
+    }
+
+    for(int i : index)
+        diff_cloud.push_back(pcl::PointXYZ(_cloud_frames[0]->points[i].x,
+                                           _cloud_frames[0]->points[i].y,
+                                           _cloud_frames[0]->points[i].z));
+
 
     std::function<double(double,double,double,double,double,double)> distance =
             [](double x1, double x2, double y1, double y2, double z1, double z2) -> double {
         return sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) + (z1 - z2)*(z1 - z2));
     };
 
-    min_dist = distance(_cloud_frames[1]->points[index[0]].x,sv_center[0],
-                    _cloud_frames[1]->points[index[0]].y,sv_center[1],
-                    _cloud_frames[1]->points[index[0]].z,sv_center[2]);
+    min_dist = distance(_cloud_frames[0]->points[index[0]].x,sv_center[0],
+                    _cloud_frames[0]->points[index[0]].y,sv_center[1],
+                    _cloud_frames[0]->points[index[0]].z,sv_center[2]);
 
     for(int i : index){
-        dist = distance(_cloud_frames[1]->points[i].x,sv_center[0],
-                        _cloud_frames[1]->points[i].y,sv_center[1],
-                        _cloud_frames[1]->points[i].z,sv_center[2]);
+        dist = distance(_cloud_frames[0]->points[i].x,sv_center[0],
+                        _cloud_frames[0]->points[i].y,sv_center[1],
+                        _cloud_frames[0]->points[i].z,sv_center[2]);
+        mean_dist += dist;
         if(min_dist > dist)
             min_dist = dist;
     }
 
-    if(min_dist < dist_thres)
+    mean_dist = mean_dist/((double)index.size());
+
+    std::cout << "min distance is " << min_dist << " and mean distance is " << mean_dist <<  std::endl;
+
+    if(mean_dist - mean_thres > -0.01)
+        return false;
+
+    if(dist_thres - min_dist > -0.01 )
         return true;
 
     return false;
