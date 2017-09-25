@@ -55,7 +55,8 @@ public:
      */
     void detect_MOG_depth(cv::Mat& depth_frame_16UC1);
 
-    bool detect_on_cloud(const std::vector<double>& sv_center, PointCloudXYZ& diff_cloud, int threshold = 0,double dist_thres = 0.02, double mean_thres = 0.2, double octree_res = 0.02);
+    bool detect_on_cloud(const PointCloudXYZ::Ptr sv, const std::vector<double>& sv_center, PointCloudXYZ::Ptr diff_cloud,
+                         int threshold = 0,double dist_thres = 0.02, double mean_thres = 0.2, double octree_res = 0.02);
 
     /**
      * @brief setInputFrames

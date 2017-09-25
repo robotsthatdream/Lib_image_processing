@@ -1,5 +1,5 @@
 #include "image_processing/MotionDetection.h"
-
+#include <pcl/registration/icp.h>
 
 using namespace image_processing;
 
@@ -119,7 +119,8 @@ void MotionDetection::detect_MOG_depth(cv::Mat& depth_frame_16UC1)
     _resultsRects = motion_to_ROIs(motion_mask);
 }
 
-bool MotionDetection::detect_on_cloud(const std::vector<double>& sv_center, PointCloudXYZ& diff_cloud ,int threshold, double dist_thres, double mean_thres, double octree_res){
+bool MotionDetection::detect_on_cloud(const PointCloudXYZ::Ptr sv, const std::vector<double>& sv_center, PointCloudXYZ::Ptr diff_cloud ,
+                                      int threshold, double dist_thres, double mean_thres, double octree_res){
     std::vector<int> index;
     double dist, min_dist, mean_dist = 0;
 
@@ -135,16 +136,28 @@ bool MotionDetection::detect_on_cloud(const std::vector<double>& sv_center, Poin
 
     octree.getPointIndicesFromNewVoxels(index);
 
+
+
     if(index.size() <= threshold){
         std::cout << "no difference !" << std::endl;
         return false;
     }
 
     for(int i : index)
-        diff_cloud.push_back(pcl::PointXYZ(_cloud_frames[0]->points[i].x,
+        diff_cloud->push_back(pcl::PointXYZ(_cloud_frames[0]->points[i].x,
                                            _cloud_frames[0]->points[i].y,
                                            _cloud_frames[0]->points[i].z));
 
+
+    pcl::IterativeClosestPoint<pcl::PointXYZ,pcl::PointXYZ> icp;
+    icp.setMaxCorrespondenceDistance(0.05);
+    icp.setInputSource(sv);
+    icp.setInputTarget(diff_cloud);
+    PointCloudXYZ output;
+    icp.align(output);
+    std::cout << "has converged:" << icp.hasConverged() << " score: " <<
+    icp.getFitnessScore() << std::endl;
+    std::cout << icp.getFinalTransformation() << std::endl;
 
     std::function<double(double,double,double,double,double,double)> distance =
             [](double x1, double x2, double y1, double y2, double z1, double z2) -> double {
