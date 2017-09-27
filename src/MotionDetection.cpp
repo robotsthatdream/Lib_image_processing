@@ -1,5 +1,6 @@
 #include "image_processing/MotionDetection.h"
 #include <pcl/registration/icp.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 using namespace image_processing;
 
@@ -149,8 +150,16 @@ bool MotionDetection::detect_on_cloud(const PointCloudXYZ::Ptr sv, const std::ve
                                            _cloud_frames[0]->points[i].z));
 
 
+    pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+    sor.setInputCloud(diff_cloud);
+    sor.setMeanK (10);
+    sor.setStddevMulThresh (0.001);
+    sor.filter (*diff_cloud);
+
+    std::cout << sv->size() << std::endl;
+
     pcl::IterativeClosestPoint<pcl::PointXYZ,pcl::PointXYZ> icp;
-    icp.setMaxCorrespondenceDistance(0.05);
+    icp.setMaxCorrespondenceDistance(dist_thres);
     icp.setInputSource(sv);
     icp.setInputTarget(diff_cloud);
     PointCloudXYZ output;
@@ -159,33 +168,36 @@ bool MotionDetection::detect_on_cloud(const PointCloudXYZ::Ptr sv, const std::ve
     icp.getFitnessScore() << std::endl;
     std::cout << icp.getFinalTransformation() << std::endl;
 
-    std::function<double(double,double,double,double,double,double)> distance =
-            [](double x1, double x2, double y1, double y2, double z1, double z2) -> double {
-        return sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) + (z1 - z2)*(z1 - z2));
-    };
-
-    min_dist = distance(_cloud_frames[0]->points[index[0]].x,sv_center[0],
-                    _cloud_frames[0]->points[index[0]].y,sv_center[1],
-                    _cloud_frames[0]->points[index[0]].z,sv_center[2]);
-
-    for(int i : index){
-        dist = distance(_cloud_frames[0]->points[i].x,sv_center[0],
-                        _cloud_frames[0]->points[i].y,sv_center[1],
-                        _cloud_frames[0]->points[i].z,sv_center[2]);
-        mean_dist += dist;
-        if(min_dist > dist)
-            min_dist = dist;
-    }
-
-    mean_dist = mean_dist/((double)index.size());
-
-    std::cout << "min distance is " << min_dist << " and mean distance is " << mean_dist <<  std::endl;
-
-    if(mean_dist - mean_thres > -0.01)
-        return false;
-
-    if(dist_thres - min_dist > -0.01 )
+    if(icp.hasConverged() && icp.getFitnessScore() < 10e-5)
         return true;
+
+//    std::function<double(double,double,double,double,double,double)> distance =
+//            [](double x1, double x2, double y1, double y2, double z1, double z2) -> double {
+//        return sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) + (z1 - z2)*(z1 - z2));
+//    };
+
+//    min_dist = distance(_cloud_frames[0]->points[index[0]].x,sv_center[0],
+//                    _cloud_frames[0]->points[index[0]].y,sv_center[1],
+//                    _cloud_frames[0]->points[index[0]].z,sv_center[2]);
+
+//    for(int i : index){
+//        dist = distance(_cloud_frames[0]->points[i].x,sv_center[0],
+//                        _cloud_frames[0]->points[i].y,sv_center[1],
+//                        _cloud_frames[0]->points[i].z,sv_center[2]);
+//        mean_dist += dist;
+//        if(min_dist > dist)
+//            min_dist = dist;
+//    }
+
+//    mean_dist = mean_dist/((double)index.size());
+
+//    std::cout << "min distance is " << min_dist << " and mean distance is " << mean_dist <<  std::endl;
+
+//    if(mean_dist - mean_thres > -0.01)
+//        return false;
+
+//    if(dist_thres - min_dist > -0.01 )
+//        return true;
 
     return false;
 }
