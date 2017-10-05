@@ -1,4 +1,5 @@
 #include <iostream>
+#include <functional>
 #include <image_processing/tools.hpp>
 
 //using namespace image_processing;
@@ -107,65 +108,85 @@ void image_processing::tools::cloudRGB2HSV(const PointCloudT::Ptr input, PointCl
 
 void image_processing::tools::rgb2Lab(int r, int g, int b, float& L, float& a, float& b2){
 
-    float sRGB_LUT[256];
-    float sXYZ_LUT[4000];
+//    float sRGB_LUT[256];
+//    float sXYZ_LUT[4000];
 
-    for (int i = 0; i < 256; i++)
-    {
-        float f = static_cast<float> (i) / 255.0f;
-        if (f > 0.04045)
-            sRGB_LUT[i] = powf ((f + 0.055f) / 1.055f, 2.4f);
-        else
-            sRGB_LUT[i] = f / 12.92f;
-    }
+//    for (int i = 0; i < 256; i++)
+//    {
+//        float f = static_cast<float> (i) / 255.0f;
+//        if (f > 0.04045)
+//            sRGB_LUT[i] = powf ((f + 0.055f) / 1.055f, 2.4f);
+//        else
+//            sRGB_LUT[i] = f / 12.92f;
+//    }
 
-    for (int i = 0; i < 4000; i++)
-    {
-        float f = static_cast<float> (i) / 4000.0f;
-        if (f > 0.008856)
-            sXYZ_LUT[i] = static_cast<float> (powf (f, 0.3333f));
-        else
-            sXYZ_LUT[i] = static_cast<float>((7.787 * f) + (16.0 / 116.0));
-    }
+//    for (int i = 0; i < 4000; i++)
+//    {
+//        float f = static_cast<float> (i) / 4000.0f;
+//        if (f > 0.008856)
+//            sXYZ_LUT[i] = static_cast<float> (powf (f, 0.3333f));
+//        else
+//            sXYZ_LUT[i] = static_cast<float>((7.787 * f) + (16.0 / 116.0));
+//    }
 
 
-    float fr = sRGB_LUT[r];
-    float fg = sRGB_LUT[g];
-    float fb = sRGB_LUT[b];
+//    float fr = sRGB_LUT[r];
+//    float fg = sRGB_LUT[g];
+//    float fb = sRGB_LUT[b];
 
-    // Use white = D65
-    const float x = fr * 0.412453f + fg * 0.357580f + fb * 0.180423f;
-    const float y = fr * 0.212671f + fg * 0.715160f + fb * 0.072169f;
-    const float z = fr * 0.019334f + fg * 0.119193f + fb * 0.950227f;
+//    // Use white = D65
+//    const float x = fr * 0.412453f + fg * 0.357580f + fb * 0.180423f;
+//    const float y = fr * 0.212671f + fg * 0.715160f + fb * 0.072169f;
+//    const float z = fr * 0.019334f + fg * 0.119193f + fb * 0.950227f;
 
-    float vx = x / 0.95047f;
-    float vy = y;
-    float vz = z / 1.08883f;
+//    float vx = x / 0.95047f;
+//    float vy = y;
+//    float vz = z / 1.08883f;
 
-    vx = sXYZ_LUT[int(vx*4000)];
-    vy = sXYZ_LUT[int(vy*4000)];
-    vz = sXYZ_LUT[int(vz*4000)];
+//    vx = sXYZ_LUT[int(vx*4000)];
+//    vy = sXYZ_LUT[int(vy*4000)];
+//    vz = sXYZ_LUT[int(vz*4000)];
 
-    L = 116.0f * vy - 16.0f;
-    if (L > 100)
-        L = 100.0f;
+//    L = 116.0f * vy - 16.0f;
+//    if (L > 100)
+//        L = 100.0f;
 
-    L = L/100.0f;
+//    L = L/100.0f;
 
-    a = 500.0f * (vx - vy);
-    if (a > 120)
-        a = 120.0f;
-    else if (a <- 120)
-        a = -120.0f;
+//    a = 500.0f * (vx - vy);
+//    if (a > 120)
+//        a = 120.0f;
+//    else if (a <- 120)
+//        a = -120.0f;
 
+//    a = a/120.0f;
+
+//    b2 = 200.0f * (vy - vz);
+//    if (b2 > 120)
+//        b2 = 120.0f;
+//    else if (b2<- 120)
+//        b2 = -120.0f;
+
+//    b2 = b2/120.0f;
+
+    std::function<float(float)> f = [](float t) -> float {
+        if(t > 0.008856f)
+            return std::pow(t,0.3333f);
+        else return 7.787f*t + 0.138f;
+    };
+
+    float X = static_cast<float>(r) * 0.412453f + static_cast<float>(g) * 0.357580f + static_cast<float>(b) * 0.180423f;
+    float Y = static_cast<float>(r) * 0.212671f + static_cast<float>(g) * 0.715160f + static_cast<float>(b) * 0.072169f;
+    float Z = static_cast<float>(r) * 0.019334f + static_cast<float>(g) * 0.119193f + static_cast<float>(b) * 0.950227f;
+
+    float Xn = 95.047f, Yn = 100.0f, Zn = 108.883f;
+
+    L = 116*f(Y/Yn) - 16;
+    a = 500*(f(X/Xn) - f(Y/Yn));
+    b2 = 200*(f(Y/Yn) - f(Z/Zn));
+
+    L = L / 100.0f;
     a = a/120.0f;
-
-    b2 = 200.0f * (vy - vz);
-    if (b2 > 120)
-        b2 = 120.0f;
-    else if (b2<- 120)
-        b2 = -120.0f;
-
     b2 = b2/120.0f;
 }
 

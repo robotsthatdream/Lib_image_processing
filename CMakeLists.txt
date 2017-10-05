@@ -33,7 +33,7 @@ install(DIRECTORY include/image_processing/  DESTINATION include/${PROJECT_NAME}
 file(GLOB_RECURSE src_files src/* include/image_processing/*)
 
 add_library(image_processing ${SOURCE_FILES})
-target_link_libraries(image_processing  ${PCL_LIBRARIES} yaml-cpp.so ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(image_processing  ${PCL_LIBRARIES} yaml-cpp.so ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} tbb)
 
 install(TARGETS ${PROJECT_NAME}
     ARCHIVE DESTINATION lib
