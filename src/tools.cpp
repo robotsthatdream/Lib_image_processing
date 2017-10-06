@@ -182,11 +182,21 @@ void image_processing::tools::rgb2Lab(int r, int g, int b, float& L, float& a, f
     float Xn = 95.047f, Yn = 100.0f, Zn = 108.883f;
 
     L = 116*f(Y/Yn) - 16;
+    if(L>100.0f)
+        L = 100.0f;
     a = 500*(f(X/Xn) - f(Y/Yn));
+    if(a > 300.0f)
+        a = 300.0f;
+    else if ( a < -300.0f)
+        a = -300.0f;
     b2 = 200*(f(Y/Yn) - f(Z/Zn));
+    if(b2 > 300.0f)
+        b2 = 300.0f;
+    else if(b < -300.0f)
+        b2 = -300.0f;
 
     L = L / 100.0f;
-    a = a/120.0f;
-    b2 = b2/120.0f;
+    a = a/300.0f;
+    b2 = b2/300.0f;
 }
 
