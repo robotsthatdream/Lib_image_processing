@@ -462,20 +462,18 @@ struct features_fct{
                     [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 std::vector<Eigen::VectorXd> data;
-                for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
-                    float HSV[3];
-                    tools::rgb2hsv(it->r,it->g,it->b,HSV[0],HSV[1],HSV[2]);
+                for(auto it = sv.second->normals_->begin(); it != sv.second->normals_->end(); ++it){
                     Eigen::VectorXd vect(3);
-                    vect(0) = HSV[0];
-                    vect(1) = HSV[1];
-                    vect[2] = HSV[2];
+                    vect(0) = it->normal[0];
+                    vect(1) = it->normal[1];
+                    vect[2] = it->normal[2];
                     data.push_back(vect);
                 }
 
                 Eigen::MatrixXd bounds(2,3);
                 bounds << -1,-1,-1,
                         1,1,1;
-                HistogramFactory hf(5,3,bounds);
+                HistogramFactory hf(3,3,bounds);
                 hf.compute_multi_dim(data);
 
                 features[sv.first]["normalHistLarge"] = hf.get_histogram()[0];

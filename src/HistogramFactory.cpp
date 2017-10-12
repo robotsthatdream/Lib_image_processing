@@ -125,6 +125,7 @@ void HistogramFactory::compute_multi_dim(const std::vector<Eigen::VectorXd>& dat
     for(int i = 0; i < _dim; i++) d = d*_bins;
     _histogram = _histogram_t(1,Eigen::VectorXd::Zero(d));
     for(auto& v: data){
+        index = 0;
         for(int i = 0; i < _dim; i++){
             val = v[i];
             if(val != val  || (fabs(val) > 10e3))
@@ -135,13 +136,15 @@ void HistogramFactory::compute_multi_dim(const std::vector<Eigen::VectorXd>& dat
             bin[i] = (val - _bounds(0,i))/((_bounds(1,i) - _bounds(0,i))/_bins);
             if(bin[i] >= _bins) bin[i] -= 1;
             int n = std::trunc(bin[i]);
-            for(int k = 0; k < n ; k++){
-                int fact = 1;
-                for(int j = 0; j < i; j++)
-                    fact = fact * _bins;
-                index += fact;
-            }
+//            for(int k = 0; k < n-1 ; k++){
+//                int fact = 1;
+//                for(int j = 0; j < i; j++)
+//                    fact = fact * _bins;
+//                index += fact;
+//            }
+            index += n*std::pow(_bins,i);
         }
+
         _histogram[0](index)++;
     }
     for(int j = 0; j < d; j++){
