@@ -8,7 +8,8 @@
 #include <image_processing/pcl_types.h>
 #include <eigen3/Eigen/Eigen>
 #include <pcl/features/fpfh.h>
-
+#include <pcl/features/principal_curvatures.h>
+#include <pcl/features/moment_invariants.h>
 
 namespace image_processing{
 
@@ -571,6 +572,104 @@ struct features_fct{
                         sv.second->centroid_.g,
                         sv.second->centroid_.b;
                 features[sv.first]["colorRGBNormal"] = new_s;
+            }
+        });
+
+        map.emplace("principalCurvatures",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            pcl::PrincipalCurvaturesEstimation<PointT,pcl::Normal,pcl::PrincipalCurvatures> pce;
+            Eigen::VectorXd new_s(5);
+            std::vector<int> indices;
+            pcl::KdTreeFLANN<PointT>::Ptr tree(new pcl::KdTreeFLANN<PointT>);
+            std::vector<int> ind_tree(1);
+            std::vector<float> dist_tree(1);
+            float cx, cy, cz, c_min, c_max;
+            for(const auto& sv : supervoxels){
+
+                indices.clear();
+                for(int i = 0; i < sv.second->normals_->size(); i++)
+                    indices.push_back(i);
+
+                tree->setInputCloud(sv.second->voxels_);
+                tree->nearestKSearch(sv.second->centroid_,1,ind_tree,dist_tree);
+                pce.computePointPrincipalCurvatures(*(sv.second->normals_),ind_tree[0],indices,
+                        cx,cy,cz,c_max,c_min);
+
+                new_s << cx,cy,cz,c_max,c_min;
+
+                features[sv.first]["principalCurvatures"] = new_s;
+            }
+        });
+
+        map.emplace("centroidPrinCurv",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            pcl::PrincipalCurvaturesEstimation<PointT,pcl::Normal,pcl::PrincipalCurvatures> pce;
+
+            Eigen::VectorXd new_s(5);
+
+            PointCloudN::Ptr normals(new PointCloudN);
+            std::vector<uint32_t> lbl;
+
+            pcl::PointCloud<pcl::PrincipalCurvatures> output_cloud;
+
+
+            for(const auto& sv : supervoxels){
+                normals->push_back(sv.second->normal_);
+                lbl.push_back(sv.first);
+            }
+
+
+            pce.setInputNormals(normals);
+
+            pce.compute(output_cloud);
+
+            for(int i = 0; i < output_cloud.size(); i++){
+                new_s << output_cloud[i].principal_curvature[0],
+                        output_cloud[i].principal_curvature[1],
+                        output_cloud[i].principal_curvature[2],
+                        output_cloud[i].pc1, output_cloud[i].pc2;
+                features[lbl[i]]["centroidsPrincCurv"] = new_s;
+            }
+
+        });
+        map.emplace("momentInvariant",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            Eigen::VectorXd new_s(3);
+            pcl::MomentInvariantsEstimation<PointT,pcl::MomentInvariants> mie;
+            float j1,j2,j3;
+            for(const auto& sv : supervoxels){
+                mie.computePointMomentInvariants(*(sv.second->voxels_),j1,j2,j3);
+                new_s << j1, j2, j3;
+                features[sv.first]["momentInvariant"] = new_s;
+            }
+        });
+        map.emplace("centroidsMomInv",
+                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+            pcl::MomentInvariantsEstimation<PointT,pcl::MomentInvariants> mie;
+
+            Eigen::VectorXd new_s(3);
+
+            PointCloudT::Ptr centroids(new PointCloudT);
+            std::vector<uint32_t> lbl;
+
+            pcl::PointCloud<pcl::MomentInvariants> output_cloud;
+
+
+            for(const auto& sv : supervoxels){
+                centroids->push_back(sv.second->centroid_);
+                lbl.push_back(sv.first);
+            }
+
+
+            mie.setInputCloud(centroids);
+
+            mie.compute(output_cloud);
+
+            for(int i = 0; i < output_cloud.size(); i++){
+                new_s << output_cloud[i].j1,
+                        output_cloud[i].j2,
+                        output_cloud[i].j3;
+                features[lbl[i]]["centroidsMomInv"] = new_s;
             }
         });
 

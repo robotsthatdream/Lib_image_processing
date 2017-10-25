@@ -83,9 +83,6 @@ bool SupervoxelSet::computeSupervoxel(workspace_t& workspace){
     passFilter.setFilterLimits(workspace.area[4],workspace.area[5]);
     passFilter.filter(*_inputCloud);
 
-
-
-
     //input cloud
     if(_inputCloud->empty()){
         std::cerr << "error : input cloud is empty" << std::endl;
