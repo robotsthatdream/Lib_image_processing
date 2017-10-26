@@ -778,8 +778,71 @@ struct features_fct{
             }
         });
 
+        map.emplace("localConvexityCP",
+                   [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
+
+            Eigen::Vector3d connectV, surfaceV,
+                    centr_pos1, centr_pos2, norm1, norm2;
+            Eigen::VectorXd new_s(8);
+            double a1,a2;
+            int count;
+            for(const auto& sv : supervoxels){
+                a1 = 0;
+                a2 = 0;
+                connectV = Eigen::Vector3d::Zero(3);
+                surfaceV = Eigen::Vector3d::Zero(3);
+                count = 0;
+                centr_pos1 << sv.second->centroid_.x,
+                        sv.second->centroid_.y,
+                        sv.second->centroid_.z;
+                norm1 << sv.second->normal_.normal[0],
+                        sv.second->normal_.normal[1],
+                        sv.second->normal_.normal[2];
+
+
+                auto it_pair = adj_map.equal_range(sv.first);
+                for(auto it = it_pair.first; it != it_pair.second; it++){
+                    centr_pos2 << supervoxels.at(it->second)->centroid_.x,
+                            supervoxels.at(it->second)->centroid_.y,
+                            supervoxels.at(it->second)->centroid_.z;
+                    norm2 << supervoxels.at(it->second)->normal_.normal[0],
+                            supervoxels.at(it->second)->normal_.normal[1],
+                            supervoxels.at(it->second)->normal_.normal[2];
+
+                    connectV += centr_pos1 - centr_pos2;
+                    surfaceV += norm1.cross(norm2);
+                    a1 += norm1.dot(connectV);
+                    a2 += norm1.dot(connectV);
+                    count++;
+                }
+                a1 = a1/(double)count;
+                a2 = a2/(double)count;
+                connectV = connectV/(double)count;
+                surfaceV = surfaceV/(double)count;
+
+                new_s << connectV(0), connectV(1), connectV(2),
+                        surfaceV(0), surfaceV(1), surfaceV(2),
+                        a1, a2;
+
+                for(int i = 0; i < new_s.rows(); i++)
+                {
+                    if(new_s(i) != new_s(i))
+                        new_s(i) = 0.;
+                    else if(fabs(new_s(i)) < 1e-4)
+                        new_s(i) = 0.;
+                    else if(new_s(i) > 1.)
+                        new_s(i) = 1.;
+                    else if(new_s(i) < -1.)
+                        new_s(i) = -1.;
+                }
+
+                features[sv.first]["localConvexityCP"] = new_s;
+            }
+        });
+
         return map;
     }
+
 
 
     static const std::map<std::string,function_t> fct_map;
