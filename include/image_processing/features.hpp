@@ -11,84 +11,17 @@
 #include <pcl/features/principal_curvatures.h>
 #include <pcl/features/moment_invariants.h>
 
+
 namespace image_processing{
 
-typedef std::function<void(const SupervoxelArray&, SupervoxelSet::features_t&)> function_t;
+typedef std::function<void(const SupervoxelArray&, const AdjacencyMap&, SupervoxelSet::features_t&)> function_t;
 
 struct features_fct{
     static std::map<std::string,function_t> create_map(){
         std::map<std::string,function_t> map;
-        map.emplace("merged",
-                   [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
-
-            PointCloudT::Ptr centroids(new PointCloudT);
-            PointCloudN::Ptr centroids_n(new PointCloudN);
-            std::map<uint32_t, int> centroids_lbl;
-
-            int i = 0;
-            for(auto it = supervoxels.begin()
-                ; it != supervoxels.end(); it++){
-                pcl::Supervoxel<PointT>::Ptr supervoxel = it->second;
-                centroids->push_back(supervoxel->centroid_);
-                centroids_n->push_back(supervoxel->normal_);
-                centroids_lbl.insert(std::pair<uint32_t,int>(it->first,i));
-                i++;
-            }
-
-            pcl::FPFHEstimation<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
-            fpfh.setInputCloud(centroids);
-            fpfh.setInputNormals(centroids_n);
-
-            pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
-            fpfh.setSearchMethod(tree);
-            fpfh.setRadiusSearch (0.05);
-
-
-            pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
-            fpfh.compute(*fpfh_cloud);
-
-
-            for(const auto& sv : supervoxels){
-                Eigen::VectorXd sample;
-
-                Eigen::MatrixXd bounds_c(2,3);
-                bounds_c << 0,0,0,
-                        1,1,1;
-
-                Eigen::MatrixXd bounds_n(2,3);
-                bounds_n << -1,-1,-1,
-                        1,1,1;
-                HistogramFactory hf_color(5,3,bounds_c);
-                HistogramFactory hf_normal(5,3,bounds_n);
-                hf_color.compute(sv.second);
-                hf_normal.compute(sv.second,"normal");
-
-                sample.resize(63);
-                int k = 0 , l = 0;
-                for(int i = 0; i < 15; i++){
-                    sample(i) = hf_color.get_histogram()[k](l);
-                    l = (l+1)%5;
-                    if(l == 0)
-                        k++;
-                }
-                l = 0; k = 0;
-                for(int i = 15; i < 30; i++){
-                    sample(i) = hf_normal.get_histogram()[k](l);
-                    l = (l+1)%5;
-                    if(l == 0)
-                        k++;
-                }
-
-                for(int i = 30; i < 63; ++i){
-                    sample(i) = fpfh_cloud->points[centroids_lbl[sv.first]].histogram[i]/100.;
-                }
-
-                features[sv.first]["merged"] = sample;
-            }
-        });
 
         map.emplace("colorNormalHist",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 Eigen::VectorXd sample;
 
@@ -148,7 +81,7 @@ struct features_fct{
 //        });
 
         map.emplace("colorHSV",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 float hsv[3];
                 tools::rgb2hsv(sv.second->centroid_.r,
@@ -162,7 +95,7 @@ struct features_fct{
         });
 
         map.emplace("colorLab",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 float Lab[3];
                 tools::rgb2Lab(sv.second->centroid_.r,
@@ -176,7 +109,7 @@ struct features_fct{
         });
 
         map.emplace("colorLabHist",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
            for(const auto& sv: supervoxels){
                std::vector<Eigen::VectorXd> data;
                for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
@@ -207,7 +140,7 @@ struct features_fct{
         });
 
         map.emplace("colorL",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 std::vector<Eigen::VectorXd> data;
                 for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
@@ -232,7 +165,7 @@ struct features_fct{
         });
 
         map.emplace("colora",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 std::vector<Eigen::VectorXd> data;
                 for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
@@ -256,7 +189,7 @@ struct features_fct{
             }
         });
         map.emplace("colorb",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 std::vector<Eigen::VectorXd> data;
                 for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
@@ -281,7 +214,7 @@ struct features_fct{
         });
 
         map.emplace("colorLabNormalHist",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
            for(const auto& sv: supervoxels){
                std::vector<Eigen::VectorXd> data;
                for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
@@ -324,7 +257,7 @@ struct features_fct{
 
 
         map.emplace("colorRGB",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 Eigen::VectorXd sample(3);
                 sample << sv.second->centroid_.r,
@@ -335,7 +268,7 @@ struct features_fct{
         });
 
         map.emplace("colorH",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
@@ -347,7 +280,7 @@ struct features_fct{
         });
 
         map.emplace("colorS",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
@@ -359,7 +292,7 @@ struct features_fct{
         });
 
         map.emplace("colorV",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
@@ -371,7 +304,7 @@ struct features_fct{
         });
 
         map.emplace("colorHist",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << 0,0,0,
@@ -392,7 +325,7 @@ struct features_fct{
         });
 
         map.emplace("normal",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 Eigen::VectorXd new_s(3);
                 new_s << sv.second->normal_.normal[0],
@@ -403,7 +336,7 @@ struct features_fct{
         });
 
         map.emplace("normalX",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << -1,-1,-1,
@@ -415,7 +348,7 @@ struct features_fct{
         });
 
         map.emplace("normalY",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << -1,-1,-1,
@@ -427,7 +360,7 @@ struct features_fct{
         });
 
         map.emplace("normalZ",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << -1,-1,-1,
@@ -439,7 +372,7 @@ struct features_fct{
         });
 
         map.emplace("normalHist",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 Eigen::MatrixXd bounds(2,3);
                 bounds << -1,-1,-1,
@@ -460,7 +393,7 @@ struct features_fct{
         });
 
         map.emplace("normalHistLarge",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 std::vector<Eigen::VectorXd> data;
                 for(auto it = sv.second->normals_->begin(); it != sv.second->normals_->end(); ++it){
@@ -481,8 +414,63 @@ struct features_fct{
             }
         });
 
+        map.emplace("normalHistNeigh",
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
+            Eigen::VectorXd sum = Eigen::VectorXd::Zero(8);
+            Eigen::MatrixXd bounds(2,3);
+            bounds << -1,-1,-1,
+                    1,1,1;
+            HistogramFactory hf(2,3,bounds);
+            int count;
+            Eigen::VectorXd new_s(16);
+            for(const auto& sv: supervoxels){
+                std::vector<Eigen::VectorXd> data;
+                auto it_pair = adj_map.equal_range(sv.first);
+                count = 0;
+                data.clear();
+                for(auto it = it_pair.first; it != it_pair.second; it++){
+                    for(auto it_norm = supervoxels.at(it->second)->normals_->begin();
+                        it_norm != supervoxels.at(it->second)->normals_->end(); ++it_norm){
+                        Eigen::VectorXd vect(3);
+                        vect(0) = it_norm->normal[0];
+                        vect(1) = it_norm->normal[1];
+                        vect[2] = it_norm->normal[2];
+                        data.push_back(vect);
+                    }
+                    hf.compute_multi_dim(data);
+                    sum += hf.get_histogram()[0];
+                    count++;
+                }
+
+                if(count > 0)
+                    sum = sum/(float)count;
+
+
+
+                data.clear();
+                for(auto it = sv.second->normals_->begin(); it != sv.second->normals_->end(); ++it){
+                    Eigen::VectorXd vect(3);
+                    vect(0) = it->normal[0];
+                    vect(1) = it->normal[1];
+                    vect[2] = it->normal[2];
+                    data.push_back(vect);
+                }
+                hf.compute_multi_dim(data);
+
+                for(int i = 0; i < 8; i++)
+                    new_s(i) = hf.get_histogram()[0](i);
+                for(int i = 8; i < 16; i++){
+                    if(fabs(sum(i-8)) < 1e-4)
+                        sum(i-8) = 0.;
+                    new_s(i) = sum(i - 8);
+                }
+
+                features[sv.first]["normalHistNeigh"] = new_s;
+            }
+        });
+
         map.emplace("colorLabHistLarge",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv: supervoxels){
                 std::vector<Eigen::VectorXd> data;
                 for(auto it = sv.second->voxels_->begin(); it != sv.second->voxels_->end(); ++it){
@@ -507,7 +495,7 @@ struct features_fct{
 
 
         map.emplace("fpfh",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             PointCloudT::Ptr centroids(new PointCloudT);
             PointCloudN::Ptr centroids_n(new PointCloudN);
             std::map<int, uint32_t> centroids_lbl;
@@ -542,7 +530,7 @@ struct features_fct{
         });
 
         map.emplace("colorHSVNormal",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 float hsv[3];
                 tools::rgb2hsv(sv.second->centroid_.r,
@@ -560,7 +548,7 @@ struct features_fct{
         });
 
         map.emplace("colorRGBNormal",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             for(const auto& sv : supervoxels){
                 Eigen::VectorXd new_s(6);
                 new_s << sv.second->normal_.normal[0],
@@ -574,7 +562,7 @@ struct features_fct{
         });
 
         map.emplace("principalCurvatures",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
             pcl::PrincipalCurvaturesEstimation<PointT,pcl::Normal,pcl::PrincipalCurvatures> pce;
             Eigen::VectorXd new_s(5);
             std::vector<int> indices;
@@ -582,30 +570,129 @@ struct features_fct{
             std::vector<int> ind_tree(1);
             std::vector<float> dist_tree(1);
             float cx, cy, cz, c_min, c_max;
+            PointCloudN::Ptr inputNormal(new PointCloudN);
+            PointCloudT::Ptr inputCloud(new PointCloudT);
+
             for(const auto& sv : supervoxels){
 
+                auto it_pair = adj_map.equal_range(sv.first);
+                for(auto it = it_pair.first; it != it_pair.second; it++){
+                    for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+                        inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
+                        inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
+                    }
+                }
+
+                for(int i = 0; i < sv.second->normals_->size(); i++){
+                    inputNormal->push_back(sv.second->normals_->at(i));
+                    inputCloud->push_back(sv.second->voxels_->at(i));
+                }
+
+
+
                 indices.clear();
-                for(int i = 0; i < sv.second->normals_->size(); i++)
+                for(int i = 0; i < inputCloud->size(); i++)
                     indices.push_back(i);
 
-                tree->setInputCloud(sv.second->voxels_);
+                tree->setInputCloud(inputCloud);
                 tree->nearestKSearch(sv.second->centroid_,1,ind_tree,dist_tree);
-                pce.computePointPrincipalCurvatures(*(sv.second->normals_),ind_tree[0],indices,
+                pce.computePointPrincipalCurvatures(*inputNormal,ind_tree[0],indices,
                         cx,cy,cz,c_max,c_min);
 
                 new_s << cx,cy,cz,c_max,c_min;
+
+                for(int i = 0; i < new_s.rows(); i++)
+                {
+                    if(fabs(new_s(i)) < 1e-4)
+                        new_s(i) = 0.;
+                    else if(new_s(i) > 1.)
+                        new_s(i) = 1.;
+                    else if(new_s(i) < -1.)
+                        new_s(i) = -1.;
+                }
 
                 features[sv.first]["principalCurvatures"] = new_s;
             }
         });
 
-        map.emplace("centroidPrinCurv",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+        map.emplace("prinCurvNeigh",
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
             pcl::PrincipalCurvaturesEstimation<PointT,pcl::Normal,pcl::PrincipalCurvatures> pce;
+            Eigen::VectorXd new_s(10);
+            std::vector<int> indices;
+            pcl::KdTreeFLANN<PointT>::Ptr tree(new pcl::KdTreeFLANN<PointT>);
+            std::vector<int> ind_tree(1);
+            std::vector<float> dist_tree(1);
+            float cx, cy, cz, c_min, c_max;
+            float cx2, cy2, cz2, c_min2, c_max2;
+            float cx_n, cy_n, cz_n, c_min_n, c_max_n;
+            int count;
+            for(const auto& sv : supervoxels){
+                count = 0;
+                cx_n = 0; cy_n = 0; cz_n = 0; c_min_n = 0; c_max_n = 0;
+                auto it_pair = adj_map.equal_range(sv.first);
+                for(auto it = it_pair.first; it != it_pair.second; it++){
+                    indices.clear();
+                    for(int i = 0; i < sv.second->normals_->size(); i++)
+                        indices.push_back(i);
+
+                    tree->setInputCloud(sv.second->voxels_);
+                    tree->nearestKSearch(sv.second->centroid_,1,ind_tree,dist_tree);
+                    pce.computePointPrincipalCurvatures(*(sv.second->normals_),ind_tree[0],indices,
+                            cx,cy,cz,c_max,c_min);
+
+                    indices.clear();
+                    for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++)
+                        indices.push_back(i);
+
+                    tree->setInputCloud(supervoxels.at(it->second)->voxels_);
+                    tree->nearestKSearch(supervoxels.at(it->second)->centroid_,1,ind_tree,dist_tree);
+                    pce.computePointPrincipalCurvatures(*(supervoxels.at(it->second)->normals_),ind_tree[0],indices,
+                            cx2,cy2,cz2,c_max2,c_min2);
+                    cx_n+= fabs(cx-cx2);
+                    cy_n+= fabs(cy-cy2);
+                    cz_n+= fabs(cz-cz2);
+                    c_min_n+= fabs(c_min-c_min2);
+                    c_max_n+= fabs(c_max-c_max2);
+                    count++;
+                }
+                if(count > 0){
+                    cx_n = cx_n/(float)count;
+                    cy_n = cy_n/(float)count;
+                    cz_n = cz_n/(float)count;
+                    c_min_n = c_min_n/(float)count;
+                    c_max_n = c_max_n/(float)count;
+                }
+
+
+
+                new_s << cx, cy, cz, c_max, c_min, cx_n, cy_n, cz_n, c_max_n, c_min_n;
+
+
+                for(int i = 0; i < new_s.rows(); i++)
+                {
+                    if(fabs(new_s(i)) < 1e-4)
+                        new_s(i) = 0.;
+                    else if(new_s(i) > 1.)
+                        new_s(i) = 1.;
+                    else if(new_s(i) < -1.)
+                        new_s(i) = -1.;
+                }
+
+                features[sv.first]["prinCurvNeigh"] = new_s;
+            }
+        });
+
+        map.emplace("centroidsPrinCurv",
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
+            pcl::PrincipalCurvaturesEstimation<PointT,pcl::Normal,pcl::PrincipalCurvatures> pce;
+            pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
+
 
             Eigen::VectorXd new_s(5);
 
             PointCloudN::Ptr normals(new PointCloudN);
+            PointCloudT::Ptr centroids(new PointCloudT);
             std::vector<uint32_t> lbl;
 
             pcl::PointCloud<pcl::PrincipalCurvatures> output_cloud;
@@ -613,11 +700,14 @@ struct features_fct{
 
             for(const auto& sv : supervoxels){
                 normals->push_back(sv.second->normal_);
+                centroids->push_back(sv.second->centroid_);
                 lbl.push_back(sv.first);
             }
 
-
+            pce.setSearchMethod(tree);
+            pce.setRadiusSearch(0.1);
             pce.setInputNormals(normals);
+            pce.setInputCloud(centroids);
 
             pce.compute(output_cloud);
 
@@ -626,14 +716,30 @@ struct features_fct{
                         output_cloud[i].principal_curvature[1],
                         output_cloud[i].principal_curvature[2],
                         output_cloud[i].pc1, output_cloud[i].pc2;
-                features[lbl[i]]["centroidsPrincCurv"] = new_s;
+
+                for(int i = 0; i < new_s.rows(); i++)
+                {
+                    if(new_s(i) != new_s(i))
+                        new_s(i) = 0.;
+                    else if(fabs(new_s(i)) < 1e-4)
+                        new_s(i) = 0.;
+                    else if(new_s(i) > 1.)
+                        new_s(i) = 1.;
+                    else if(new_s(i) < -1.)
+                        new_s(i) = -1.;
+
+                }
+
+                features[lbl[i]]["centroidsPrinCurv"] = new_s;
             }
 
         });
         map.emplace("momentInvariant",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             Eigen::VectorXd new_s(3);
             pcl::MomentInvariantsEstimation<PointT,pcl::MomentInvariants> mie;
+            mie.setRadiusSearch(0.005);
+
             float j1,j2,j3;
             for(const auto& sv : supervoxels){
                 mie.computePointMomentInvariants(*(sv.second->voxels_),j1,j2,j3);
@@ -642,8 +748,10 @@ struct features_fct{
             }
         });
         map.emplace("centroidsMomInv",
-                    [](const SupervoxelArray& supervoxels, SupervoxelSet::features_t& features){
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
             pcl::MomentInvariantsEstimation<PointT,pcl::MomentInvariants> mie;
+
+            mie.setRadiusSearch(0.005);
 
             Eigen::VectorXd new_s(3);
 
@@ -657,7 +765,6 @@ struct features_fct{
                 centroids->push_back(sv.second->centroid_);
                 lbl.push_back(sv.first);
             }
-
 
             mie.setInputCloud(centroids);
 

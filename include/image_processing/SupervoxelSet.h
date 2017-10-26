@@ -79,10 +79,10 @@ public :
     typedef std::map<uint32_t,std::map<std::string,Eigen::VectorXd>> features_t;
 
     SupervoxelSet(){
-        init<supervoxel>();
+//        init<supervoxel>();
     }
     SupervoxelSet(const PointCloudT::Ptr& cloud) : _inputCloud(cloud){
-        init<supervoxel>();
+//        init<supervoxel>();
     }
     SupervoxelSet(const SupervoxelSet& super) :
         _inputCloud(super._inputCloud),
