@@ -10,7 +10,7 @@
 #include <pcl/features/fpfh.h>
 #include <pcl/features/principal_curvatures.h>
 #include <pcl/features/moment_invariants.h>
-
+#include <pcl/features/boundary.h>
 
 namespace image_processing{
 
@@ -574,7 +574,8 @@ struct features_fct{
             PointCloudT::Ptr inputCloud(new PointCloudT);
 
             for(const auto& sv : supervoxels){
-
+                inputNormal->clear();
+                inputCloud->clear();
                 auto it_pair = adj_map.equal_range(sv.first);
                 for(auto it = it_pair.first; it != it_pair.second; it++){
                     for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
@@ -838,8 +839,51 @@ struct features_fct{
 
                 features[sv.first]["localConvexityCP"] = new_s;
             }
+
         });
 
+        map.emplace("boundary",
+                   [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
+            pcl::BoundaryEstimation<PointT,pcl::Normal,pcl::Boundary> be;
+            pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
+            PointCloudN::Ptr inputNormal(new PointCloudN);
+            PointCloudT::Ptr inputCloud(new PointCloudT);
+            PointCloudT boundaryCloud;
+            pcl::PointCloud<pcl::Boundary> boundaries;
+            for(const auto& sv: supervoxels){
+                boundaries.clear();
+                inputNormal->clear();
+                inputCloud->clear();
+                boundaryCloud.clear();
+
+                auto it_pair = adj_map.equal_range(sv.first);
+                for(auto it = it_pair.first; it != it_pair.second; it++){
+                    for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+                        inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
+                        inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
+                    }
+                }
+
+                for(int i = 0; i < sv.second->normals_->size(); i++){
+                    inputNormal->push_back(sv.second->normals_->at(i));
+                    inputCloud->push_back(sv.second->voxels_->at(i));
+                }
+
+                be.setInputCloud(inputCloud);
+                be.setInputNormals(inputNormal);
+                be.setSearchMethod(tree);
+                be.setRadiusSearch(0.02);
+                be.compute(boundaries);
+
+                for(int i = 0; i < boundaries.size(); i++){
+                    if(boundaries[i].boundary_point != boundaries[i].boundary_point)
+                        continue;
+                    if(boundary.boundary_point){
+                        boundaryCloud.push_back(inputCloud[i]);
+                    }
+                }
+            }
+        });
         return map;
     }
 
