@@ -878,8 +878,8 @@ struct features_fct{
                 for(int i = 0; i < boundaries.size(); i++){
                     if(boundaries[i].boundary_point != boundaries[i].boundary_point)
                         continue;
-                    if(boundary.boundary_point){
-                        boundaryCloud.push_back(inputCloud[i]);
+                    if(boundaries[i].boundary_point){
+                        boundaryCloud.push_back(inputCloud->at(i));
                     }
                 }
             }
