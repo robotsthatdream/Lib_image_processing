@@ -161,7 +161,24 @@ public :
     /**
      * @brief clear
      */
-    void clear();
+    template<typename Param>
+    void clear(){
+        //    for(auto it = _supervoxels.begin();it != _supervoxels.end();it++){
+        //        std::cout << "remove !" << std::endl;
+        //        remove(it->first);
+        //    }
+
+        auto it = _supervoxels.begin();
+        while(it != _supervoxels.end()){
+            remove(it->first);
+            it = _supervoxels.begin();
+        }
+
+        _extractor.reset(new pcl::SupervoxelClustering<PointT>(Param::voxel_resolution,Param::seed_resolution,Param::use_transform));
+        _extractor->setColorImportance(Param::color_importance);
+        _extractor->setSpatialImportance(Param::spatial_importance);
+        _extractor->setNormalImportance(Param::normal_importance);
+    }
 
     /**
      * @brief extractCloud : give the pointcloud in base of supervoxel

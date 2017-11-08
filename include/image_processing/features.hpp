@@ -7,10 +7,12 @@
 #include <pcl/segmentation/supervoxel_clustering.h>
 #include <image_processing/pcl_types.h>
 #include <eigen3/Eigen/Eigen>
+#include <pcl/features/fpfh_omp.h>
 #include <pcl/features/fpfh.h>
 #include <pcl/features/principal_curvatures.h>
 #include <pcl/features/moment_invariants.h>
 #include <pcl/features/boundary.h>
+#include <tbb/tbb.h>
 
 namespace image_processing{
 
@@ -527,6 +529,130 @@ struct features_fct{
                    features[feat.second]["fpfh"](i) = fpfh_cloud->points[feat.first].histogram[i]/100.;
                 }
             }
+        });
+
+        map.emplace("localMeanFPFH",
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap&, SupervoxelSet::features_t& features){
+
+            pcl::FPFHEstimationOMP<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
+            pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
+            pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
+
+
+            for(const auto& sv : supervoxels){
+                fpfh.setInputCloud(sv.second->voxels_);
+                fpfh.setInputNormals(sv.second->normals_);
+
+                fpfh.setSearchMethod(tree);
+                fpfh.setRadiusSearch (0.05);
+                fpfh.compute(*fpfh_cloud);
+
+                features[sv.first]["localMeanFPFH"] = Eigen::VectorXd::Zero(33);
+                for(int i = 0; i < fpfh_cloud->size(); i++){
+                    for(int j = 0; j < 33; j++)
+                        features[sv.first]["localMeanFPFH"](j) += fpfh_cloud->points[i].histogram[j]/100.;
+                }
+                features[sv.first]["localMeanFPFH"] = features[sv.first]["localMeanFPFH"]/(double)fpfh_cloud->size();
+            }
+        });
+
+        map.emplace("neighMeanFPFH",
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
+
+//            pcl::FPFHEstimationOMP<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
+//            pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
+//            pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
+//            PointCloudN::Ptr inputNormal(new PointCloudN);
+//            PointCloudT::Ptr inputCloud(new PointCloudT);
+//            pcl::IndicesPtr indices(new std::vector<int>);
+            std::vector<uint32_t> lbls;
+
+            for(const auto& sv : supervoxels)
+                lbls.push_back(sv.first);
+
+            tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
+                              [&](const tbb::blocked_range<size_t>& r){
+
+                pcl::FPFHEstimationOMP<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
+                pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
+                pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
+                PointCloudN::Ptr inputNormal(new PointCloudN);
+                PointCloudT::Ptr inputCloud(new PointCloudT);
+                pcl::IndicesPtr indices(new std::vector<int>);
+                for(int k = r.begin(); k < r.end(); k++){
+;
+                    inputNormal.reset(new PointCloudN);
+                    inputCloud.reset(new PointCloudT);
+                    auto it_pair = adj_map.equal_range(lbls[k]);
+                    for(auto it = it_pair.first; it != it_pair.second; it++){
+                        for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+                            inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
+                            inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
+                        }
+                    }
+
+                    for(int i = 0; i < supervoxels.at(lbls[k])->normals_->size(); i++){
+                        inputNormal->push_back(supervoxels.at(lbls[k])->normals_->at(i));
+                        inputCloud->push_back(supervoxels.at(lbls[k])->voxels_->at(i));
+                    }
+
+                    indices.reset(new std::vector<int>);
+                    for(int i = 0; i < inputCloud->size(); i++)
+                        indices->push_back(i);
+
+                    fpfh.setInputCloud(inputCloud);
+                    fpfh.setInputNormals(inputNormal);
+                    fpfh.setIndices(indices);
+
+                    fpfh.setSearchMethod(tree);
+                    fpfh.setRadiusSearch (0.05);
+                    fpfh.compute(*fpfh_cloud);
+
+                    features[lbls[k]]["neighMeanFPFH"] = Eigen::VectorXd::Zero(33);
+                    for(int i = 0; i < fpfh_cloud->size(); i++){
+                        for(int j = 0; j < 33; j++)
+                            features[lbls[k]]["neighMeanFPFH"](j) += fpfh_cloud->points[i].histogram[j]/100.;
+                    }
+                    features[lbls[k]]["neighMeanFPFH"] = features[lbls[k]]["neighMeanFPFH"]/(double)fpfh_cloud->size();
+                }
+            });
+
+//            for(const auto& sv : supervoxels){
+
+//                inputNormal.reset(new PointCloudN);
+//                inputCloud.reset(new PointCloudT);
+//                auto it_pair = adj_map.equal_range(sv.first);
+//                for(auto it = it_pair.first; it != it_pair.second; it++){
+//                    for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+//                        inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
+//                        inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
+//                    }
+//                }
+
+//                for(int i = 0; i < sv.second->normals_->size(); i++){
+//                    inputNormal->push_back(sv.second->normals_->at(i));
+//                    inputCloud->push_back(sv.second->voxels_->at(i));
+//                }
+
+//                indices.reset(new std::vector<int>);
+//                for(int i = 0; i < inputCloud->size(); i++)
+//                    indices->push_back(i);
+
+//                fpfh.setInputCloud(inputCloud);
+//                fpfh.setInputNormals(inputNormal);
+//                fpfh.setIndices(indices);
+
+//                fpfh.setSearchMethod(tree);
+//                fpfh.setRadiusSearch (0.05);
+//                fpfh.compute(*fpfh_cloud);
+
+//                features[sv.first]["neighMeanFPFH"] = Eigen::VectorXd::Zero(33);
+//                for(int i = 0; i < fpfh_cloud->size(); i++){
+//                    for(int j = 0; j < 33; j++)
+//                        features[sv.first]["neighMeanFPFH"](j) += fpfh_cloud->points[i].histogram[j]/100.;
+//                }
+//                features[sv.first]["neighMeanFPFH"] = features[sv.first]["neighMeanFPFH"]/(double)fpfh_cloud->size();
+//            }
         });
 
         map.emplace("colorHSVNormal",

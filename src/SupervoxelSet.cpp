@@ -313,20 +313,7 @@ void SupervoxelSet::remove(uint32_t label){
     _adjacency_map.erase(label);
 }
 
-void SupervoxelSet::clear(){
-//    for(auto it = _supervoxels.begin();it != _supervoxels.end();it++){
-//        std::cout << "remove !" << std::endl;
-//        remove(it->first);
-//    }
 
-    auto it = _supervoxels.begin();
-    while(it != _supervoxels.end()){
-        remove(it->first);
-        it = _supervoxels.begin();
-    }
-
-    _extractor.reset(new pcl::SupervoxelClustering<PointT>(supervoxel::voxel_resolution,supervoxel::seed_resolution,supervoxel::use_transform));
-}
 
 void SupervoxelSet::extractCloud(PointCloudT& resultCloud){
     for(SupervoxelArray::iterator sv_itr = _supervoxels.begin();
