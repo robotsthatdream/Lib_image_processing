@@ -610,6 +610,95 @@ struct features_fct{
                     features[lbls[k]]["neighMeanFPFH"] = features[lbls[k]]["neighMeanFPFH"]/(double)fpfh_cloud->size();
                 }
             });
+       });
+
+        map.emplace("meanFPFHLabHist",
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
+
+            std::vector<uint32_t> lbls;
+
+            for(const auto& sv : supervoxels)
+                lbls.push_back(sv.first);
+
+            tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
+                              [&](const tbb::blocked_range<size_t>& r){
+
+                pcl::FPFHEstimationOMP<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
+                pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
+                pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
+                PointCloudN::Ptr inputNormal(new PointCloudN);
+                PointCloudT::Ptr inputCloud(new PointCloudT);
+                pcl::IndicesPtr indices(new std::vector<int>);
+                Eigen::VectorXd new_s(48);
+                for(int k = r.begin(); k < r.end(); k++){
+
+                    //* Lab
+                    std::vector<Eigen::VectorXd> data;
+                    for(auto it = supervoxels.at(lbls[k])->voxels_->begin(); it != supervoxels.at(lbls[k])->voxels_->end(); ++it){
+                        float Lab[3];
+                        tools::rgb2Lab(it->r,it->g,it->b,Lab[0],Lab[1],Lab[2]);
+                        Eigen::VectorXd vect(3);
+                        vect(0) = Lab[0];
+                        vect(1) = Lab[1];
+                        vect[2] = Lab[2];
+                        data.push_back(vect);
+                    }
+                    Eigen::MatrixXd bounds(2,3);
+                    bounds << 0,-1,-1,
+                            1,1,1;
+                    HistogramFactory hf(5,3,bounds);
+                    hf.compute(data);
+
+                    int t = 0 , l = 0;
+                    for(int i = 0; i < 15; i++){
+                        new_s(i) = hf.get_histogram()[t](l);
+                        l = (l+1)%5;
+                        if(l == 0)
+                            t++;
+                    }
+                    //*/
+
+                    //* FPFH
+                    inputNormal.reset(new PointCloudN);
+                    inputCloud.reset(new PointCloudT);
+                    auto it_pair = adj_map.equal_range(lbls[k]);
+                    for(auto it = it_pair.first; it != it_pair.second; it++){
+                        for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+                            inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
+                            inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
+                        }
+                    }
+
+                    for(int i = 0; i < supervoxels.at(lbls[k])->normals_->size(); i++){
+                        inputNormal->push_back(supervoxels.at(lbls[k])->normals_->at(i));
+                        inputCloud->push_back(supervoxels.at(lbls[k])->voxels_->at(i));
+                    }
+
+                    indices.reset(new std::vector<int>);
+                    for(int i = 0; i < inputCloud->size(); i++)
+                        indices->push_back(i);
+
+                    fpfh.setInputCloud(inputCloud);
+                    fpfh.setInputNormals(inputNormal);
+                    fpfh.setIndices(indices);
+
+                    fpfh.setSearchMethod(tree);
+                    fpfh.setRadiusSearch (0.05);
+                    fpfh.compute(*fpfh_cloud);
+
+                    Eigen::VectorXd tmp = Eigen::VectorXd::Zero(33);
+                    for(int i = 0; i < fpfh_cloud->size(); i++){
+                        for(int j = 0; j < 33; j++)
+                            tmp(j) += fpfh_cloud->points[i].histogram[j]/100.;
+                    }
+                    tmp = tmp/(double)fpfh_cloud->size();
+                    for(int i = 0; i < 33; i++)
+                        new_s(i+15) = tmp(i);
+                    //*/
+
+                    features[lbls[k]]["meanFPFHLabHist"] = new_s;
+                }
+            });
         });
 
         map.emplace("colorHSVNormal",
