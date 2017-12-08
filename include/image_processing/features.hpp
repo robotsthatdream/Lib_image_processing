@@ -623,7 +623,7 @@ struct features_fct{
             tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
                               [&](const tbb::blocked_range<size_t>& r){
 
-                pcl::FPFHEstimationOMP<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
+                pcl::FPFHEstimation<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
                 pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
                 pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
                 PointCloudN::Ptr inputNormal(new PointCloudN);
