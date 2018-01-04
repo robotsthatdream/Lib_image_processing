@@ -15,7 +15,7 @@ add_custom_target(headers SOURCES ${HEADFILES})
 
 
 #Libraries
-set(Boost_USE_STATIC_LIBS ON)
+#set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.54 COMPONENTS filesystem system thread iostreams chrono REQUIRED)
 find_package(OpenCV 2.4 REQUIRED COMPONENTS features2d nonfree)
 find_package(PCL 1.7 REQUIRED)
@@ -25,14 +25,14 @@ include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCL
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O3 ${CMAKE_CXX_FLAGS}")
 set(LIBRARY_OUTPUT_PATH lib/${CMAKE_BUILD_TYPE})
 
 install(DIRECTORY include/image_processing/  DESTINATION include/${PROJECT_NAME})
 
 file(GLOB_RECURSE src_files src/* include/image_processing/*)
 
-add_library(image_processing ${SOURCE_FILES})
+add_library(image_processing SHARED  ${SOURCE_FILES})
 target_link_libraries(image_processing  ${PCL_LIBRARIES} yaml-cpp.so ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} tbb)
 
 install(TARGETS ${PROJECT_NAME}
