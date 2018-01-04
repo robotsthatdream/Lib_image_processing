@@ -558,7 +558,6 @@ struct features_fct{
 
         map.emplace("neighMeanFPFH",
                     [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
-
             std::vector<uint32_t> lbls;
 
             for(const auto& sv : supervoxels)
@@ -573,6 +572,7 @@ struct features_fct{
                 PointCloudN::Ptr inputNormal(new PointCloudN);
                 PointCloudT::Ptr inputCloud(new PointCloudT);
                 pcl::IndicesPtr indices(new std::vector<int>);
+
                 for(int k = r.begin(); k < r.end(); k++){
 ;
                     inputNormal.reset(new PointCloudN);
@@ -610,7 +610,7 @@ struct features_fct{
                     features[lbls[k]]["neighMeanFPFH"] = features[lbls[k]]["neighMeanFPFH"]/(double)fpfh_cloud->size();
                 }
             });
-        });
+       });
 
         map.emplace("meanFPFHLabHist",
                     [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
@@ -623,7 +623,7 @@ struct features_fct{
             tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
                               [&](const tbb::blocked_range<size_t>& r){
 
-                pcl::FPFHEstimationOMP<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
+                pcl::FPFHEstimation<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
                 pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
                 pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
                 PointCloudN::Ptr inputNormal(new PointCloudN);
@@ -651,7 +651,7 @@ struct features_fct{
 
                     int t = 0 , l = 0;
                     for(int i = 0; i < 15; i++){
-                        new_s(i) = hf.get_histogram()[k](l);
+                        new_s(i) = hf.get_histogram()[t](l);
                         l = (l+1)%5;
                         if(l == 0)
                             t++;
