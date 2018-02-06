@@ -269,4 +269,5 @@ void SurfaceOfInterest::neighbor_bluring(const std::string& modality, double cst
                 weights[adj_it->second] = 0.;
         }
     }
+    _weights[modality] = weights;
 }
