@@ -1,6 +1,7 @@
 #include "image_processing/MotionDetection.h"
 #include <pcl/registration/icp.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/filters/radius_outlier_removal.h>
 
 using namespace image_processing;
 
@@ -149,12 +150,23 @@ bool MotionDetection::detect_on_cloud(const PointCloudXYZ::Ptr sv, const std::ve
                                            _cloud_frames[0]->points[i].y,
                                            _cloud_frames[0]->points[i].z));
 
-
     pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
     sor.setInputCloud(diff_cloud);
     sor.setMeanK (10);
     sor.setStddevMulThresh (0.001);
     sor.filter (*diff_cloud);
+
+    pcl::RadiusOutlierRemoval<pcl::PointXYZ> ror;
+    ror.setInputCloud(diff_cloud);
+    ror.setRadiusSearch(0.01);
+    ror.setMinNeighborsInRadius (20);
+    // apply filter
+    ror.filter (*diff_cloud);
+
+
+    if(diff_cloud->empty())
+        return false;
+
 
     std::cout << sv->size() << std::endl;
 

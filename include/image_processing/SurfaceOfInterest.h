@@ -159,7 +159,7 @@ public:
         std::vector<uint32_t> lbls;
         for(const auto& sv : _supervoxels){
             lbls.push_back(sv.first);
-            _weights[modality].emplace(sv.first,0);
+            _weights[modality].emplace(sv.first,0.5);
         }
 
         tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
@@ -234,7 +234,7 @@ public:
      * @brief return a point cloud colored by the weights of the given modality
      * @param modality
      */
-    PointCloudT getColoredWeightedCloud(const std::string &modality);
+    pcl::PointCloud<pcl::PointXYZI> getColoredWeightedCloud(const std::string &modality);
 
     /**
      * @brief return a map that link a supervoxel to the id of an object
@@ -245,7 +245,7 @@ public:
 
     std::map<std::string,saliency_map_t> get_weights(){return _weights;}
 
-
+    void neighbor_bluring(const std::string& modality);
 
 private :
     std::vector<uint32_t> _labels;

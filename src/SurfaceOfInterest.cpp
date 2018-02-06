@@ -7,7 +7,7 @@ using namespace image_processing;
 //NAIVE POLICY
 bool SurfaceOfInterest::generate(workspace_t &workspace){
     if(!computeSupervoxel(workspace))
-	return false;
+        return false;
 
     init_weights("random");
     return true;
@@ -16,7 +16,7 @@ bool SurfaceOfInterest::generate(workspace_t &workspace){
 //KEYPOINTS POLICY
 bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, workspace_t &workspace){
     if(!computeSupervoxel(workspace))
-	return false;
+        return false;
 
     init_weights("keyPts",0.);
     find_soi(key_pts);
@@ -27,7 +27,7 @@ bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, workspace_t &
 bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, workspace_t &workspace){
     delete_background(background);
     if(!computeSupervoxel(workspace))
-	return false;
+        return false;
 
     init_weights("expert");
     return true;
@@ -203,23 +203,20 @@ void SurfaceOfInterest::delete_background(const PointCloudT::Ptr background){
     _inputCloud.reset(new PointCloudT(filtered_cloud));
 }
 
-PointCloudT SurfaceOfInterest::getColoredWeightedCloud(const std::string &modality){
+pcl::PointCloud<pcl::PointXYZI> SurfaceOfInterest::getColoredWeightedCloud(const std::string &modality){
 
-    PointCloudT result;
+    pcl::PointCloud<pcl::PointXYZI> result;
+    pcl::PointXYZI pt;
 
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
         pcl::Supervoxel<PointT>::Ptr current_sv = it_sv->second;
-        float c = 255.*_weights[modality][it_sv->first];
-        uint8_t color = c;
+        float c = _weights[modality][it_sv->first];
 
         for(auto v : *(current_sv->voxels_)){
-            PointT pt;
             pt.x = v.x;
             pt.y = v.y;
             pt.z = v.z;
-            pt.r = color;
-            pt.g = color;
-            pt.b = color;
+            pt.intensity = c;
             result.push_back(pt);
         }
     }
@@ -255,4 +252,21 @@ std::map<pcl::Supervoxel<PointT>::Ptr, int> SurfaceOfInterest::get_supervoxels_c
     }
 
     return sv_clusters;
+}
+
+void SurfaceOfInterest::neighbor_bluring(const std::string& modality, double cst){
+    std::map<uint32_t,double> weights = _weights[modality];
+    for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
+        auto neighbors = _adjacency_map.equal_range(it_sv->first);
+        for(auto adj_it = neighbors.first; adj_it != neighbors.second; adj_it++){
+            if(_weights[modality][adj_it->first] >= 0.5)
+                weights[adj_it->second] += cst;
+            else
+                weights[adj_it->second] -= cst;
+            if(weights[adj_it->second] >= 1.)
+                weights[adj_it->second] = 1.;
+            else if(weights[adj_it->second] >= 0.)
+                weights[adj_it->second] = 0.;
+        }
+    }
 }
