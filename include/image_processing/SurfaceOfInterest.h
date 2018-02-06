@@ -245,7 +245,7 @@ public:
 
     std::map<std::string,saliency_map_t> get_weights(){return _weights;}
 
-    void neighbor_bluring(const std::string& modality);
+    void neighbor_bluring(const std::string& modality, double cst);
 
 private :
     std::vector<uint32_t> _labels;
