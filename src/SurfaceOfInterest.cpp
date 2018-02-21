@@ -259,15 +259,47 @@ void SurfaceOfInterest::neighbor_bluring(const std::string& modality, double cst
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
         auto neighbors = _adjacency_map.equal_range(it_sv->first);
         for(auto adj_it = neighbors.first; adj_it != neighbors.second; adj_it++){
-            if(_weights[modality][adj_it->first] >= 0.5)
-                weights[adj_it->second] += cst;
+            if(_weights[modality][adj_it->second] >= 0.5)
+                weights[adj_it->first] += cst;
             else
-                weights[adj_it->second] -= cst;
-            if(weights[adj_it->second] >= 1.)
-                weights[adj_it->second] = 1.;
-            else if(weights[adj_it->second] >= 0.)
-                weights[adj_it->second] = 0.;
+                weights[adj_it->first] -= cst;
+            if(weights[adj_it->first] >= 1.)
+                weights[adj_it->first] = 1.;
+            else if(weights[adj_it->first] <= 0.)
+                weights[adj_it->first] = 0.;
         }
     }
     _weights[modality] = weights;
+}
+
+void SurfaceOfInterest::adaptive_threshold(const std::string& modality){
+    std::map<uint32_t,double> weights = _weights[modality];
+    for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
+        auto neighbors = _adjacency_map.equal_range(it_sv->first);
+        double avg = _weights[modality][it_sv->first];
+        double tot = 1;
+        for(auto adj_it = neighbors.first; adj_it != neighbors.second; adj_it++){
+            avg+=_weights[modality][adj_it->second];
+            tot+=1.;
+        }
+        avg = avg/tot;
+        if(avg >= 0.5 && _weights[modality][it_sv->first] >= avg)
+            weights[it_sv->first] = 1.;
+        else weights[it_sv->first] = 0.;
+
+    }
+    _weights[modality] = weights;
+}
+
+pcl::PointCloud<pcl::PointXYZI> SurfaceOfInterest::cumulative_relevance_map(std::vector<pcl::PointCloud<pcl::PointXYZI>> list_weights){
+    pcl::PointCloud<pcl::PointXYZI> output_cloud = list_weights[0];
+    for(int i = 0; i < list_weights[0].size(); i++){
+        double avg = 0;
+        for(const pcl::PointCloud<pcl::PointXYZI>& map: list_weights){
+            avg += map[i].intensity;
+        }
+        avg = avg/(double)list_weights.size();
+        output_cloud[i].intensity = avg;
+    }
+    return output_cloud;
 }

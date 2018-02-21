@@ -206,7 +206,7 @@ void SupervoxelSet::consolidate(){
         AdjacencyMap::iterator neighbor_it = _adjacency_map.equal_range(super_it->first).first;
         for(;neighbor_it != _adjacency_map.equal_range(super_it->first).second; neighbor_it++){
             if(!contain(neighbor_it->second))
-                _adjacency_map.erase(neighbor_it->second);
+                _adjacency_map.erase(neighbor_it);
         }
         //        super_it = adjacency_map.upper_bound (adja_it->first);
     }
@@ -486,7 +486,21 @@ pcl::PointXYZ SupervoxelSet::globalPosition(){
 
 
 void SupervoxelSet::compute_feature(const std::string& name){
+    _features.clear();
     features_fct::fct_map.at(name)(_supervoxels, _adjacency_map, _features);
+}
+
+void SupervoxelSet::filter_supervoxels(int min_size){
+    std::vector<uint32_t> to_erase;
+    for(SupervoxelArray::iterator it = _supervoxels.begin()
+        ; it != _supervoxels.end(); it++){
+        if(it->second->voxels_->size() < min_size)
+            to_erase.push_back(it->first);
+    }
+    for(int i = 0; i < to_erase.size(); i++)
+        remove(to_erase[i]);
+
+    consolidate();
 }
 
 void SupervoxelSet::getCentroidCloud(PointCloudT &centroids, std::map<int,uint32_t> &centroidsLabel, PointCloudN &centroid_normals){

@@ -284,6 +284,8 @@ public :
      */
     std::vector<uint32_t> getNeighbor(uint32_t label);
 
+    void filter_supervoxels(int min_size);
+
     /**
      *@brief acces methodes to a supervoxel
      *@param label : uint32_t
