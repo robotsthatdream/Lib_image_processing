@@ -579,6 +579,8 @@ struct features_fct{
                     inputCloud.reset(new PointCloudT);
                     auto it_pair = adj_map.equal_range(lbls[k]);
                     for(auto it = it_pair.first; it != it_pair.second; it++){
+                        if(supervoxels.find(it->second) == supervoxels.end())
+                            continue;
                         for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
                             inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
                             inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
@@ -620,8 +622,8 @@ struct features_fct{
             for(const auto& sv : supervoxels)
                 lbls.push_back(sv.first);
 
-//            tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
-//                              [&](const tbb::blocked_range<size_t>& r){
+            tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
+                              [&](const tbb::blocked_range<size_t>& r){
 
                 pcl::FPFHEstimation<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
                 pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
@@ -630,8 +632,8 @@ struct features_fct{
                 PointCloudT::Ptr inputCloud(new PointCloudT);
                 pcl::IndicesPtr indices(new std::vector<int>);
                 Eigen::VectorXd new_s(48);
-//                for(int k = r.begin(); k < r.end(); k++){
-                for(int k = 0; k < lbls.size(); k++){
+                for(int k = r.begin(); k < r.end(); k++){
+//                for(int k = 0; k < lbls.size(); k++){
                     //* Lab
                     std::vector<Eigen::VectorXd> data;
                     for(auto it = supervoxels.at(lbls[k])->voxels_->begin(); it != supervoxels.at(lbls[k])->voxels_->end(); ++it){
@@ -663,6 +665,8 @@ struct features_fct{
                     inputCloud.reset(new PointCloudT);
                     auto it_pair = adj_map.equal_range(lbls[k]);
                     for(auto it = it_pair.first; it != it_pair.second; it++){
+                        if(supervoxels.find(it->second) == supervoxels.end())
+                            continue;
                         for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
                             inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
                             inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
@@ -698,7 +702,7 @@ struct features_fct{
 
                     features[lbls[k]]["meanFPFHLabHist"] = new_s;
                 }
-//            });
+            });
         });
 
         map.emplace("colorHSVNormal",
@@ -750,6 +754,8 @@ struct features_fct{
                 inputCloud->clear();
                 auto it_pair = adj_map.equal_range(sv.first);
                 for(auto it = it_pair.first; it != it_pair.second; it++){
+                    if(supervoxels.find(it->second) == supervoxels.end())
+                        continue;
                     for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
                         inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
                         inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
@@ -805,6 +811,8 @@ struct features_fct{
                 cx_n = 0; cy_n = 0; cz_n = 0; c_min_n = 0; c_max_n = 0;
                 auto it_pair = adj_map.equal_range(sv.first);
                 for(auto it = it_pair.first; it != it_pair.second; it++){
+                    if(supervoxels.find(it->second) == supervoxels.end())
+                        continue;
                     indices.clear();
                     for(int i = 0; i < sv.second->normals_->size(); i++)
                         indices.push_back(i);
@@ -975,6 +983,8 @@ struct features_fct{
 
                 auto it_pair = adj_map.equal_range(sv.first);
                 for(auto it = it_pair.first; it != it_pair.second; it++){
+                    if(supervoxels.find(it->second) == supervoxels.end())
+                        continue;
                     centr_pos2 << supervoxels.at(it->second)->centroid_.x,
                             supervoxels.at(it->second)->centroid_.y,
                             supervoxels.at(it->second)->centroid_.z;
@@ -1030,6 +1040,8 @@ struct features_fct{
 
                 auto it_pair = adj_map.equal_range(sv.first);
                 for(auto it = it_pair.first; it != it_pair.second; it++){
+                    if(supervoxels.find(it->second) == supervoxels.end())
+                        continue;
                     for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
                         inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
                         inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));

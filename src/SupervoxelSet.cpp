@@ -252,51 +252,52 @@ uint32_t SupervoxelSet::whichVoxelContain(float x, float y, float z){
 //  return isInThisVoxel(x,y,z,_supervoxels.begin()->first,_adjacency_map,gen,20);
 }
 
-uint32_t SupervoxelSet::isInThisVoxel(float x, float y, float z, uint32_t label,AdjacencyMap am,  boost::random::mt19937 gen, int counter ){
-  if(counter <= 0)
-    return 221133;
-  label = _supervoxels.lower_bound(label)->first;
-  pcl::Supervoxel<PointT>::Ptr vox = _supervoxels.at(label);
-  double distance = sqrt((x-vox->centroid_.x)*(x-vox->centroid_.x)
-                         + (y-vox->centroid_.y)*(y-vox->centroid_.y)
-                         + (z-vox->centroid_.z)*(z-vox->centroid_.z));
-  if(distance < _extractor->getSeedResolution())
-    return label;
-  else{
-      AdjacencyMap::iterator it = am.equal_range(label).first;
-      AdjacencyMap::iterator neighbor_it = am.equal_range(label).first;
-      vox = _supervoxels.at(neighbor_it->second);
-      uint32_t new_lbl = neighbor_it->second;
-      double new_dist = sqrt((x-vox->centroid_.x)*(x-vox->centroid_.x)
-                     + (y-vox->centroid_.y)*(y-vox->centroid_.y)
-                     + (z-vox->centroid_.z)*(z-vox->centroid_.z));
-      for(;neighbor_it != am.equal_range(label).second; ++neighbor_it){
+//Deprecated
+//uint32_t SupervoxelSet::isInThisVoxel(float x, float y, float z, uint32_t label,AdjacencyMap am,  boost::random::mt19937 gen, int counter ){
+//  if(counter <= 0)
+//    return 221133;
+//  label = _supervoxels.lower_bound(label)->first;
+//  pcl::Supervoxel<PointT>::Ptr vox = _supervoxels.at(label);
+//  double distance = sqrt((x-vox->centroid_.x)*(x-vox->centroid_.x)
+//                         + (y-vox->centroid_.y)*(y-vox->centroid_.y)
+//                         + (z-vox->centroid_.z)*(z-vox->centroid_.z));
+//  if(distance < _extractor->getSeedResolution())
+//    return label;
+//  else{
+//      AdjacencyMap::iterator it = am.equal_range(label).first;
+//      AdjacencyMap::iterator neighbor_it = am.equal_range(label).first;
+//      vox = _supervoxels.at(neighbor_it->second);
+//      uint32_t new_lbl = neighbor_it->second;
+//      double new_dist = sqrt((x-vox->centroid_.x)*(x-vox->centroid_.x)
+//                     + (y-vox->centroid_.y)*(y-vox->centroid_.y)
+//                     + (z-vox->centroid_.z)*(z-vox->centroid_.z));
+//      for(;neighbor_it != am.equal_range(label).second; ++neighbor_it){
 
-          vox = _supervoxels.at(neighbor_it->second);
-          double tmp = sqrt((x-vox->centroid_.x)*(x-vox->centroid_.x)
-                         + (y-vox->centroid_.y)*(y-vox->centroid_.y)
-                         + (z-vox->centroid_.z)*(z-vox->centroid_.z));
-          if(tmp < new_dist){
-            new_dist = tmp;
-            new_lbl = neighbor_it->second;
-            it = neighbor_it;
-            }
-        }
-      if(new_dist > distance ){
-          boost::random::uniform_int_distribution<> dist(1,_supervoxels.size());
-          return isInThisVoxel(x,y,z,dist(gen),am,gen,counter-1);
-        }
-      //supression de l'arc parcourue
-//      neighbor_it = am.equal_range(new_lbl).first;
-//      for(;neighbor_it != am.equal_range(new_lbl).second; ++neighbor_it){
-//          if(neighbor_it->second == label)
-//            break;
+//          vox = _supervoxels.at(neighbor_it->second);
+//          double tmp = sqrt((x-vox->centroid_.x)*(x-vox->centroid_.x)
+//                         + (y-vox->centroid_.y)*(y-vox->centroid_.y)
+//                         + (z-vox->centroid_.z)*(z-vox->centroid_.z));
+//          if(tmp < new_dist){
+//            new_dist = tmp;
+//            new_lbl = neighbor_it->second;
+//            it = neighbor_it;
+//            }
 //        }
-//      am.erase(neighbor_it);
-//      am.erase(it);
-      return isInThisVoxel(x,y,z,new_lbl,am,gen,counter);
-    }
-}
+//      if(new_dist > distance ){
+//          boost::random::uniform_int_distribution<> dist(1,_supervoxels.size());
+//          return isInThisVoxel(x,y,z,dist(gen),am,gen,counter-1);
+//        }
+//      //supression de l'arc parcourue
+////      neighbor_it = am.equal_range(new_lbl).first;
+////      for(;neighbor_it != am.equal_range(new_lbl).second; ++neighbor_it){
+////          if(neighbor_it->second == label)
+////            break;
+////        }
+////      am.erase(neighbor_it);
+////      am.erase(it);
+//      return isInThisVoxel(x,y,z,new_lbl,am,gen,counter);
+//    }
+//}
 
 void SupervoxelSet::insert(uint32_t label,
                                pcl::Supervoxel<PointT>::Ptr supervoxel,
@@ -310,6 +311,16 @@ void SupervoxelSet::insert(uint32_t label,
 
 void SupervoxelSet::remove(uint32_t label){
     _supervoxels.erase(label);
+//    auto pair_it = _adjacency_map.equal_range(label);
+//    AdjacencyMap::iterator neighbor_it = pair_it.first;
+//    for(;neighbor_it != pair_it.second; ++neighbor_it){
+//        auto pair_it2 = _adjacency_map.equal_range(neighbor_it->second);
+//        AdjacencyMap::iterator ngb_it = pair_it2.first;
+//        for(;ngb_it != pair_it2.second; ++ngb_it){
+//            if(ngb_it->second == label)
+//                _adjacency_map.erase(ngb_it);
+//        }
+//    }
     _adjacency_map.erase(label);
 }
 
@@ -499,8 +510,6 @@ void SupervoxelSet::filter_supervoxels(int min_size){
     }
     for(int i = 0; i < to_erase.size(); i++)
         remove(to_erase[i]);
-
-    consolidate();
 }
 
 void SupervoxelSet::getCentroidCloud(PointCloudT &centroids, std::map<int,uint32_t> &centroidsLabel, PointCloudN &centroid_normals){
@@ -534,7 +543,9 @@ std::vector<uint32_t> SupervoxelSet::getNeighbor(uint32_t label){
 
     AdjacencyMap::iterator neighbor_it = _adjacency_map.equal_range(label).first;
     for(;neighbor_it != _adjacency_map.equal_range(label).second;++neighbor_it)
-        result.push_back(neighbor_it->second);
+        if(!contain(neighbor_it->second))
+            result.push_back(neighbor_it->second);
+
 
     return result;
 

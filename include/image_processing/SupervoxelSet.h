@@ -170,7 +170,8 @@ public :
 
         auto it = _supervoxels.begin();
         while(it != _supervoxels.end()){
-            remove(it->first);
+            _supervoxels.erase(it->first);
+            _adjacency_map.erase(it->first);
             it = _supervoxels.begin();
         }
 
