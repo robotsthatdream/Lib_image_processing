@@ -620,8 +620,8 @@ struct features_fct{
             for(const auto& sv : supervoxels)
                 lbls.push_back(sv.first);
 
-//            tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
-//                              [&](const tbb::blocked_range<size_t>& r){
+            tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
+                              [&](const tbb::blocked_range<size_t>& r){
 
                 pcl::FPFHEstimation<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
                 pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
@@ -630,8 +630,8 @@ struct features_fct{
                 PointCloudT::Ptr inputCloud(new PointCloudT);
                 pcl::IndicesPtr indices(new std::vector<int>);
                 Eigen::VectorXd new_s(48);
-//                for(int k = r.begin(); k < r.end(); k++){
-                for(int k = 0; k < lbls.size(); k++){
+                for(int k = r.begin(); k < r.end(); k++){
+//                for(int k = 0; k < lbls.size(); k++){
                     //* Lab
                     std::vector<Eigen::VectorXd> data;
                     for(auto it = supervoxels.at(lbls[k])->voxels_->begin(); it != supervoxels.at(lbls[k])->voxels_->end(); ++it){
@@ -698,7 +698,7 @@ struct features_fct{
 
                     features[lbls[k]]["meanFPFHLabHist"] = new_s;
                 }
-//            });
+            });
         });
 
         map.emplace("colorHSVNormal",
