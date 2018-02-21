@@ -105,7 +105,6 @@ void SurfaceOfInterest::reduce_to_soi(){
     for(int i = 0; i < _labels_no_soi.size(); i++){
         remove(_labels_no_soi[i]);
     }
-    consolidate();
 }
 
 bool SurfaceOfInterest::choice_of_soi(const std::string& modality, pcl::Supervoxel<PointT> &supervoxel, uint32_t &lbl){
