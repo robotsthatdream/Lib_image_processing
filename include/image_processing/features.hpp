@@ -700,6 +700,12 @@ struct features_fct{
                         new_s(i+15) = tmp(i);
                     //*/
 
+                    for(int i = 0; i < 48; i++){
+                        if(new_s(i) > 1)
+                            new_s(i) = 1;
+                        else if (new_s(i) < 10e-4)
+                            new_s(i) = 0;
+                    }
                     features[lbls[k]]["meanFPFHLabHist"] = new_s;
                 }
             });
