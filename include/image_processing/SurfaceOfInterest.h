@@ -174,7 +174,7 @@ public:
             std::vector<uint32_t> lbls;
             for(const auto& sv : _supervoxels){
                 lbls.push_back(sv.first);
-                _weights["merge"].emplace(sv.first,0);
+                _weights["merge"].emplace(sv.first,std::vector<double>(classifier.get_nbr_class(),0));
             }
             tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
                               [&](const tbb::blocked_range<size_t>& r){
