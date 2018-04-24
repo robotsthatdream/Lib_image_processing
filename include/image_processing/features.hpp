@@ -619,8 +619,10 @@ struct features_fct{
 
             std::vector<uint32_t> lbls;
 
-            for(const auto& sv : supervoxels)
+            for(const auto& sv : supervoxels){
                 lbls.push_back(sv.first);
+                features.emplace(sv.first,std::map<std::string,Eigen::VectorXd>());
+            }
 
             tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
                               [&](const tbb::blocked_range<size_t>& r){
