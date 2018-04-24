@@ -114,14 +114,14 @@ bool SurfaceOfInterest::choice_of_soi(const std::string& modality, pcl::Supervox
     float val = 0.f;
     float total_w = 0.f;
     for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++)
-        total_w += it->second;
+        total_w += it->second[lbl];
 
     if(total_w == 0)
         return false;
 
 
     for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++){
-        val+=it->second/(total_w/**_weights[modality].size()*/);
+        val+=it->second[lbl]/(total_w/**_weights[modality].size()*/);
         soi_dist.emplace(val,it->first);
     }
     //*/
@@ -148,10 +148,10 @@ bool SurfaceOfInterest::choice_of_soi_by_uncertainty(const std::string& modality
 
     float total_w = 0.f;
     for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++){
-        if(it->second > 0.5)
-            total_w += (1.-it->second)*2.;
+        if(it->second[lbl] > 0.5)
+            total_w += (1.-it->second[lbl])*2.;
         else
-            total_w += it->second*2.;
+            total_w += it->second[lbl]*2.;
     }
 
     std::cout << "global uncertainty : " << total_w << std::endl;
@@ -160,9 +160,9 @@ bool SurfaceOfInterest::choice_of_soi_by_uncertainty(const std::string& modality
         return false;
 
     for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++){
-        if(it->second > .5)
-            val+=(1.-it->second)*2./(total_w);
-        else val+=(it->second)*2./(total_w);
+        if(it->second[lbl] > .5)
+            val+=(1.-it->second[lbl])*2./(total_w);
+        else val+=(it->second[lbl])*2./(total_w);
         soi_dist.emplace(val,it->first);
     }
     //*/
@@ -202,14 +202,14 @@ void SurfaceOfInterest::delete_background(const PointCloudT::Ptr background){
     _inputCloud.reset(new PointCloudT(filtered_cloud));
 }
 
-pcl::PointCloud<pcl::PointXYZI> SurfaceOfInterest::getColoredWeightedCloud(const std::string &modality){
+pcl::PointCloud<pcl::PointXYZI> SurfaceOfInterest::getColoredWeightedCloud(const std::string &modality,int lbl){
 
     pcl::PointCloud<pcl::PointXYZI> result;
     pcl::PointXYZI pt;
 
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
         pcl::Supervoxel<PointT>::Ptr current_sv = it_sv->second;
-        float c = _weights[modality][it_sv->first];
+        float c = _weights[modality][it_sv->first][lbl];
 
         for(auto v : *(current_sv->voxels_)){
             pt.x = v.x;
@@ -224,13 +224,13 @@ pcl::PointCloud<pcl::PointXYZI> SurfaceOfInterest::getColoredWeightedCloud(const
 }
 
 
-std::map<pcl::Supervoxel<PointT>::Ptr, int> SurfaceOfInterest::get_supervoxels_clusters(const std::string &modality, double &saliency_threshold){
+std::map<pcl::Supervoxel<PointT>::Ptr, int> SurfaceOfInterest::get_supervoxels_clusters(const std::string &modality, double &saliency_threshold,int lbl){
     std::map<pcl::Supervoxel<PointT>::Ptr, int> sv_clusters;
 
     int cluster_id = 0;
 
     std::function<void (uint32_t, int)> _add_supervoxels_to_clusters = [&](uint32_t sv_label, int cluster_id) {
-      double weight = _weights[modality][sv_label];
+      double weight = _weights[modality][sv_label][lbl];
       pcl::Supervoxel<PointT>::Ptr sv = _supervoxels.find(sv_label)->second;
       auto it = sv_clusters.find(sv);
 
@@ -253,38 +253,38 @@ std::map<pcl::Supervoxel<PointT>::Ptr, int> SurfaceOfInterest::get_supervoxels_c
     return sv_clusters;
 }
 
-void SurfaceOfInterest::neighbor_bluring(const std::string& modality, double cst){
-    std::map<uint32_t,double> weights = _weights[modality];
+void SurfaceOfInterest::neighbor_bluring(const std::string& modality, double cst,int lbl){
+    relevance_map_t weights = _weights[modality];
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
         auto neighbors = _adjacency_map.equal_range(it_sv->first);
         for(auto adj_it = neighbors.first; adj_it != neighbors.second; adj_it++){
-            if(_weights[modality][adj_it->second] >= 0.5)
-                weights[adj_it->first] += cst;
+            if(_weights[modality][adj_it->second][lbl] >= 0.5)
+                weights[adj_it->first][lbl] += cst;
             else
-                weights[adj_it->first] -= cst;
-            if(weights[adj_it->first] >= 1.)
-                weights[adj_it->first] = 1.;
-            else if(weights[adj_it->first] <= 0.)
-                weights[adj_it->first] = 0.;
+                weights[adj_it->first][lbl] -= cst;
+            if(weights[adj_it->first][lbl] >= 1.)
+                weights[adj_it->first][lbl] = 1.;
+            else if(weights[adj_it->first][lbl] <= 0.)
+                weights[adj_it->first][lbl] = 0.;
         }
     }
     _weights[modality] = weights;
 }
 
-void SurfaceOfInterest::adaptive_threshold(const std::string& modality){
-    std::map<uint32_t,double> weights = _weights[modality];
+void SurfaceOfInterest::adaptive_threshold(const std::string& modality, int lbl){
+    relevance_map_t weights = _weights[modality];
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
         auto neighbors = _adjacency_map.equal_range(it_sv->first);
-        double avg = _weights[modality][it_sv->first];
+        double avg = _weights[modality][it_sv->first][lbl];
         double tot = 1;
         for(auto adj_it = neighbors.first; adj_it != neighbors.second; adj_it++){
-            avg+=_weights[modality][adj_it->second];
+            avg+=_weights[modality][adj_it->second][lbl];
             tot+=1.;
         }
         avg = avg/tot;
-        if(avg >= 0.5 && _weights[modality][it_sv->first] >= avg)
-            weights[it_sv->first] = 1.;
-        else weights[it_sv->first] = 0.;
+        if(avg >= 0.5 && _weights[modality][it_sv->first][lbl] >= avg)
+            weights[it_sv->first][lbl] = 1.;
+        else weights[it_sv->first][lbl] = 0.;
 
     }
     _weights[modality] = weights;

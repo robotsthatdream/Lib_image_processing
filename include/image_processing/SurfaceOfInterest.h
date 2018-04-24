@@ -37,7 +37,7 @@ class SurfaceOfInterest : public SupervoxelSet
 {
 public:
 
-    typedef std::map<uint32_t,double> saliency_map_t;
+    typedef std::map<uint32_t,std::vector<double>> relevance_map_t;
 
     /**
      * @brief default constructor
@@ -64,17 +64,8 @@ public:
         _weights(soi._weights),
         _labels(soi._labels),
         _labels_no_soi(_labels_no_soi),
-        _gen(soi._gen)
-    {
-        //        _weights.emplace("colorH",saliency_map_t());
-//        _weights.emplace("colorS",saliency_map_t());
-//        _weights.emplace("colorV",saliency_map_t());
-//        _weights.emplace("normalX",saliency_map_t());
-//        _weights.emplace("normalY",saliency_map_t());
-//        _weights.emplace("normalZ",saliency_map_t());
-//        _weights.emplace("fpfh",saliency_map_t());
-//        _weights.emplace("merged",saliency_map_t());
-    }
+        _gen(soi._gen){}
+
     /**
      * @brief constructor with a SupervoxelSet
      * @param super
@@ -154,19 +145,19 @@ public:
         if(_weights.find(modality) != _weights.end())
             _weights[modality].clear();
         else
-            _weights[modality] = saliency_map_t();
+            _weights[modality] = relevance_map_t();
 
         std::vector<uint32_t> lbls;
         for(const auto& sv : _supervoxels){
             lbls.push_back(sv.first);
-            _weights[modality].emplace(sv.first,0.5);
+            _weights[modality].emplace(sv.first,std::vector<double>(classifier.get_nbr_class(),0.5));
         }
 
         tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
                           [&](const tbb::blocked_range<size_t>& r){
             for(size_t i = r.begin(); i != r.end(); ++i){
                 _weights[modality][lbls[i]] = classifier.compute_estimation(
-                            _features[lbls[i]][modality],1);
+                            _features[lbls[i]][modality]);
             }
         });
 
@@ -178,7 +169,7 @@ public:
             if(_weights.find("merge") != _weights.end())
                 _weights["merge"].clear();
             else
-                _weights["merge"] = saliency_map_t();
+                _weights["merge"] = relevance_map_t();
 
             std::vector<uint32_t> lbls;
             for(const auto& sv : _supervoxels){
@@ -189,7 +180,7 @@ public:
                               [&](const tbb::blocked_range<size_t>& r){
                 for(size_t i = r.begin(); i != r.end(); ++i){
                     _weights["merge"][lbls[i]] = classifier.compute_estimation(
-                                _features[lbls[i]],1.);
+                                _features[lbls[i]]);
                 }
             });
 
@@ -207,12 +198,12 @@ public:
             if(_weights.find(classi.first) != _weights.end())
                 _weights[classi.first].clear();
             else
-                _weights[classi.first] = saliency_map_t();
+                _weights[classi.first] = relevance_map_t();
 
 
             for(const auto& sv : _supervoxels){
                 _weights[classi.first].emplace(sv.first,
-                                           classi.second.compute_estimation(_features[sv.first][classi.first],1));
+                                           classi.second.compute_estimation(_features[sv.first][classi.first]));
             }
         }
     }
@@ -234,26 +225,26 @@ public:
      * @brief return a point cloud colored by the weights of the given modality
      * @param modality
      */
-    pcl::PointCloud<pcl::PointXYZI> getColoredWeightedCloud(const std::string &modality);
+    pcl::PointCloud<pcl::PointXYZI> getColoredWeightedCloud(const std::string &modality,int lbl);
 
     /**
      * @brief return a map that link a supervoxel to the id of an object
      * @param modality
      * @param saliency_threshold
      */
-    std::map<pcl::Supervoxel<PointT>::Ptr, int> get_supervoxels_clusters(const std::string &modality, double &saliency_threshold);
+    std::map<pcl::Supervoxel<PointT>::Ptr, int> get_supervoxels_clusters(const std::string &modality, double &saliency_threshold,int lbl);
 
-    std::map<std::string,saliency_map_t> get_weights(){return _weights;}
+    std::map<std::string,relevance_map_t> get_weights(){return _weights;}
 
-    void neighbor_bluring(const std::string& modality, double cst);
-    void adaptive_threshold(const std::string& modality);
+    void neighbor_bluring(const std::string& modality, double cst, int lbl);
+    void adaptive_threshold(const std::string& modality, int lbl);
     pcl::PointCloud<pcl::PointXYZI> cumulative_relevance_map(std::vector<pcl::PointCloud<pcl::PointXYZI>> list_weights);
 
 
 private :
     std::vector<uint32_t> _labels;
     std::vector<uint32_t> _labels_no_soi;
-    std::map<std::string,saliency_map_t> _weights;
+    std::map<std::string,relevance_map_t> _weights;
 
     boost::random::mt19937 _gen;
 

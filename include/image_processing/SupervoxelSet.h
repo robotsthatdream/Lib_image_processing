@@ -228,6 +228,12 @@ public :
      */
     void substract(SupervoxelSet &cloud);
 
+    void init_features();
+
+    /**
+     * @brief compute features of type 'name' of each supervoxels
+     * @param name
+     */
     void compute_feature(const std::string& name);
     //---------------------------------------------------------
 
