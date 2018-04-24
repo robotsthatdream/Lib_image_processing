@@ -99,7 +99,7 @@ public:
         if(!computeSupervoxel(workspace))
         return false;
 
-        init_weights(modality,init_val);
+        init_weights(modality,classifier.get_nbr_class(),init_val);
         compute_weights(modality, classifier);
         return true;
     }
@@ -125,7 +125,7 @@ public:
      */
     void reduce_to_soi();
 
-    void init_weights(const std::string& modality, float value = 1.);
+    void init_weights(const std::string& modality,int nbr_class, float value = 1.);
 
     /**
      * @brief methode compute the weight of each supervoxels. The weights represent the probability for a soi to be explored.

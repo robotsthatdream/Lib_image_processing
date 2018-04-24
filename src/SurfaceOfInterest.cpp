@@ -9,7 +9,7 @@ bool SurfaceOfInterest::generate(workspace_t &workspace){
     if(!computeSupervoxel(workspace))
         return false;
 
-    init_weights("random");
+    init_weights("random",2);
     return true;
 }
 
@@ -18,7 +18,7 @@ bool SurfaceOfInterest::generate(const PointCloudXYZ::Ptr key_pts, workspace_t &
     if(!computeSupervoxel(workspace))
         return false;
 
-    init_weights("keyPts",0.);
+    init_weights("keyPts",2,0.);
     find_soi(key_pts);
     return true;
 }
@@ -29,7 +29,7 @@ bool SurfaceOfInterest::generate(const PointCloudT::Ptr background, workspace_t 
     if(!computeSupervoxel(workspace))
         return false;
 
-    init_weights("expert");
+    init_weights("expert",2);
     return true;
 }
 
@@ -78,8 +78,9 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
     }
 
 
+    std::vector<double> v = {0.,1.};
     for(auto it = result.begin(); it != result.end(); it++)
-        _weights["keyPts"].emplace(it->first,1.);
+        _weights["keyPts"].emplace(it->first,v);
 
 
 //    for(auto it = no_result.begin(); it != no_result.end(); it++)
@@ -92,12 +93,12 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
 //    assert(_labels.size() == _weights.size());
 }
 
-void SurfaceOfInterest::init_weights(const std::string& modality, float value){
+void SurfaceOfInterest::init_weights(const std::string& modality, int nbr_class, float value){
 //    for(auto& mod : _weights){
 //        mod.second.clear();
     _weights[modality].clear();
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
-        _weights[modality].emplace(it_sv->first,value);
+        _weights[modality].emplace(it_sv->first,std::vector<double>(nbr_class,value));
     }
 }
 
