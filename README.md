@@ -1,5 +1,5 @@
 ## image_processing :
-Image processing library developped for the saliency map babbling
+Image processing library developped for the relevance map babbling
 
 ---
 
