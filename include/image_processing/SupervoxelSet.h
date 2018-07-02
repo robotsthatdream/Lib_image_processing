@@ -168,13 +168,14 @@ public :
         //        remove(it->first);
         //    }
 
-        auto it = _supervoxels.begin();
-        while(it != _supervoxels.end()){
-            _supervoxels.erase(it->first);
-            _adjacency_map.erase(it->first);
-            it = _supervoxels.begin();
-        }
-
+//        auto it = _supervoxels.begin();
+//        while(it != _supervoxels.end()){
+//            _supervoxels.erase(it->first);
+//            _adjacency_map.erase(it->first);
+//            it = _supervoxels.begin();
+//        }
+        _supervoxels.clear();
+        _adjacency_map.clear();
         _extractor.reset(new pcl::SupervoxelClustering<PointT>(Param::voxel_resolution,Param::seed_resolution,Param::use_transform));
         _extractor->setColorImportance(Param::color_importance);
         _extractor->setSpatialImportance(Param::spatial_importance);
