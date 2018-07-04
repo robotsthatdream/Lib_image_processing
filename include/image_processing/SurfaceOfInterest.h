@@ -210,39 +210,6 @@ public:
   	}
 
     /**
-     * @brief methode compute and return the weight of each supervoxels.
-     * All weights are between 0 and 1.
-     * @param modality of used features
-     * @param classifier
-     */
-    template <typename classifier_t>
-    saliency_map_t compute_saliency_map(const std::string& modality, classifier_t &classifier){
-        saliency_map_t map;
-
-        if(_features.begin()->second.find(modality) == _features.begin()->second.end()){
-            std::cerr << "SurfaceOfInterest Error: unknow modality : " << modality << std::endl;
-            return map;
-        }
-
-
-        std::vector<uint32_t> lbls;
-        for(const auto& sv : _supervoxels){
-            lbls.push_back(sv.first);
-            map.emplace(sv.first,0);
-        }
-
-        tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
-                          [&](const tbb::blocked_range<size_t>& r){
-            for(size_t i = r.begin(); i != r.end(); ++i){
-                map[lbls[i]] = classifier.compute_estimation(
-                            _features[lbls[i]][modality],1);
-            }
-        });
-
-        return map;
-    }
-
-    /**
      * @brief choose randomly one soi
      * @param supervoxel
      * @param label of chosen supervoxel in the soi set
@@ -288,7 +255,7 @@ public:
      * @param saliency threshold
      * @return a set of regions (a region is a vector of supervoxels' labels)
      */
-    std::vector<std::set<uint32_t>> extract_regions(const std::string &modality, double saliency_threshold);
+    std::vector<std::set<uint32_t>> extract_regions(const std::string &modality, double saliency_threshold, int class_lbl);
 
     /**
      * @brief compute the closest region in a vector for the given center
@@ -304,7 +271,7 @@ public:
      * @param saliency threshold
      * @return a set of supervoxels' labels that are not salient
      */
-    std::set<uint32_t> extract_background(const std::string &modality, double saliency_threshold);
+    std::set<uint32_t> extract_background(const std::string &modality, double saliency_threshold, int class_lbl);
 
 private :
     std::vector<uint32_t> _labels;

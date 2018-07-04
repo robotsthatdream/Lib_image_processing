@@ -32,14 +32,14 @@ public:
 
   Object() {}
 
-  Object(classifier_t classifier, std::string saliency_modality,
-         std::string modality, Eigen::Vector4d center) :
-    _classifier(classifier), _saliency_modality(saliency_modality),
-    _modality(modality), _center(center) {}
+  Object(classifier_t classifier, std::string relevance_modality,
+         std::string modality, Eigen::Vector4d center, int class_lbl = 1) :
+    _classifier(classifier), _relevance_modality(relevance_modality),
+    _modality(modality), _center(center), _class_lbl(class_lbl) {}
 
   Object(const Object& obj) :
-    _classifier(obj._classifier), _saliency_modality(obj._saliency_modality),
-    _modality(obj._modality), _center(obj._center) {}
+    _classifier(obj._classifier), _relevance_modality(obj._relevance_modality),
+    _modality(obj._modality), _center(obj._center), _class_lbl(obj._class_lbl) {}
 
   ~Object() {}
 
@@ -50,10 +50,10 @@ public:
   classifier_t get_classifier() {return _classifier;}
 
   /**
-   *@brief Get the saliency modality used by the object.
-   *@return the saliency modality
+   *@brief Get the relevance modality used by the object.
+   *@return the relevance modality
    */
-  std::string get_saliency_modality() {return _saliency_modality;}
+  std::string get_relevance_modality() {return _relevance_modality;}
 
   /**
    *@brief Get the modality used by the classifier of the object.
@@ -130,17 +130,18 @@ public:
 private:
 
   classifier_t _classifier;
-  std::string _saliency_modality;
+  std::string _relevance_modality;
   std::string _modality;
+  int _class_lbl;
   Eigen::Vector4d _center;
 
   SupervoxelArray _initial_hyp;
-  saliency_map_t _initial_map;
+  SurfaceOfInterest::relevance_map_t _initial_map;
   PointCloudT::Ptr _initial_cloud;
   std::map<uint32_t, Eigen::VectorXd> _initial_features;
 
   SupervoxelArray _current_hyp;
-  saliency_map_t _current_map;
+  SurfaceOfInterest::relevance_map_t _current_map;
   PointCloudT::Ptr _transformed_initial_cloud;
   PointCloudT::Ptr _current_cloud;
   PointCloudT::Ptr _result_cloud;
@@ -151,23 +152,24 @@ void Object<classifier_t>::recover_center(SurfaceOfInterest& surface)
 {
   std::cout << "object hypothesis : recovering object's center" << std::endl;
 
-  saliency_map_t map = surface.compute_saliency_map(_modality, _classifier);
+  surface.compute_weights<classifier_t>(_modality, _classifier);
+  SurfaceOfInterest::relevance_map_t map = surface.get_weights()[_modality];
 
-  std::vector<std::set<uint32_t>> regions = surface.extract_regions(_saliency_modality, 0.5);
+  std::vector<std::set<uint32_t>> regions = surface.extract_regions(_relevance_modality, 0.5,_class_lbl);
 
   size_t best_i = 0;
-  double best_saliency = 0.0;
+  double best_relevance = 0.0;
   for (size_t i = 0; i < regions.size(); i++)
   {
-    double saliency = 0.0;
+    double relevance = 0.0;
     for (const auto& sv : regions[i])
     {
-      saliency += map[sv];
+      relevance += map[sv][_class_lbl];
     }
-    saliency /= regions[i].size();
+    relevance /= regions[i].size();
 
-    if (saliency > best_saliency) {
-      best_saliency = saliency;
+    if (relevance > best_relevance) {
+      best_relevance = relevance;
       best_i = i;
     }
   }
@@ -186,9 +188,9 @@ bool Object<classifier_t>::set_initial(SurfaceOfInterest& initial_surface)
   _initial_hyp.clear();
   _initial_features.clear();
   _initial_cloud = PointCloudT::Ptr(new PointCloudT);
-  _initial_map = initial_surface.compute_saliency_map(_modality, _classifier);
-
-  std::vector<std::set<uint32_t>> regions = initial_surface.extract_regions(_saliency_modality, 0.5);
+  initial_surface.compute_weights<classifier_t>(_modality, _classifier);
+  _initial_map = initial_surface.get_weights()[_modality];
+  std::vector<std::set<uint32_t>> regions = initial_surface.extract_regions(_relevance_modality, 0.5,_class_lbl);
   size_t id = initial_surface.get_closest_region(regions, _center);
 
   if (regions[id].size() == 0) {
@@ -243,7 +245,8 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
 
   _current_hyp.clear();
   _current_cloud = PointCloudT::Ptr(new PointCloudT);
-  _current_map = current_surface.compute_saliency_map(_modality, _classifier);
+  current_surface.compute_weights<classifier_t>(_modality, _classifier);
+  _current_map = current_surface.get_weights()[_modality];
 
   _result_cloud = PointCloudT::Ptr(new PointCloudT);
 
@@ -262,7 +265,7 @@ bool Object<classifier_t>::set_current(SurfaceOfInterest& current_surface,
 
   // set current hypothesis, cloud and map
   SupervoxelArray svs = current_surface.getSupervoxels();
-  std::vector<std::set<uint32_t>> regions = current_surface.extract_regions(_saliency_modality, 0.5);
+  std::vector<std::set<uint32_t>> regions = current_surface.extract_regions(_relevance_modality, 0.5,_class_lbl);
   size_t id = current_surface.get_closest_region(regions, c_transformed_initial);
 
   if (regions[id].size() == 0) {

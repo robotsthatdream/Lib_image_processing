@@ -306,14 +306,14 @@ pcl::PointCloud<pcl::PointXYZI> SurfaceOfInterest::cumulative_relevance_map(std:
 }
 
 
-std::vector<std::vector<uint32_t>> SurfaceOfInterest::extract_regions(const std::string &modality, double saliency_threshold,int class_lbl)
+std::vector<std::set<uint32_t>> SurfaceOfInterest::extract_regions(const std::string &modality, double saliency_threshold,int class_lbl)
 {
     std::set<uint32_t> labels_set;
     std::vector<std::set<uint32_t>> regions;
 
-    std::function<void (std::vector<uint32_t>&, uint32_t)> _add_supervoxels_to_region = [&](std::vector<uint32_t>& region, uint32_t sv_label) {
+    std::function<void (std::set<uint32_t>&, uint32_t)> _add_supervoxels_to_region = [&](std::set<uint32_t>& region, uint32_t sv_label) {
         double weight = _weights[modality][sv_label][class_lbl];
-        auto it = find(label_set.begin(), label_set.end(), sv_label);
+        auto it = find(labels_set.begin(), labels_set.end(), sv_label);
         if (weight > saliency_threshold && it == labels_set.end()) {
             labels_set.insert(sv_label);
             region.insert(sv_label);
@@ -362,7 +362,7 @@ size_t SurfaceOfInterest::get_closest_region(const std::vector<std::set<uint32_t
     }
 }
 
-std::vector<uint32_t> SurfaceOfInterest::extract_background(const std::string &modality, double saliency_threshold, int class_lbl)
+std::set<uint32_t> SurfaceOfInterest::extract_background(const std::string &modality, double saliency_threshold, int class_lbl)
 {
     std::set<uint32_t> background;
 
