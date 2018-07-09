@@ -1,6 +1,16 @@
 #include "image_processing/SurfaceOfInterest.h"
 #include "eigen3/Eigen/Core"
+
+#include "opencv2/core/version.hpp"
+#if CV_MAJOR_VERSION == 2
 #include "opencv2/ocl/ocl.hpp"
+#elif CV_MAJOR_VERSION == 3
+// ocl.hpp is now part of core.
+#include "opencv2/core.hpp"
+#endif
+
+
+
 
 using namespace image_processing;
 
