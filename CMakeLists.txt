@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(image_processing)
 
-set(SOURCE_FILES src/DescriptorExtraction.cpp
+set(SOURCE_FILES
     src/MotionDetection.cpp
     src/SupervoxelSet.cpp
     src/SurfaceOfInterest.cpp
@@ -14,34 +14,19 @@ set(SOURCE_FILES src/DescriptorExtraction.cpp
 FILE(GLOB_RECURSE HEADFILES "include/*.hpp" "include/*.h")
 add_custom_target(headers SOURCES ${HEADFILES})
 
-option(WITH_CVNONFREE "Include opencv non-free part" FALSE)
-if(WITH_CVNONFREE)
-    find_package(OpenCV COMPONENTS features2d nonfree)
-    set(SOURCE_FILES src/DescriptorExtraction.cpp
-        src/MotionDetection.cpp
-        src/SupervoxelSet.cpp
-        src/SurfaceOfInterest.cpp
-        src/BabblingDataset.cpp
-        src/HistogramFactory.cpp
-        src/Object.cpp
-        src/tools.cpp
-    )
-else()
-    find_package(OpenCV COMPONENTS features2d)
-    set(SOURCE_FILES src/DescriptorExtraction.cpp
-        src/MotionDetection.cpp
-        src/SupervoxelSet.cpp
-        src/SurfaceOfInterest.cpp
-        src/HistogramFactory.cpp
-        src/Object.cpp
-        src/tools.cpp
-    )
-endif()
+set(OpenCVRequiredComponents core features2d video)
 
+option(WITH_CVNONFREE "Include parts requiring non-free dependencies (currently, OpenCV Sift)." FALSE)
+if(WITH_CVNONFREE)
+	list(APPEND OpenCVRequiredComponents nonfree)
+  list(APPEND SOURCE_FILES src/DescriptorExtraction.cpp)
+endif(WITH_CVNONFREE)
 
 #Libraries
 #set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.54 COMPONENTS filesystem system thread iostreams chrono REQUIRED)
+# OpenCV: at least 2.4? Anyway, formally requiring OpenCV 2.4 rejects 3.2 in practice.
+find_package(OpenCV REQUIRED COMPONENTS ${OpenCVRequiredComponents}) 
 find_package(PCL 1.7 REQUIRED)
 find_package(VTK REQUIRED)
 
