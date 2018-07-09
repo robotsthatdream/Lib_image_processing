@@ -6,7 +6,7 @@ set(SOURCE_FILES src/DescriptorExtraction.cpp
     src/SupervoxelSet.cpp
     src/SurfaceOfInterest.cpp
     src/BabblingDataset.cpp
-	src/HistogramFactory.cpp
+    src/HistogramFactory.cpp
     src/Object.cpp
     src/tools.cpp
 )
@@ -14,11 +14,34 @@ set(SOURCE_FILES src/DescriptorExtraction.cpp
 FILE(GLOB_RECURSE HEADFILES "include/*.hpp" "include/*.h")
 add_custom_target(headers SOURCES ${HEADFILES})
 
+option(WITH_CVNONFREE "Include opencv non-free part" FALSE)
+if(WITH_CVNONFREE)
+    find_package(OpenCV COMPONENTS features2d nonfree)
+    set(SOURCE_FILES src/DescriptorExtraction.cpp
+        src/MotionDetection.cpp
+        src/SupervoxelSet.cpp
+        src/SurfaceOfInterest.cpp
+        src/BabblingDataset.cpp
+        src/HistogramFactory.cpp
+        src/Object.cpp
+        src/tools.cpp
+    )
+else()
+    find_package(OpenCV COMPONENTS features2d)
+    set(SOURCE_FILES src/DescriptorExtraction.cpp
+        src/MotionDetection.cpp
+        src/SupervoxelSet.cpp
+        src/SurfaceOfInterest.cpp
+        src/HistogramFactory.cpp
+        src/Object.cpp
+        src/tools.cpp
+    )
+endif()
+
 
 #Libraries
 #set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.54 COMPONENTS filesystem system thread iostreams chrono REQUIRED)
-find_package(OpenCV 2.4 REQUIRED COMPONENTS features2d nonfree)
 find_package(PCL 1.7 REQUIRED)
 find_package(VTK REQUIRED)
 
