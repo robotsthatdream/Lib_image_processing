@@ -95,6 +95,7 @@ void MotionDetection::detect_simple(cv::Mat& current_frame_BGR)
     }
 }
 
+#if CV_MAJOR_VERSION==2
 void MotionDetection::detect_MOG(cv::Mat& current_frame_BGR)
 {
     cv::Mat motion_mask;
@@ -120,6 +121,7 @@ void MotionDetection::detect_MOG_depth(cv::Mat& depth_frame_16UC1)
 
     _resultsRects = motion_to_ROIs(motion_mask);
 }
+#endif /* CV_MAJOR_VERSION 2 */
 
 bool MotionDetection::detect_on_cloud(const PointCloudXYZ::Ptr sv, const std::vector<double>& sv_center, PointCloudXYZ::Ptr diff_cloud ,
                                       int threshold, double dist_thres, double mean_thres, double octree_res){

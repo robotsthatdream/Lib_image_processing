@@ -2,6 +2,15 @@
 #define MOTION_DETECTION_H
 
 #include <opencv2/opencv.hpp>
+
+#include "opencv2/core/version.hpp"
+#if CV_MAJOR_VERSION == 2
+#include <opencv2/opencv.hpp>
+#elif CV_MAJOR_VERSION == 3
+#warning Breaking API change of BackgroundSubtractorMOG2 in OpenCV3.  Code was cut out.  Caller code that calls detect_MOG or detect_MOG_depth will not compile for this reason.
+#endif
+
+
 #include <fstream>
 #include <ctime>
 #include <image_processing/pcl_types.h>
@@ -45,6 +54,7 @@ public:
      */
     void detect_simple(cv::Mat& current_frame);
 
+#if CV_MAJOR_VERSION==2
     /**
      *@brief Builds motion mask from current frame. Similar as detect_simple but use a powerful adaptive background method.
      */
@@ -54,6 +64,7 @@ public:
      *@brief Builds motion mask from depth frame. Uses the MOG background subtraction algorithm, with some tuning to work with depth frames. One may need to use RGBD utils to subscribe to both Depth and RBG topics on ROS.
      */
     void detect_MOG_depth(cv::Mat& depth_frame_16UC1);
+#endif /* CV_MAJOR_VERSION 2 */
 
     bool detect_on_cloud(const PointCloudXYZ::Ptr sv, const std::vector<double>& sv_center, PointCloudXYZ::Ptr diff_cloud,
                          int threshold = 0,double dist_thres = 0.02, double mean_thres = 0.2, double octree_res = 0.02);
@@ -120,7 +131,10 @@ private :
     cv::Mat _background_BGR;
     cv::Mat _background_depth_16UC1;
 
+#if CV_MAJOR_VERSION==2
     cv::BackgroundSubtractorMOG2 _background_sub_MOG2;
+#endif
+    //cv::Ptr<cv::BackgroundSubtractorMOG2> _background_sub_MOG2;
 
     //parameter
     double _minArea; //minimum size of contours;
