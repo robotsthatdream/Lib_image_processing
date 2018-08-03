@@ -25,6 +25,19 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
     auto supervoxels = soi.getSupervoxels();
     auto weights_for_this_modality = soi.get_weights()[modality];
 
+    auto input_cloud = soi.getInputCloud();
+    for (auto it_p = input_cloud->begin(); it_p != input_cloud->end(); it_p++) {
+        // auto current_p = it_p->second;
+        pt.x = it_p->x;
+        pt.y = it_p->y;
+        pt.z = it_p->z;
+
+        pt.r = (it_p->r + it_p->g + it_p->b) / 6;
+        pt.g = it_p->g / 4;
+        pt.b = it_p->b / 8;
+        result.push_back(pt);
+    }
+
     for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
          it_sv++) {
         pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
