@@ -1,7 +1,17 @@
+#include <iostream>
+
+#include <pcl/console/parse.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <pcl/sample_consensus/ransac.h>
+#include <pcl/sample_consensus/sac_model_plane.h>
+#include <pcl/sample_consensus/sac_model_sphere.h>
+#include <pcl/visualization/pcl_visualizer.h>
+
 #include "../include/image_processing/SurfaceOfInterest.h"
 #include <boost/archive/text_iarchive.hpp>
 #include <iagmm/gmm.hpp>
-#include <iostream>
 
 namespace ip = image_processing;
 
@@ -57,6 +67,18 @@ int main(int argc, char **argv) {
 
     std::cout << obj_indexes.size() << " objects hypothesis extracted"
               << std::endl;
+
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
+        new pcl::visualization::PCLVisualizer("Coucou 3D Viewer"));
+    viewer->setBackgroundColor(0, 0, 0);
+    viewer->addPointCloud<ip::PointT>(input_cloud, "cloud");
+    viewer->setPointCloudRenderingProperties(
+        pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "cloud");
+    while (!viewer->wasStopped()) {
+        viewer->spinOnce(100);
+        boost::this_thread::sleep(boost::posix_time::microseconds(100000));
+    }
+    return 0;
 
     return 0;
 }
