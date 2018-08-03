@@ -15,6 +15,34 @@
 
 namespace ip = image_processing;
 
+pcl::PointCloud<pcl::PointXYZRGB>
+getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
+                        int lbl) {
+
+    pcl::PointCloud<pcl::PointXYZRGB> result;
+    pcl::PointXYZRGB pt;
+
+    auto supervoxels = soi.getSupervoxels();
+    auto weights_for_this_modality = soi.get_weights()[modality];
+
+    for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
+         it_sv++) {
+        pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
+        float c = weights_for_this_modality[it_sv->first][lbl];
+
+        for (auto v : *(current_sv->voxels_)) {
+            pt.x = v.x;
+            pt.y = v.y;
+            pt.z = v.z;
+            //            pt.rgb = (c * 255) * 0x010101;
+            pt.r = pt.g = pt.b = c * 255.0;
+            result.push_back(pt);
+        }
+    }
+
+    return result;
+}
+
 int main(int argc, char **argv) {
 
     if (argc != 3) {
@@ -68,17 +96,20 @@ int main(int argc, char **argv) {
     std::cout << obj_indexes.size() << " objects hypothesis extracted"
               << std::endl;
 
+    pcl::PointCloud<pcl::PointXYZRGB> relevance_map_cloud =
+        getColoredWeightedCloud(soi, "meanFPFHLabHist", 1);
+    boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>
+        relevance_map_cloud_ptr(&relevance_map_cloud);
+
     boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
         new pcl::visualization::PCLVisualizer("Coucou 3D Viewer"));
     viewer->setBackgroundColor(0, 0, 0);
-    viewer->addPointCloud<ip::PointT>(input_cloud, "cloud");
+    viewer->addPointCloud<pcl::PointXYZRGB>(relevance_map_cloud_ptr, "cloud");
     viewer->setPointCloudRenderingProperties(
         pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "cloud");
     while (!viewer->wasStopped()) {
         viewer->spinOnce(100);
         boost::this_thread::sleep(boost::posix_time::microseconds(100000));
     }
-    return 0;
-
     return 0;
 }
