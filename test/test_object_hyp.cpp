@@ -37,9 +37,15 @@ int main(int argc, char **argv) {
 
     //* Generate relevance map on the pointcloud
     ip::SurfaceOfInterest soi(input_cloud);
+    std::cout << "computing supervoxel" << std::endl;
     soi.computeSupervoxel();
+    std::cout << "computed supervoxel" << std::endl;
+    std::cout << "computing meanFPFHLabHist" << std::endl;
     soi.compute_feature("meanFPFHLabHist");
+    std::cout << "computed meanFPFHLabHist" << std::endl;
+    std::cout << "computing meanFPFHLabHist weights" << std::endl;
     soi.compute_weights<iagmm::GMM>("meanFPFHLabHist", gmm);
+    std::cout << "computed meanFPFHLabHist weights" << std::endl;
     //*/
 
     std::cout << "relevance_map extracted" << std::endl;
