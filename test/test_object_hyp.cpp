@@ -57,6 +57,42 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
         }
     }
 
+    /* Populate again with cloud fitted with shape. */
+    for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
+         it_sv++) {
+        pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
+        float c = weights_for_this_modality[it_sv->first][lbl];
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
+            new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::copyPointCloud(*(current_sv->voxels_), *cloud_xyz);
+        std::vector<int> inliers;
+        {
+            pcl::SampleConsensusModelSphere<pcl::PointXYZ>::Ptr model_s(
+                new pcl::SampleConsensusModelSphere<pcl::PointXYZ>(cloud_xyz));
+
+            pcl::RandomSampleConsensus<pcl::PointXYZ> ransac(model_s);
+            ransac.setDistanceThreshold(.001);
+            ransac.computeModel();
+            ransac.getInliers(inliers);
+        }
+
+        // copies all inliers of the model computed to another PointCloud
+        pcl::PointCloud<pcl::PointXYZ>::Ptr final(
+            new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::copyPointCloud<pcl::PointXYZ>(*cloud_xyz, inliers, * final);
+
+        for (auto v : *(final)) {
+            pt.x = v.x;
+            pt.y = v.y;
+            pt.z = v.z;
+            //            pt.rgb = (c * 255) * 0x010101;
+            pt.r = pt.b = 0;
+            pt.g = c * 255.0;
+            result.push_back(pt);
+        }
+    }
+
     return result;
 }
 
