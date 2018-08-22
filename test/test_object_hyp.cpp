@@ -114,6 +114,7 @@ int main(int argc, char **argv) {
 
     pcl::PointCloud<pcl::PointXYZRGB> relevance_map_cloud =
         getColoredWeightedCloud(soi, "meanFPFHLabHist", 1);
+
     boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>
         relevance_map_cloud_ptr(&relevance_map_cloud);
 
