@@ -40,7 +40,7 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
         result.push_back(pt);
     }
 
-    /* Populate again with grey points depending on weight. */
+    /* Populate again with orange points depending on weight. */
     for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
          it_sv++) {
         pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
@@ -50,8 +50,9 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
             pt.x = v.x;
             pt.y = v.y;
             pt.z = v.z;
-            //            pt.rgb = (c * 255) * 0x010101;
-            pt.r = pt.g = pt.b = c * 255.0;
+            pt.r = c * 255.0;
+            pt.g = c * 128.0;
+            pt.b = 0;
             result.push_back(pt);
         }
     }
