@@ -25,6 +25,8 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
     auto supervoxels = soi.getSupervoxels();
     auto weights_for_this_modality = soi.get_weights()[modality];
 
+    /* Populate point cloud first with blueish tint, to see where input objects
+     * are. */
     auto input_cloud = soi.getInputCloud();
     for (auto it_p = input_cloud->begin(); it_p != input_cloud->end(); it_p++) {
         // auto current_p = it_p->second;
@@ -38,6 +40,7 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
         result.push_back(pt);
     }
 
+    /* Populate again with grey points depending on weight. */
     for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
          it_sv++) {
         pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
