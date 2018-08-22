@@ -93,6 +93,10 @@ int main(int argc, char **argv) {
     ip::SurfaceOfInterest soi(input_cloud);
     std::cout << "computing supervoxel" << std::endl;
     soi.computeSupervoxel();
+
+    std::cout << soi.getSupervoxels().size() << " supervoxels extracted"
+              << std::endl;
+
     std::cout << "computed supervoxel" << std::endl;
     std::cout << "computing meanFPFHLabHist" << std::endl;
     soi.compute_feature("meanFPFHLabHist");
