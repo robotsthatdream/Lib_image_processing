@@ -93,7 +93,7 @@ public :
 
     template <typename Param>
     void init(){
-        _extractor.reset(new pcl::SupervoxelClustering<PointT>(Param::voxel_resolution,Param::seed_resolution,Param::use_transform));
+        _extractor.reset(new pcl::SupervoxelClustering<PointT>(Param::voxel_resolution,Param::seed_resolution));
         _extractor->setColorImportance(Param::color_importance);
         _extractor->setSpatialImportance(Param::spatial_importance);
         _extractor->setNormalImportance(Param::normal_importance);
@@ -106,7 +106,6 @@ public :
         _cam_param.rgb_princ_pt_y = Param::rgb_princ_pt_y;
         _cam_param.height = Param::height;
         _cam_param.width = Param::width;
-
     }
 
     //METHODES-------------------------------------------------
@@ -176,7 +175,7 @@ public :
 //        }
         _supervoxels.clear();
         _adjacency_map.clear();
-        _extractor.reset(new pcl::SupervoxelClustering<PointT>(Param::voxel_resolution,Param::seed_resolution,Param::use_transform));
+        _extractor.reset(new pcl::SupervoxelClustering<PointT>(Param::voxel_resolution,Param::seed_resolution));
         _extractor->setColorImportance(Param::color_importance);
         _extractor->setSpatialImportance(Param::spatial_importance);
         _extractor->setNormalImportance(Param::normal_importance);
