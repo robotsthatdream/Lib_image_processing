@@ -17,13 +17,10 @@ namespace ip = image_processing;
 
 pcl::PointCloud<pcl::PointXYZRGB>
 getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
-                        int lbl) {
+                        int lbl, std::vector<std::set<uint32_t>> obj_indexes) {
 
     pcl::PointCloud<pcl::PointXYZRGB> result;
     pcl::PointXYZRGB pt;
-
-    auto supervoxels = soi.getSupervoxels();
-    auto weights_for_this_modality = soi.get_weights()[modality];
 
     /* Populate point cloud first with blueish tint, to see where input objects
      * are. */
@@ -39,6 +36,9 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
         pt.b = (it_p->r + it_p->g + it_p->b) / 6;
         result.push_back(pt);
     }
+
+    auto supervoxels = soi.getSupervoxels();
+    auto weights_for_this_modality = soi.get_weights()[modality];
 
     /* Populate again with orange points depending on weight. */
     for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
@@ -175,7 +175,7 @@ int main(int argc, char **argv) {
               << std::endl;
 
     pcl::PointCloud<pcl::PointXYZRGB> relevance_map_cloud =
-        getColoredWeightedCloud(soi, "meanFPFHLabHist", 1);
+        getColoredWeightedCloud(soi, "meanFPFHLabHist", 1, obj_indexes);
 
     boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>
         relevance_map_cloud_ptr(&relevance_map_cloud);
