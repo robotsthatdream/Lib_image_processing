@@ -67,14 +67,35 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
             new pcl::PointCloud<pcl::PointXYZ>);
         pcl::copyPointCloud(*(current_sv->voxels_), *cloud_xyz);
         std::vector<int> inliers;
-        {
-            pcl::SampleConsensusModelSphere<pcl::PointXYZ>::Ptr model_s(
-                new pcl::SampleConsensusModelSphere<pcl::PointXYZ>(cloud_xyz));
 
-            pcl::RandomSampleConsensus<pcl::PointXYZ> ransac(model_s);
-            ransac.setDistanceThreshold(.001);
-            ransac.computeModel();
-            ransac.getInliers(inliers);
+        pcl::SampleConsensusModelSphere<pcl::PointXYZ>::Ptr model_s(
+            new pcl::SampleConsensusModelSphere<pcl::PointXYZ>(cloud_xyz));
+
+        pcl::RandomSampleConsensus<pcl::PointXYZ> ransac(model_s);
+        ransac.setDistanceThreshold(.001);
+        ransac.computeModel();
+        ransac.getInliers(inliers);
+
+        Eigen::VectorXf coeff;
+        ransac.getModelCoefficients(coeff);
+
+        std::cerr << "coeff: " << coeff << std::endl;
+
+        Eigen::VectorXf coeff_refined;
+        model_s->optimizeModelCoefficients(inliers, coeff, coeff_refined);
+        // EXPECT_EQ (4, coeff_refined.size ());
+
+        pcl::PointCloud<pcl::PointXYZ> proj_points;
+        model_s->projectPoints(inliers, coeff_refined, proj_points, false);
+
+        for (auto v : proj_points) {
+            pt.x = v.x;
+            pt.y = v.y;
+            pt.z = v.z;
+            //            pt.rgb = (c * 255) * 0x010101;
+            pt.r = pt.b = c * 255.0;
+            pt.g = 0;
+            result.push_back(pt);
         }
 
         // copies all inliers of the model computed to another PointCloud
@@ -163,6 +184,7 @@ int main(int argc, char **argv) {
         new pcl::visualization::PCLVisualizer("Coucou 3D Viewer"));
     viewer->setBackgroundColor(0, 0, 0);
     viewer->addPointCloud<pcl::PointXYZRGB>(relevance_map_cloud_ptr, "cloud");
+
     viewer->setPointCloudRenderingProperties(
         pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "cloud");
     while (!viewer->wasStopped()) {
