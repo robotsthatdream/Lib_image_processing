@@ -49,6 +49,7 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
     boost::random::uniform_int_distribution<> dist(4, 7);
     // _gen.seed(0); No seed, we want it deterministic.
 
+    int kept = 0;
     for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
          it_sv++) {
         int current_sv_label = it_sv->first;
@@ -56,13 +57,13 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
         float c = weights_for_this_modality[it_sv->first][lbl];
 
         if (c < 0.5) {
-            std::cout << " skipping sv of label " << current_sv_label
-                      << " weight " << c << std::endl;
+            // std::cout << " skipping sv of label " << current_sv_label << "
+            // weight " << c << std::endl;
             continue;
-        } else {
-            std::cout << " KEEPING sv of label " << current_sv_label
-                      << " weight " << c << std::endl;
         }
+        // std::cout << " KEEPING sv of label " << current_sv_label << " weight
+        // " << c << std::endl;
+        ++kept;
 
         // Colors between quarter and half the max.  Not too weak, not too
         // bright.
@@ -81,6 +82,8 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
             result.push_back(pt);
         }
     }
+    std::cout << "Thresholding kept " << kept << " supervoxels out of "
+              << supervoxels.size() << std::endl;
 
     /* Populate again with cloud fitted with shape. */
     for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
