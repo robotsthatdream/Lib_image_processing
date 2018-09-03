@@ -51,7 +51,7 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
         pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
         float c = weights_for_this_modality[it_sv->first][lbl];
 
-        if (c < 0.2) {
+        if (c < 0.5) {
             std::cout << " skipping sv of label " << current_first << " weight "
                       << c << std::endl;
             continue;
