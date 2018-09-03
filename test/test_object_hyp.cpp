@@ -85,15 +85,71 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
     std::cout << "Thresholding kept " << kept << " supervoxels out of "
               << supervoxels.size() << std::endl;
 
+    // vector < PointCloud<PointXYZ>::Ptr, Eigen::aligned_allocator <PointCloud
+    // <PointXYZ>::Ptr > > sourceClouds;
+
     /* Populate again with cloud fitted with shape. */
-    for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
-         it_sv++) {
-        pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
-        float c = weights_for_this_modality[it_sv->first][lbl];
+
+    /* We have to express what supervoxels belong together.
+
+       We could copy points, or just set indices, which saves memory.  Actually,
+       PCL uses indices anyway.
+
+       We don't have to filter again because extract_regions already does it.
+
+    */
+
+    // Rappel : typedef std::map<uint32_t, pcl::Supervoxel<PointT>::Ptr>
+    // SupervoxelArray;
+
+    // for(auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
+    // it_sv++)
+    /* each object */
+    for (auto it_obj_hyp = obj_indexes.begin(); it_obj_hyp != obj_indexes.end();
+         it_obj_hyp++) {
+        int r = float(dist(_gen) << 4);
+        int g = float(dist(_gen) << 4);
+        int b = float(dist(_gen) << 4);
+
+        std::cout << std::endl
+                  << "New color = " << r << "," << g << "," << b << std::endl;
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
             new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::copyPointCloud(*(current_sv->voxels_), *cloud_xyz);
+
+        // *it_obj_hyp is a std::set<uint32_t>
+
+        {
+            int kept = 0;
+            pcl::PointXYZ pt;
+            for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
+                 it_sv++) {
+                int current_sv_label = it_sv->first;
+                pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
+
+                if (it_obj_hyp->find(current_sv_label) == it_obj_hyp->end()) {
+                    // std::cout << "Supervoxel " << current_sv_label << " not
+                    // part of current object, skipping." << std::endl;
+                    continue;
+                }
+                ++kept;
+
+                std::cout << "Supervoxel labelled " << current_sv_label
+                          << " part of current object, including, will add "
+                          << current_sv->voxels_->size() << " point(s)."
+                          << std::endl;
+                for (auto v : *(current_sv->voxels_)) {
+                    pt.x = v.x;
+                    pt.y = v.y;
+                    pt.z = v.z;
+                    cloud_xyz->push_back(pt);
+                }
+            }
+            std::cout << "Gathered " << kept
+                      << " supervoxels into a point cloud of size "
+                      << cloud_xyz->size() << std::endl;
+        }
+
         std::vector<int> inliers;
 
         pcl::SampleConsensusModelSphere<pcl::PointXYZ>::Ptr model_s(
@@ -116,13 +172,16 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
         pcl::PointCloud<pcl::PointXYZ> proj_points;
         model_s->projectPoints(inliers, coeff_refined, proj_points, false);
 
+        pcl::PointXYZRGB pt;
+
         for (auto v : proj_points) {
             pt.x = v.x;
             pt.y = v.y;
             pt.z = v.z;
-            //            pt.rgb = (c * 255) * 0x010101;
-            pt.r = pt.b = c * 255.0;
-            pt.g = 0;
+
+            pt.r = r;
+            pt.g = g;
+            pt.b = b;
             result.push_back(pt);
         }
 
@@ -131,15 +190,25 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
             new pcl::PointCloud<pcl::PointXYZ>);
         pcl::copyPointCloud<pcl::PointXYZ>(*cloud_xyz, inliers, * final);
 
+        r = r * 2;
+        g = g * 2;
+        b = b * 2;
+
+        std::cout << std::endl
+                  << "Begin new obj hyp, color = " << r << "," << g << "," << b
+                  << std::endl;
+
         for (auto v : *(final)) {
             pt.x = v.x;
             pt.y = v.y;
             pt.z = v.z;
-            //            pt.rgb = (c * 255) * 0x010101;
-            pt.r = pt.b = 0;
-            pt.g = c * 255.0;
+
+            pt.r = r;
+            pt.g = g;
+            pt.b = b;
             result.push_back(pt);
         }
+        std::cout << "End new obj hyp." << std::endl;
     }
 
     return result;
