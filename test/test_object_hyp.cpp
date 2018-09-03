@@ -47,8 +47,18 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
 
     for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
          it_sv++) {
+        int current_first = it_sv->first;
         pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
         float c = weights_for_this_modality[it_sv->first][lbl];
+
+        if (c < 0.2) {
+            std::cout << " skipping sv of label " << current_first << " weight "
+                      << c << std::endl;
+            continue;
+        } else {
+            std::cout << " KEEPING sv of label " << current_first << " weight "
+                      << c << std::endl;
+        }
 
         // Colors between quarter and half the max.  Not too weak, not too
         // bright.
