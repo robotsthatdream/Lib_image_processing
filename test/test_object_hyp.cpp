@@ -20,20 +20,24 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
                         int lbl, std::vector<std::set<uint32_t>> obj_indexes) {
 
     pcl::PointCloud<pcl::PointXYZRGB> result;
-    pcl::PointXYZRGB pt;
 
     /* Draw all points in dark blueish tint, to see overall scene. */
     auto input_cloud = soi.getInputCloud();
-    for (auto it_p = input_cloud->begin(); it_p != input_cloud->end(); it_p++) {
-        // auto current_p = it_p->second;
-        pt.x = it_p->x;
-        pt.y = it_p->y;
-        pt.z = it_p->z;
 
-        pt.r = it_p->r / 8;
-        pt.g = it_p->g / 4;
-        pt.b = (it_p->r + it_p->g + it_p->b) / 6;
-        result.push_back(pt);
+    {
+        pcl::PointXYZRGB pt;
+        for (auto it_p = input_cloud->begin(); it_p != input_cloud->end();
+             it_p++) {
+            // auto current_p = it_p->second;
+            pt.x = it_p->x;
+            pt.y = it_p->y;
+            pt.z = it_p->z;
+
+            pt.r = it_p->r / 8;
+            pt.g = it_p->g / 4;
+            pt.b = (it_p->r + it_p->g + it_p->b) / 6;
+            result.push_back(pt);
+        }
     }
 
     auto supervoxels = soi.getSupervoxels();
@@ -66,6 +70,7 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
         int g = float(dist(_gen) << 3) * (c + 1.0);
         int b = float(dist(_gen) << 3) * (c + 1.0);
 
+        pcl::PointXYZRGB pt;
         for (auto v : *(current_sv->voxels_)) {
             pt.x = v.x;
             pt.y = v.y;
