@@ -22,8 +22,7 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
     pcl::PointCloud<pcl::PointXYZRGB> result;
     pcl::PointXYZRGB pt;
 
-    /* Populate point cloud first with blueish tint, to see where input objects
-     * are. */
+    /* Draw all points in dark blueish tint, to see overall scene. */
     auto input_cloud = soi.getInputCloud();
     for (auto it_p = input_cloud->begin(); it_p != input_cloud->end(); it_p++) {
         // auto current_p = it_p->second;
@@ -40,19 +39,30 @@ getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
     auto supervoxels = soi.getSupervoxels();
     auto weights_for_this_modality = soi.get_weights()[modality];
 
-    /* Populate again with orange points depending on weight. */
+    /* Draw all supervoxels points in various colors. */
+
+    boost::random::mt19937 _gen;
+    boost::random::uniform_int_distribution<> dist(4, 7);
+    // _gen.seed(0); No seed, we want it deterministic.
+
     for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
          it_sv++) {
         pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
         float c = weights_for_this_modality[it_sv->first][lbl];
 
+        // Colors between quarter and half the max.  Not too weak, not too
+        // bright.
+        int r = float(dist(_gen) << 3) * (c + 1.0);
+        int g = float(dist(_gen) << 3) * (c + 1.0);
+        int b = float(dist(_gen) << 3) * (c + 1.0);
+
         for (auto v : *(current_sv->voxels_)) {
             pt.x = v.x;
             pt.y = v.y;
             pt.z = v.z;
-            pt.r = c * 255.0;
-            pt.g = c * 128.0;
-            pt.b = 0;
+            pt.r = r;
+            pt.g = g;
+            pt.b = b;
             result.push_back(pt);
         }
     }
