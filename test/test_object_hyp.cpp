@@ -167,20 +167,26 @@ int main(int argc, char **argv) {
         // for(auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
         // it_sv++)
         /* each object */
-        for (auto it_obj_hyp = obj_indexes.begin();
-             it_obj_hyp != obj_indexes.end(); it_obj_hyp++) {
+        for (int obj_index_i; obj_index_i < obj_indexes.size(); obj_index_i++)
+        // for(auto it_obj_hyp = obj_indexes.begin(); it_obj_hyp !=
+        // obj_indexes.end(); it_obj_hyp++)
+        {
+            std::string obj_index_i_s = std::to_string(obj_index_i);
+            auto p_obj_hyp = &(obj_indexes[obj_index_i]);
+
             int r = float(dist(_gen) << 4);
             int g = float(dist(_gen) << 4);
             int b = float(dist(_gen) << 4);
 
             std::cout << std::endl
-                      << "New color = " << r << "," << g << "," << b
-                      << std::endl;
+                      << "Begin new obj hyp, id=" << obj_index_i_s << ", "
+                                                                      "color = "
+                      << r << "," << g << "," << b << std::endl;
 
             pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
                 new pcl::PointCloud<pcl::PointXYZ>);
 
-            // *it_obj_hyp is a std::set<uint32_t>
+            // *p_obj_hyp is a std::set<uint32_t>&
 
             {
                 int kept = 0;
@@ -190,8 +196,7 @@ int main(int argc, char **argv) {
                     int current_sv_label = it_sv->first;
                     pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
 
-                    if (it_obj_hyp->find(current_sv_label) ==
-                        it_obj_hyp->end()) {
+                    if (p_obj_hyp->find(current_sv_label) == p_obj_hyp->end()) {
                         // std::cout << "Supervoxel " << current_sv_label << "
                         // not part of current object, skipping." << std::endl;
                         continue;
@@ -260,8 +265,8 @@ int main(int argc, char **argv) {
             b = b * 2;
 
             std::cout << std::endl
-                      << "Begin new obj hyp, color = " << r << "," << g << ","
-                      << b << std::endl;
+                      << "Adding to output cloud obj hyp, id=" << obj_index_i_s
+                      << ", color = " << r << "," << g << "," << b << std::endl;
 
             for (auto v : *(final)) {
                 pt.x = v.x;
@@ -273,7 +278,8 @@ int main(int argc, char **argv) {
                 pt.b = b;
                 relevance_map_cloud.push_back(pt);
             }
-            std::cout << "End new obj hyp." << std::endl;
+            std::cout << "End new obj hyp, id=" << obj_index_i_s << "."
+                      << std::endl;
         }
     }
 
