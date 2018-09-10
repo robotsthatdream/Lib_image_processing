@@ -15,205 +15,6 @@
 
 namespace ip = image_processing;
 
-pcl::PointCloud<pcl::PointXYZRGB>
-getColoredWeightedCloud(ip::SurfaceOfInterest &soi, const std::string &modality,
-                        int lbl, std::vector<std::set<uint32_t>> obj_indexes) {
-
-    pcl::PointCloud<pcl::PointXYZRGB> result;
-
-    /* Draw all points in dark blueish tint, to see overall scene. */
-    auto input_cloud = soi.getInputCloud();
-
-    {
-        pcl::PointXYZRGB pt;
-        for (auto it_p = input_cloud->begin(); it_p != input_cloud->end();
-             it_p++) {
-            // auto current_p = it_p->second;
-            pt.x = it_p->x;
-            pt.y = it_p->y;
-            pt.z = it_p->z;
-
-            pt.r = it_p->r / 8;
-            pt.g = it_p->g / 4;
-            pt.b = (it_p->r + it_p->g + it_p->b) / 6;
-            result.push_back(pt);
-        }
-    }
-
-    auto supervoxels = soi.getSupervoxels();
-    auto weights_for_this_modality = soi.get_weights()[modality];
-
-    /* Draw all supervoxels points in various colors. */
-
-    boost::random::mt19937 _gen;
-    boost::random::uniform_int_distribution<> dist(4, 7);
-    // _gen.seed(0); No seed, we want it deterministic.
-
-    int kept = 0;
-    for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
-         it_sv++) {
-        int current_sv_label = it_sv->first;
-        pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
-        float c = weights_for_this_modality[it_sv->first][lbl];
-
-        if (c < 0.5) {
-            // std::cout << " skipping sv of label " << current_sv_label << "
-            // weight " << c << std::endl;
-            continue;
-        }
-        // std::cout << " KEEPING sv of label " << current_sv_label << " weight
-        // " << c << std::endl;
-        ++kept;
-
-        // Colors between quarter and half the max.  Not too weak, not too
-        // bright.
-        int r = float(dist(_gen) << 2) * (c + 1.0);
-        int g = float(dist(_gen) << 2) * (c + 1.0);
-        int b = float(dist(_gen) << 2) * (c + 1.0);
-
-        pcl::PointXYZRGB pt;
-        for (auto v : *(current_sv->voxels_)) {
-            pt.x = v.x;
-            pt.y = v.y;
-            pt.z = v.z;
-            pt.r = r;
-            pt.g = g;
-            pt.b = b;
-            result.push_back(pt);
-        }
-    }
-    std::cout << "Thresholding kept " << kept << " supervoxels out of "
-              << supervoxels.size() << std::endl;
-
-    // vector < PointCloud<PointXYZ>::Ptr, Eigen::aligned_allocator <PointCloud
-    // <PointXYZ>::Ptr > > sourceClouds;
-
-    /* Populate again with cloud fitted with shape. */
-
-    /* We have to express what supervoxels belong together.
-
-       We could copy points, or just set indices, which saves memory.  Actually,
-       PCL uses indices anyway.
-
-       We don't have to filter again because extract_regions already does it.
-
-    */
-
-    // Rappel : typedef std::map<uint32_t, pcl::Supervoxel<PointT>::Ptr>
-    // SupervoxelArray;
-
-    // for(auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
-    // it_sv++)
-    /* each object */
-    for (auto it_obj_hyp = obj_indexes.begin(); it_obj_hyp != obj_indexes.end();
-         it_obj_hyp++) {
-        int r = float(dist(_gen) << 4);
-        int g = float(dist(_gen) << 4);
-        int b = float(dist(_gen) << 4);
-
-        std::cout << std::endl
-                  << "New color = " << r << "," << g << "," << b << std::endl;
-
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
-            new pcl::PointCloud<pcl::PointXYZ>);
-
-        // *it_obj_hyp is a std::set<uint32_t>
-
-        {
-            int kept = 0;
-            pcl::PointXYZ pt;
-            for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
-                 it_sv++) {
-                int current_sv_label = it_sv->first;
-                pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
-
-                if (it_obj_hyp->find(current_sv_label) == it_obj_hyp->end()) {
-                    // std::cout << "Supervoxel " << current_sv_label << " not
-                    // part of current object, skipping." << std::endl;
-                    continue;
-                }
-                ++kept;
-
-                std::cout << "Supervoxel labelled " << current_sv_label
-                          << " part of current object, including, will add "
-                          << current_sv->voxels_->size() << " point(s)."
-                          << std::endl;
-                for (auto v : *(current_sv->voxels_)) {
-                    pt.x = v.x;
-                    pt.y = v.y;
-                    pt.z = v.z;
-                    cloud_xyz->push_back(pt);
-                }
-            }
-            std::cout << "Gathered " << kept
-                      << " supervoxels into a point cloud of size "
-                      << cloud_xyz->size() << std::endl;
-        }
-
-        std::vector<int> inliers;
-
-        pcl::SampleConsensusModelSphere<pcl::PointXYZ>::Ptr model_s(
-            new pcl::SampleConsensusModelSphere<pcl::PointXYZ>(cloud_xyz));
-
-        pcl::RandomSampleConsensus<pcl::PointXYZ> ransac(model_s);
-        ransac.setDistanceThreshold(.001);
-        ransac.computeModel();
-        ransac.getInliers(inliers);
-
-        Eigen::VectorXf coeff;
-        ransac.getModelCoefficients(coeff);
-
-        std::cerr << "coeff: " << coeff << std::endl;
-
-        Eigen::VectorXf coeff_refined;
-        model_s->optimizeModelCoefficients(inliers, coeff, coeff_refined);
-        // EXPECT_EQ (4, coeff_refined.size ());
-
-        pcl::PointCloud<pcl::PointXYZ> proj_points;
-        model_s->projectPoints(inliers, coeff_refined, proj_points, false);
-
-        pcl::PointXYZRGB pt;
-
-        for (auto v : proj_points) {
-            pt.x = v.x;
-            pt.y = v.y;
-            pt.z = v.z;
-
-            pt.r = r;
-            pt.g = g;
-            pt.b = b;
-            result.push_back(pt);
-        }
-
-        // copies all inliers of the model computed to another PointCloud
-        pcl::PointCloud<pcl::PointXYZ>::Ptr final(
-            new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::copyPointCloud<pcl::PointXYZ>(*cloud_xyz, inliers, * final);
-
-        r = r * 2;
-        g = g * 2;
-        b = b * 2;
-
-        std::cout << std::endl
-                  << "Begin new obj hyp, color = " << r << "," << g << "," << b
-                  << std::endl;
-
-        for (auto v : *(final)) {
-            pt.x = v.x;
-            pt.y = v.y;
-            pt.z = v.z;
-
-            pt.r = r;
-            pt.g = g;
-            pt.b = b;
-            result.push_back(pt);
-        }
-        std::cout << "End new obj hyp." << std::endl;
-    }
-
-    return result;
-}
-
 int main(int argc, char **argv) {
 
     if (argc != 3) {
@@ -271,15 +72,213 @@ int main(int argc, char **argv) {
     std::cout << obj_indexes.size() << " objects hypothesis extracted"
               << std::endl;
 
-    pcl::PointCloud<pcl::PointXYZRGB> relevance_map_cloud =
-        getColoredWeightedCloud(soi, "meanFPFHLabHist", 1, obj_indexes);
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
+        new pcl::visualization::PCLVisualizer("Coucou 3D Viewer"));
+    viewer->setBackgroundColor(0, 0, 0);
+
+    pcl::PointCloud<pcl::PointXYZRGB> relevance_map_cloud;
+
+    {
+        std::string modality = "meanFPFHLabHist";
+        int lbl = 1;
+
+        /* Draw all points in dark blueish tint, to see overall scene. */
+        auto input_cloud = soi.getInputCloud();
+
+        {
+            pcl::PointXYZRGB pt;
+            for (auto it_p = input_cloud->begin(); it_p != input_cloud->end();
+                 it_p++) {
+                // auto current_p = it_p->second;
+                pt.x = it_p->x;
+                pt.y = it_p->y;
+                pt.z = it_p->z;
+
+                pt.r = it_p->r / 8;
+                pt.g = it_p->g / 4;
+                pt.b = (it_p->r + it_p->g + it_p->b) / 6;
+                relevance_map_cloud.push_back(pt);
+            }
+        }
+
+        auto supervoxels = soi.getSupervoxels();
+        auto weights_for_this_modality = soi.get_weights()[modality];
+
+        /* Draw all supervoxels points in various colors. */
+
+        boost::random::mt19937 _gen;
+        boost::random::uniform_int_distribution<> dist(4, 7);
+        // _gen.seed(0); No seed, we want it deterministic.
+
+        int kept = 0;
+        for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
+             it_sv++) {
+            int current_sv_label = it_sv->first;
+            pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
+            float c = weights_for_this_modality[it_sv->first][lbl];
+
+            if (c < 0.5) {
+                // std::cout << " skipping sv of label " << current_sv_label <<
+                // " weight " << c << std::endl;
+                continue;
+            }
+            // std::cout << " KEEPING sv of label " << current_sv_label << "
+            // weight " << c << std::endl;
+            ++kept;
+
+            // Colors between quarter and half the max.  Not too weak, not too
+            // bright.
+            int r = float(dist(_gen) << 2) * (c + 1.0);
+            int g = float(dist(_gen) << 2) * (c + 1.0);
+            int b = float(dist(_gen) << 2) * (c + 1.0);
+
+            pcl::PointXYZRGB pt;
+            for (auto v : *(current_sv->voxels_)) {
+                pt.x = v.x;
+                pt.y = v.y;
+                pt.z = v.z;
+                pt.r = r;
+                pt.g = g;
+                pt.b = b;
+                relevance_map_cloud.push_back(pt);
+            }
+        }
+        std::cout << "Thresholding kept " << kept << " supervoxels out of "
+                  << supervoxels.size() << std::endl;
+
+        // vector < PointCloud<PointXYZ>::Ptr, Eigen::aligned_allocator
+        // <PointCloud <PointXYZ>::Ptr > > sourceClouds;
+
+        /* Populate again with cloud fitted with shape. */
+
+        /* We have to express what supervoxels belong together.
+
+           We could copy points, or just set indices, which saves memory.
+           Actually, PCL uses indices anyway.
+
+           We don't have to filter again because extract_regions already does
+           it.
+
+        */
+
+        // Rappel : typedef std::map<uint32_t, pcl::Supervoxel<PointT>::Ptr>
+        // SupervoxelArray;
+
+        // for(auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
+        // it_sv++)
+        /* each object */
+        for (auto it_obj_hyp = obj_indexes.begin();
+             it_obj_hyp != obj_indexes.end(); it_obj_hyp++) {
+            int r = float(dist(_gen) << 4);
+            int g = float(dist(_gen) << 4);
+            int b = float(dist(_gen) << 4);
+
+            std::cout << std::endl
+                      << "New color = " << r << "," << g << "," << b
+                      << std::endl;
+
+            pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
+                new pcl::PointCloud<pcl::PointXYZ>);
+
+            // *it_obj_hyp is a std::set<uint32_t>
+
+            {
+                int kept = 0;
+                pcl::PointXYZ pt;
+                for (auto it_sv = supervoxels.begin();
+                     it_sv != supervoxels.end(); it_sv++) {
+                    int current_sv_label = it_sv->first;
+                    pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
+
+                    if (it_obj_hyp->find(current_sv_label) ==
+                        it_obj_hyp->end()) {
+                        // std::cout << "Supervoxel " << current_sv_label << "
+                        // not part of current object, skipping." << std::endl;
+                        continue;
+                    }
+                    ++kept;
+
+                    std::cout << "Supervoxel labelled " << current_sv_label
+                              << " part of current object, including, will add "
+                              << current_sv->voxels_->size() << " point(s)."
+                              << std::endl;
+                    for (auto v : *(current_sv->voxels_)) {
+                        pt.x = v.x;
+                        pt.y = v.y;
+                        pt.z = v.z;
+                        cloud_xyz->push_back(pt);
+                    }
+                }
+                std::cout << "Gathered " << kept
+                          << " supervoxels into a point cloud of size "
+                          << cloud_xyz->size() << std::endl;
+            }
+
+            std::vector<int> inliers;
+
+            pcl::SampleConsensusModelSphere<pcl::PointXYZ>::Ptr model_s(
+                new pcl::SampleConsensusModelSphere<pcl::PointXYZ>(cloud_xyz));
+
+            pcl::RandomSampleConsensus<pcl::PointXYZ> ransac(model_s);
+            ransac.setDistanceThreshold(.001);
+            ransac.computeModel();
+            ransac.getInliers(inliers);
+
+            Eigen::VectorXf coeff;
+            ransac.getModelCoefficients(coeff);
+
+            std::cerr << "coeff: " << coeff << std::endl;
+
+            Eigen::VectorXf coeff_refined;
+            model_s->optimizeModelCoefficients(inliers, coeff, coeff_refined);
+            // EXPECT_EQ (4, coeff_refined.size ());
+
+            pcl::PointCloud<pcl::PointXYZ> proj_points;
+            model_s->projectPoints(inliers, coeff_refined, proj_points, false);
+
+            pcl::PointXYZRGB pt;
+
+            for (auto v : proj_points) {
+                pt.x = v.x;
+                pt.y = v.y;
+                pt.z = v.z;
+
+                pt.r = r;
+                pt.g = g;
+                pt.b = b;
+                relevance_map_cloud.push_back(pt);
+            }
+
+            // copies all inliers of the model computed to another PointCloud
+            pcl::PointCloud<pcl::PointXYZ>::Ptr final(
+                new pcl::PointCloud<pcl::PointXYZ>);
+            pcl::copyPointCloud<pcl::PointXYZ>(*cloud_xyz, inliers, * final);
+
+            r = r * 2;
+            g = g * 2;
+            b = b * 2;
+
+            std::cout << std::endl
+                      << "Begin new obj hyp, color = " << r << "," << g << ","
+                      << b << std::endl;
+
+            for (auto v : *(final)) {
+                pt.x = v.x;
+                pt.y = v.y;
+                pt.z = v.z;
+
+                pt.r = r;
+                pt.g = g;
+                pt.b = b;
+                relevance_map_cloud.push_back(pt);
+            }
+            std::cout << "End new obj hyp." << std::endl;
+        }
+    }
 
     boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>
         relevance_map_cloud_ptr(&relevance_map_cloud);
 
-    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
-        new pcl::visualization::PCLVisualizer("Coucou 3D Viewer"));
-    viewer->setBackgroundColor(0, 0, 0);
     viewer->addPointCloud<pcl::PointXYZRGB>(relevance_map_cloud_ptr, "cloud");
 
     viewer->setPointCloudRenderingProperties(
