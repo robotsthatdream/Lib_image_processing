@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
         int lbl = 1;
 
         /* Draw all points in dark blueish tint, to see overall scene. */
-        auto input_cloud = soi.getInputCloud();
+        ip::PointCloudT::Ptr input_cloud = soi.getInputCloud();
 
         {
             pcl::PointXYZRGB pt;
@@ -101,8 +101,9 @@ int main(int argc, char **argv) {
             }
         }
 
-        auto supervoxels = soi.getSupervoxels();
-        auto weights_for_this_modality = soi.get_weights()[modality];
+        ip::SupervoxelArray supervoxels = soi.getSupervoxels();
+        ip::SurfaceOfInterest::relevance_map_t weights_for_this_modality =
+            soi.get_weights()[modality];
 
         /* Draw all supervoxels points in various colors. */
 
@@ -172,7 +173,7 @@ int main(int argc, char **argv) {
         // obj_indexes.end(); it_obj_hyp++)
         {
             std::string obj_index_i_s = std::to_string(obj_index_i);
-            auto p_obj_hyp = &(obj_indexes[obj_index_i]);
+            std::set<uint32_t> *p_obj_hyp = &(obj_hypotheses[obj_index_i]);
 
             int r = float(dist(_gen) << 4);
             int g = float(dist(_gen) << 4);
@@ -185,8 +186,6 @@ int main(int argc, char **argv) {
 
             pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
                 new pcl::PointCloud<pcl::PointXYZ>);
-
-            // *p_obj_hyp is a std::set<uint32_t>&
 
             {
                 int kept = 0;
@@ -299,8 +298,8 @@ int main(int argc, char **argv) {
         }
     }
 
-    boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>>
-        relevance_map_cloud_ptr(&relevance_map_cloud);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr relevance_map_cloud_ptr(
+        &relevance_map_cloud);
 
     viewer->addPointCloud<pcl::PointXYZRGB>(relevance_map_cloud_ptr, "cloud");
 
