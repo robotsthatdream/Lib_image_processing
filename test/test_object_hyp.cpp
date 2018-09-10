@@ -241,6 +241,8 @@ int main(int argc, char **argv) {
             model_s->optimizeModelCoefficients(inliers, coeff, coeff_refined);
             // EXPECT_EQ (4, coeff_refined.size ());
 
+            std::cerr << "coeff_refined: " << coeff_refined << std::endl;
+
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             model_s->projectPoints(inliers, coeff_refined, proj_points, false);
 
