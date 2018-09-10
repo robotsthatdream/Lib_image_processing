@@ -199,7 +199,8 @@ int main(int argc, char **argv) {
                     ++kept;
 
                     std::cout << "Supervoxel labelled " << current_sv_label
-                              << " part of current object, including, will add "
+                              << " part of current object, including, "
+                                 "will add "
                               << current_sv->voxels_->size() << " point(s)."
                               << std::endl;
                     for (auto v : *(current_sv->voxels_)) {
