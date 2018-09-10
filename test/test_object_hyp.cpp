@@ -229,6 +229,14 @@ int main(int argc, char **argv) {
                           << cloud_xyz->size() << std::endl;
             }
 
+            if (cloud_xyz->size() < 20) {
+                std::cerr
+                    << "Skipping hypothesis object id=" << obj_index_i_s
+                    << " because supervoxels combined into too few points: "
+                    << cloud_xyz->size() << std::endl;
+                continue;
+            }
+
             std::vector<int> inliers;
 
             pcl::SampleConsensusModelSphere<pcl::PointXYZ>::Ptr model_s(
