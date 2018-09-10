@@ -65,11 +65,13 @@ int main(int argc, char **argv) {
     std::cout << "relevance_map extracted" << std::endl;
 
     //* Generate objects hypothesis
-    std::vector<std::set<uint32_t>> obj_indexes;
-    obj_indexes = soi.extract_regions("meanFPFHLabHist", 0.5, 1);
+    std::vector<std::set<uint32_t>> obj_hypotheses;
+    obj_hypotheses = soi.extract_regions("meanFPFHLabHist", 0.5, 1);
     //*/
 
-    std::cout << obj_indexes.size() << " objects hypothesis extracted"
+    // obj_hypotheses
+
+    std::cout << obj_hypotheses.size() << " objects hypothesis extracted"
               << std::endl;
 
     boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
@@ -168,9 +170,10 @@ int main(int argc, char **argv) {
         // for(auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
         // it_sv++)
         /* each object */
-        for (int obj_index_i; obj_index_i < obj_indexes.size(); obj_index_i++)
-        // for(auto it_obj_hyp = obj_indexes.begin(); it_obj_hyp !=
-        // obj_indexes.end(); it_obj_hyp++)
+        for (int obj_index_i; obj_index_i < obj_hypotheses.size();
+             obj_index_i++)
+        // for(auto it_obj_hyp = obj_hypotheses.begin(); it_obj_hyp !=
+        // obj_hypotheses.end(); it_obj_hyp++)
         {
             std::string obj_index_i_s = std::to_string(obj_index_i);
             std::set<uint32_t> *p_obj_hyp = &(obj_hypotheses[obj_index_i]);
