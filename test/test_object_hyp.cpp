@@ -242,6 +242,22 @@ int main(int argc, char **argv) {
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             model_s->projectPoints(inliers, coeff_refined, proj_points, false);
 
+            pcl::PointXYZ sphereCenter(coeff[0], coeff[1], coeff[2]);
+
+            std::string sphereId("sphere" + obj_index_i_s);
+
+            std::cerr << "will add sphere with id: " << sphereId << std::endl;
+
+            viewer->addSphere(sphereCenter, coeff[3], ((float)r) / 255.0,
+                              ((float)g) / 255.0, ((float)b) / 255.0, sphereId);
+
+            viewer->setShapeRenderingProperties(
+                pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
+                pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME,
+                sphereId);
+
+            std::cerr << "added sphere with id: " << sphereId << std::endl;
+
             pcl::PointXYZRGB pt;
 
             for (auto v : proj_points) {
