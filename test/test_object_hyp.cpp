@@ -190,6 +190,13 @@ int main(int argc, char **argv) {
             pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
                 new pcl::PointCloud<pcl::PointXYZ>);
 
+            if (p_obj_hyp->size() <= 1) {
+                std::cerr << "Skipping hypothesis object id=" << obj_index_i_s
+                          << " because too few supervoxels: "
+                          << p_obj_hyp->size() << std::endl;
+                continue;
+            }
+
             {
                 int kept = 0;
                 pcl::PointXYZ pt;
