@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     pcl::io::loadPCDFile(pcd_file, *input_cloud);
     //*/
 
-    std::cout << "pcd file loaded" << std::endl;
+    std::cout << "pcd file loaded:" << pcd_file << std::endl;
 
     //* Load the CMMs classifier from the archive
     std::ifstream ifs(gmm_archive);
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
     iarch >> gmm;
     //*/
 
-    std::cout << "classifier archive loaded" << std::endl;
+    std::cout << "classifier archive loaded:" << gmm_archive << std::endl;
 
     //* Generate relevance map on the pointcloud
     ip::SurfaceOfInterest soi(input_cloud);
