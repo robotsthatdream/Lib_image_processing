@@ -714,6 +714,112 @@ struct features_fct{
             });
         });
 
+
+
+        map.emplace("centralFPFHLabHist",
+                    [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
+
+            std::vector<uint32_t> lbls;
+
+            for(const auto& sv : supervoxels){
+                lbls.push_back(sv.first);
+                features.emplace(sv.first,std::map<std::string,Eigen::VectorXd>());
+            }
+
+            tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
+                              [&](const tbb::blocked_range<size_t>& r){
+
+                pcl::FPFHEstimation<PointT, pcl::Normal, pcl::FPFHSignature33> fpfh;
+                pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
+                pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_cloud(new pcl::PointCloud<pcl::FPFHSignature33>);
+                PointCloudN::Ptr inputNormal(new PointCloudN);
+                PointCloudT::Ptr inputCloud(new PointCloudT);
+                pcl::IndicesPtr indices(new std::vector<int>);
+                Eigen::VectorXd new_s(48);
+                for(int k = r.begin(); k < r.end(); k++){
+//                for(int k = 0; k < lbls.size(); k++){
+                    //* Lab
+                    std::vector<Eigen::VectorXd> data;
+                    for(auto it = supervoxels.at(lbls[k])->voxels_->begin(); it != supervoxels.at(lbls[k])->voxels_->end(); ++it){
+                        float Lab[3];
+                        tools::rgb2Lab(it->r,it->g,it->b,Lab[0],Lab[1],Lab[2]);
+                        Eigen::VectorXd vect(3);
+                        vect(0) = Lab[0];
+                        vect(1) = Lab[1];
+                        vect[2] = Lab[2];
+                        data.push_back(vect);
+                    }
+                    Eigen::MatrixXd bounds(2,3);
+                    bounds << 0,-1,-1,
+                            1,1,1;
+                    HistogramFactory hf(5,3,bounds);
+                    hf.compute(data);
+
+                    int t = 0 , l = 0;
+                    for(int i = 0; i < 15; i++){
+                        new_s(i) = hf.get_histogram()[t](l);
+                        l = (l+1)%5;
+                        if(l == 0)
+                            t++;
+                    }
+                    //*/
+
+                    //* FPFH
+                    inputNormal.reset(new PointCloudN);
+                    inputCloud.reset(new PointCloudT);
+                    auto it_pair = adj_map.equal_range(lbls[k]);
+                    for(auto it = it_pair.first; it != it_pair.second; it++){
+                        if(supervoxels.find(it->second) == supervoxels.end())
+                            continue;
+                        for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+                            inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
+                            inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
+                        }
+                    }
+
+                    for(int i = 0; i < supervoxels.at(lbls[k])->normals_->size(); i++){
+                        inputNormal->push_back(supervoxels.at(lbls[k])->normals_->at(i));
+                        inputCloud->push_back(supervoxels.at(lbls[k])->voxels_->at(i));
+                    }
+
+                    indices.reset(new std::vector<int>);
+                    for(int i = 0; i < inputCloud->size(); i++)
+                        indices->push_back(i);
+
+                    fpfh.setInputCloud(inputCloud);
+                    fpfh.setInputNormals(inputNormal);
+                    fpfh.setIndices(indices);
+
+                    fpfh.setSearchMethod(tree);
+                    fpfh.setRadiusSearch (0.05*inputCloud->size());
+                    fpfh.compute(*fpfh_cloud);
+
+                    PointT centroid = supervoxels.at(lbls[k])->centroid_;
+
+                    pcl::KdTreeFLANN<PointT> tree;
+                    tree.setInputCloud(inputCloud);
+
+                    std::vector<int> nn_indices(1);
+                    std::vector<float> nn_distance(1);
+
+                    if(!tree.nearestKSearch(centroid,1,nn_indices,nn_distance))
+                        return false;
+
+                    for(int i = 0; i < 33; i++)
+                        new_s(i+15) = fpfh_cloud->points[nn_indices[0]].histogram[i]/100.;
+                    //*/
+
+                    for(int i = 0; i < 48; i++){
+                        if(new_s(i) > 1)
+                            new_s(i) = 1;
+                        else if (new_s(i) < 10e-4)
+                            new_s(i) = 0;
+                    }
+                    features[lbls[k]]["centralFPFHLabHist"] = new_s;
+                }
+            });
+        });
+
         map.emplace("circleFPFHLabHist",
                     [](const SupervoxelArray& supervoxels, const AdjacencyMap& adj_map, SupervoxelSet::features_t& features){
 
