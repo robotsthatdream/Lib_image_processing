@@ -272,8 +272,8 @@ void SurfaceOfInterest::neighbor_bluring(const std::string& modality, double cst
         for(auto adj_it = neighbors.first; adj_it != neighbors.second; adj_it++){
             if(_weights[modality][adj_it->second][lbl] >= 0.5)
                 weights[adj_it->first][lbl] += cst;
-            else
-                weights[adj_it->first][lbl] -= cst;
+//            else
+//                weights[adj_it->first][lbl] -= cst;
             if(weights[adj_it->first][lbl] >= 1.)
                 weights[adj_it->first][lbl] = 1.;
             else if(weights[adj_it->first][lbl] <= 0.)
