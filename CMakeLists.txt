@@ -12,7 +12,7 @@ set(SOURCE_FILES
 )
 
 FILE(GLOB_RECURSE HEADFILES "include/*.hpp" "include/*.h")
-add_custom_target(headers SOURCES ${HEADFILES})
+add_custom_target(headers_image_processing SOURCES ${HEADFILES})
 
 set(OpenCVRequiredComponents core features2d video)
 
@@ -29,6 +29,8 @@ find_package(Boost 1.54 COMPONENTS filesystem system thread iostreams chrono REQ
 find_package(OpenCV REQUIRED COMPONENTS ${OpenCVRequiredComponents}) 
 find_package(PCL 1.7 REQUIRED)
 find_package(VTK REQUIRED)
+
+include(CMake/FindTBB.cmake)
 
 include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
@@ -71,4 +73,4 @@ install(TARGETS ${PROJECT_NAME}
 #target_link_libraries(color_hist_supervoxel  image_processing ${OpenCV_LIBRARIES})
 
 add_executable(test_object_hyp test/test_object_hyp.cpp)
-target_link_libraries(test_object_hyp  image_processing iagmm tbb)
+target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb)
