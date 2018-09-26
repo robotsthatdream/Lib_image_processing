@@ -146,7 +146,7 @@ public :
      */
     bool contain(uint32_t label);
 
-    /**
+    /**_features
      *@brief remove the supervoxel who correspond to label
      *@param label : uint32_t
      */
@@ -302,6 +302,9 @@ public :
     const pcl::Supervoxel<PointT>::Ptr& at(uint32_t label) const {return _supervoxels.at(label);}
 
     const std::map<std::string, Eigen::VectorXd>& get_features(uint32_t lbl){return _features[lbl];}
+    void set_feature(std::string modality,uint32_t lbl,Eigen::VectorXd feature){
+        _features[lbl][modality] = feature;
+    }
 
     /**
      *@brief get the feature vector of a supervoxel for a given modality.
