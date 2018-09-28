@@ -12,6 +12,9 @@ git:git
 /usr/include/flann/flann.h:libflann-dev
 /usr/include/vtk*:libvtk6-dev
 /usr/include/proj_api.h:libproj-dev
+/usr/include/tbb/tbb.h:libtbb-dev
+/usr/include/yaml-cpp/yaml.h:libyaml-cpp-dev
+/usr/include/qhull/qhull.h:libqhull-dev
 "
 
 MISSING=""
