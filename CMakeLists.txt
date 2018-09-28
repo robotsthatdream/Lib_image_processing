@@ -32,7 +32,23 @@ find_package(VTK REQUIRED)
 
 include(CMake/FindTBB.cmake)
 
-include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS})
+SET(IAGMM_INSTALL_TREE FALSE CACHE STRING "Path to IAGMM.")
+
+if(NOT IAGMM_INSTALL_TREE)
+  message(SEND_ERROR "Please tell me where to find a compiled IAGMM.  For example: 
+      cmake -DIAGMM_INSTALL_TREE=/path/to/iagmm.installtree/ .
+Then you can run again.")
+endif(NOT IAGMM_INSTALL_TREE)
+
+add_library(iagmm SHARED IMPORTED)
+set_property(TARGET iagmm PROPERTY IMPORTED_LOCATION "${IAGMM_INSTALL_TREE}/lib/libiagmm.so" )
+# The /lib/libiagmm.so above could be further cleaned up.
+
+
+# # find_library(IAGMM_LIBRARY iagmm)
+# find_package(iagmm)
+
+include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS} "${IAGMM_INSTALL_TREE}/include" )
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 
