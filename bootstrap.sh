@@ -59,7 +59,7 @@ cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
 
 
 chmod -c a+x ninja_with_args.sh
-export PATH="$PWD:$PATH"
+export NINJASCRIPT="$PWD/ninja_with_args.sh"
 
 
 IMAGE_PROCESSING_BUILD_ROOT=${PWD}.dependencies_and_generated
@@ -99,7 +99,7 @@ else
         cd opencv
 
         cmake_project_bootstrap.sh . -G Ninja \
-                                   -D CMAKE_MAKE_PROGRAM:STRING="ninja_with_args.sh" \
+                                   -D CMAKE_MAKE_PROGRAM:STRING="$NINJASCRIPT" \
                                    -D CMAKE_BUILD_TYPE:STRING=Release \
                                    -D BUILD_JAVA:BOOL=OFF \
                                    -D BUILD_PACKAGE:BOOL=OFF \
@@ -140,7 +140,7 @@ else
 
         cd pcl
         cmake_project_bootstrap.sh . -G Ninja \
-                                   -D CMAKE_MAKE_PROGRAM:STRING="ninja_with_args.sh" \
+                                   -D CMAKE_MAKE_PROGRAM:STRING="$NINJASCRIPT" \
                                    -DCMAKE_BUILD_TYPE:STRING=Release \
                                    -DCMAKE_CXX_STANDARD=11 . \
                                    -DWITH_QHULL=ON \
@@ -166,7 +166,7 @@ else(
     cd IAGMM_Lib
     cmake_project_bootstrap.sh . -G Ninja \
                                -DCMAKE_BUILD_TYPE=Release \
-                               -D CMAKE_MAKE_PROGRAM:STRING="ninja_with_args.sh" \
+                               -D CMAKE_MAKE_PROGRAM:STRING="$NINJASCRIPT" \
 
     cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.Release
     time cmake --build . -- install
@@ -187,7 +187,7 @@ else(
 
     cd image_processing
     cmake_project_bootstrap.sh . -G Ninja \
-                               -D CMAKE_MAKE_PROGRAM:STRING="ninja_with_args.sh" \
+                               -D CMAKE_MAKE_PROGRAM:STRING="$NINJASCRIPT" \
                                -DCMAKE_BUILD_TYPE=Release \
                                -DIAGMM_INSTALL_TREE="${IAGMM_IT}" \
 
