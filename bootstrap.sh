@@ -48,7 +48,7 @@ cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
 
 IMAGE_PROCESSING_BUILD_ROOT=${PWD}.dependencies_and_generated
 
-mkdir "$IMAGE_PROCESSING_BUILD_ROOT"
+mkdir -p "$IMAGE_PROCESSING_BUILD_ROOT"
 cd "$IMAGE_PROCESSING_BUILD_ROOT"
 
 # function append_to_variable_with_separator()
