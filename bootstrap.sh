@@ -54,6 +54,11 @@ IMAGE_PROCESSING_SOURCE_ROOT="$( cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}
 
 cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
 
+
+chmod -c a+x ninja_with_args.sh
+export PATH="$PWD:$PATH"
+
+
 IMAGE_PROCESSING_BUILD_ROOT=${PWD}.dependencies_and_generated
 
 mkdir -p "$IMAGE_PROCESSING_BUILD_ROOT"
@@ -90,7 +95,8 @@ else
 
         cd opencv
 
-        cmake_project_bootstrap.sh . \
+        cmake_project_bootstrap.sh . -G Ninja \
+                                   -D CMAKE_MAKE_PROGRAM:STRING="ninja_with_args.sh" \
                                    -D CMAKE_BUILD_TYPE:STRING=Release \
                                    -D BUILD_JAVA:BOOL=OFF \
                                    -D BUILD_PACKAGE:BOOL=OFF \
@@ -130,7 +136,8 @@ else
         fi
 
         cd pcl
-        cmake_project_bootstrap.sh . \
+        cmake_project_bootstrap.sh . -G Ninja \
+                                   -D CMAKE_MAKE_PROGRAM:STRING="ninja_with_args.sh" \
                                    -DCMAKE_BUILD_TYPE:STRING=Release \
                                    -DCMAKE_CXX_STANDARD=11 . \
                                    -DWITH_QHULL=ON \
@@ -149,7 +156,9 @@ then
     echo "IAGMM_Lib already in $IAGMM_IT"
 else(
     cd IAGMM_Lib
-    cmake_project_bootstrap.sh . -DCMAKE_BUILD_TYPE=Release
+    cmake_project_bootstrap.sh . -G Ninja \
+                               -DCMAKE_BUILD_TYPE=Release \
+                               -D CMAKE_MAKE_PROGRAM:STRING="ninja_with_args.sh" \
 
     cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.Release
     time cmake --build . -- install
@@ -164,7 +173,11 @@ then
     echo "Image_Processing already in $IMAGE_PROCESSING_IT"
 else(
     cd image_processing
-    cmake_project_bootstrap.sh . -DCMAKE_BUILD_TYPE=Release -DIAGMM_INSTALL_TREE="${IAGMM_IT}"
+    cmake_project_bootstrap.sh . -G Ninja \
+                               -D CMAKE_MAKE_PROGRAM:STRING="ninja_with_args.sh" \
+                               -DCMAKE_BUILD_TYPE=Release \
+                               -DIAGMM_INSTALL_TREE="${IAGMM_IT}" \
+
 
     cd ${IMAGE_PROCESSING_BUILD_ROOT}/image_processing.OSID_${OS_ID}.buildtree.Release
     time cmake --build . -- install
