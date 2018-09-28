@@ -2,6 +2,43 @@
 
 set -eu
 
+## Sanity check dependencies
+
+TOOLS="cmake:cmake ninja:ninja-build /usr/include/eigen3:libeigen3-dev git:git /usr/include/boost/version.hpp:libboost-all-dev"
+
+MISSING=""
+for TOOLNP in ${TOOLS}
+do IFS=: read FNAME PNAME <<< "$TOOLNP"
+   echo -ne "Checking for $FNAME \011of $PNAME...  \0011"
+   { which $FNAME || stat --format="%n" $FNAME
+   } || { MISSING="$MISSING $TOOLNP"
+          echo "not found"
+   }
+done
+if [[ -n "$MISSING" ]]
+then echo
+     echo
+     echo "################################"
+     echo "Some tools are missing: "
+     echo "$MISSING " | sed 's/:[^:]* / /g'
+     echo
+     echo "Suggested action:"
+     echo
+     echo -n "sudo apt-get install "
+     echo " $MISSING " | sed 's/ [^:]*:/ /g'
+     echo
+     echo "Or the equivalent for your environment (yum, cygwin, etc)."
+     echo
+     echo "Or hack this script and report..."
+     echo "################################"
+     exit 1
+else
+    echo "######## All tools found. ########"
+fi
+
+
+## Set up directory hierarchy
+
 # This prevents cmake_project_bootstrap.sh to build:
 export NO_BUILD=indeed
 
