@@ -30,7 +30,7 @@ then echo
      echo "Some tools are missing: "
      echo "$MISSING " | sed 's/:[^:]* / /g'
      echo
-     echo "Suggested action:"
+     echo "Suggested action(s):"
      echo
      echo -n "sudo apt-get install -y --no-install-recommends "
      echo " $MISSING " | sed 's/ [^:]*:/ /g'
