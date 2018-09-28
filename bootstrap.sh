@@ -158,6 +158,11 @@ if [[ -d "${IAGMM_IT}" ]]
 then
     echo "IAGMM_Lib already in $IAGMM_IT"
 else(
+    if [[ ! -d IAGMM_Lib ]]
+    then
+        git clone https://github.com/LeniLeGoff/IAGMM_Lib
+    fi
+
     cd IAGMM_Lib
     cmake_project_bootstrap.sh . -G Ninja \
                                -DCMAKE_BUILD_TYPE=Release \
@@ -175,6 +180,11 @@ if [[ -d "${IMAGE_PROCESSING_IT}" ]]
 then
     echo "Image_Processing already in $IMAGE_PROCESSING_IT"
 else(
+    if [[ ! -d image_processing ]]
+    then
+        git clone https://github.com/robotsthatdream/Lib_image_processing image_processing
+    fi
+
     cd image_processing
     cmake_project_bootstrap.sh . -G Ninja \
                                -D CMAKE_MAKE_PROGRAM:STRING="ninja_with_args.sh" \
