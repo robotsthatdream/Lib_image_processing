@@ -4,13 +4,21 @@ set -eu
 
 ## Sanity check dependencies
 
-TOOLS="cmake:cmake ninja:ninja-build /usr/include/eigen3:libeigen3-dev git:git /usr/include/boost/version.hpp:libboost-all-dev /usr/include/flann/flann.h:libflannd-dev"
+TOOLS="cmake:cmake
+ninja:ninja-build
+/usr/include/eigen3:libeigen3-dev
+git:git
+/usr/include/boost/version.hpp:libboost-all-dev
+/usr/include/flann/flann.h:libflann-dev
+/usr/include/vtk*:libvtk6-dev
+/usr/include/proj_api.h:libproj-dev
+"
 
 MISSING=""
 for TOOLNP in ${TOOLS}
 do IFS=: read FNAME PNAME <<< "$TOOLNP"
    echo -ne "Checking for $FNAME \011of $PNAME...  \0011"
-   { which $FNAME || stat --format="%n" $FNAME
+   { which $FNAME || stat --format="%n" $( ls -1bd $FNAME || echo >&2 "$FNAME not found" )
    } || { MISSING="$MISSING $TOOLNP"
           echo "not found"
    }
