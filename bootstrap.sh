@@ -24,7 +24,7 @@ then echo
      echo
      echo "Suggested action:"
      echo
-     echo -n "sudo apt-get install "
+     echo -n "sudo apt-get install -y --no-install-recommends "
      echo " $MISSING " | sed 's/ [^:]*:/ /g'
      echo
      echo "Or the equivalent for your environment (yum, cygwin, etc)."
