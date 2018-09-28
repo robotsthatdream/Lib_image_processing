@@ -4,7 +4,7 @@ set -eu
 
 ## Sanity check dependencies
 
-TOOLS="cmake:cmake ninja:ninja-build /usr/include/eigen3:libeigen3-dev git:git /usr/include/boost/version.hpp:libboost-all-dev"
+TOOLS="cmake:cmake ninja:ninja-build /usr/include/eigen3:libeigen3-dev git:git /usr/include/boost/version.hpp:libboost-all-dev /usr/include/flann/flann.h:libflannd-dev"
 
 MISSING=""
 for TOOLNP in ${TOOLS}
