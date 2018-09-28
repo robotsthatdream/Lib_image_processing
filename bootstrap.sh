@@ -105,7 +105,7 @@ else
                                    -D WITH_PROTOBUF:BOOL=OFF
 #        FIXME protobuf
         cd ${IMAGE_PROCESSING_BUILD_ROOT}/opencv.OSID_${OS_ID}.buildtree.Release
-        time make -j8 -k install
+        time cmake --build . -- install
     )
 fi
 export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${OPENCV_IT}"
@@ -130,7 +130,7 @@ else
                                    -DBUILD_visualization=ON
 
         cd ${IMAGE_PROCESSING_BUILD_ROOT}/pcl.OSID_${OS_ID}.buildtree.Release
-        time make -j1 -k install #FIXME plus
+        time cmake --build . -- install
     )
 fi
 export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${PCL_IT}"
@@ -144,7 +144,7 @@ else(
     cmake_project_bootstrap.sh . -DCMAKE_BUILD_TYPE=Release
 
     cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.Release
-    time make -j5 -k install
+    time cmake --build . -- install
 )
 fi
 
@@ -159,7 +159,7 @@ else(
     cmake_project_bootstrap.sh . -DCMAKE_BUILD_TYPE=Release -DIAGMM_INSTALL_TREE="${IAGMM_IT}"
 
     cd ${IMAGE_PROCESSING_BUILD_ROOT}/image_processing.OSID_${OS_ID}.buildtree.Release
-    time make -j5 -k install
+    time cmake --build . -- install
 )
 fi
 
