@@ -57,10 +57,11 @@ IMAGE_PROCESSING_SOURCE_ROOT="$( cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}
 
 cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
 
-
+function select_ninja()
+{
 chmod -c a+x ninja_with_args.sh
-export NINJASCRIPT="$PWD/ninja_with_args.sh"
-
+export MY_CMAKE_GENERATOR_OPTIONS="-G Ninja -D CMAKE_MAKE_PROGRAM:STRING=\"$PWD/ninja_with_args.sh\" "
+}
 
 IMAGE_PROCESSING_BUILD_ROOT=${PWD}.dependencies_and_generated
 
@@ -98,8 +99,7 @@ else
 
         cd opencv
 
-        cmake_project_bootstrap.sh . -G Ninja \
-                                   -D CMAKE_MAKE_PROGRAM:STRING="$NINJASCRIPT" \
+        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
                                    -D CMAKE_BUILD_TYPE:STRING=Release \
                                    -D BUILD_JAVA:BOOL=OFF \
                                    -D BUILD_PACKAGE:BOOL=OFF \
@@ -139,8 +139,7 @@ else
         fi
 
         cd pcl
-        cmake_project_bootstrap.sh . -G Ninja \
-                                   -D CMAKE_MAKE_PROGRAM:STRING="$NINJASCRIPT" \
+        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
                                    -DCMAKE_BUILD_TYPE:STRING=Release \
                                    -DCMAKE_CXX_STANDARD=11 . \
                                    -DWITH_QHULL=ON \
@@ -164,9 +163,8 @@ else(
     fi
 
     cd IAGMM_Lib
-    cmake_project_bootstrap.sh . -G Ninja \
+        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
                                -DCMAKE_BUILD_TYPE=Release \
-                               -D CMAKE_MAKE_PROGRAM:STRING="$NINJASCRIPT" \
 
     cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.Release
     time cmake --build . -- install
@@ -186,8 +184,7 @@ else(
     fi
 
     cd image_processing
-    cmake_project_bootstrap.sh . -G Ninja \
-                               -D CMAKE_MAKE_PROGRAM:STRING="$NINJASCRIPT" \
+        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
                                -DCMAKE_BUILD_TYPE=Release \
                                -DIAGMM_INSTALL_TREE="${IAGMM_IT}" \
 
