@@ -178,13 +178,13 @@ if [[ -d "${IMAGE_PROCESSING_IT}" ]]
 then
     echo "Image_Processing already in $IMAGE_PROCESSING_IT"
 else(
-    if [[ ! -d image_processing ]]
-    then
-        git clone https://github.com/robotsthatdream/Lib_image_processing image_processing
-    fi
+#    if [[ ! -d image_processing ]]
+#    then
+#        git clone https://github.com/robotsthatdream/Lib_image_processing image_processing
+#    fi
 
-    cd image_processing
-        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
+    cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
+    cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
                                -DCMAKE_BUILD_TYPE=Release \
                                -DIAGMM_INSTALL_TREE="${IAGMM_IT}" \
 
