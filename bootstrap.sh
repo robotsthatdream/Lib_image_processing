@@ -186,7 +186,7 @@ else(
     cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
     cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
                                -DCMAKE_BUILD_TYPE=Release \
-                               -DIAGMM_INSTALL_TREE="${IAGMM_IT}" \
+                               -DIAGMM_INSTALL_TREE:STRING="${IAGMM_IT}" \
 
 
     cd ${IMAGE_PROCESSING_BUILD_ROOT}/image_processing.OSID_${OS_ID}.buildtree.Release
