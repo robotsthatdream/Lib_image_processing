@@ -3,6 +3,8 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/filters/radius_outlier_removal.h>
 
+#include "opencv2/imgproc/types_c.h" // for CV_BGR2HSV and others, since OpenCV 4 alpha.
+
 using namespace image_processing;
 
 bool MotionDetection::detect(cv::Mat& diff, int thre)
