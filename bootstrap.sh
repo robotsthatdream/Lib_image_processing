@@ -189,7 +189,7 @@ else(
                                -DIAGMM_INSTALL_TREE:STRING="${IAGMM_IT}" \
 
 
-    cd ${IMAGE_PROCESSING_BUILD_ROOT}/image_processing.OSID_${OS_ID}.buildtree.Release
+    cd ${IMAGE_PROCESSING_SOURCE_ROOT}.OSID_${OS_ID}.buildtree.Release
     time cmake --build . -- install
 )
 fi
