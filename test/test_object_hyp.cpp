@@ -1,13 +1,13 @@
-#include <iostream>
 #include "../include/image_processing/SurfaceOfInterest.h"
-#include <iagmm/gmm.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <iagmm/gmm.hpp>
+#include <iostream>
 
 namespace ip = image_processing;
 
-int main(int argc, char** argv){
+int main(int argc, char **argv) {
 
-    if(argc != 3){
+    if (argc != 3) {
         std::cerr << "Usage : \n\t- pcd file\n\t- gmm archive" << std::endl;
         return 1;
     }
@@ -24,7 +24,7 @@ int main(int argc, char** argv){
 
     //* Load the CMMs classifier from the archive
     std::ifstream ifs(gmm_archive);
-    if(!ifs){
+    if (!ifs) {
         std::cerr << "Unable to open archive : " << gmm_archive << std::endl;
         return 1;
     }
@@ -39,17 +39,18 @@ int main(int argc, char** argv){
     ip::SurfaceOfInterest soi(input_cloud);
     soi.computeSupervoxel();
     soi.compute_feature("meanFPFHLabHist");
-    soi.compute_weights<iagmm::GMM>("meanFPFHLabHist",gmm);
+    soi.compute_weights<iagmm::GMM>("meanFPFHLabHist", gmm);
     //*/
 
     std::cout << "relevance_map extracted" << std::endl;
 
     //* Generate objects hypothesis
     std::vector<std::set<uint32_t>> obj_indexes;
-    obj_indexes = soi.extract_regions("meanFPFHLabHist",0.5,1);
+    obj_indexes = soi.extract_regions("meanFPFHLabHist", 0.5, 1);
     //*/
 
-    std::cout << obj_indexes.size() <<  " objects hypothesis extracted" << std::endl;
+    std::cout << obj_indexes.size() << " objects hypothesis extracted"
+              << std::endl;
 
     return 0;
 }
