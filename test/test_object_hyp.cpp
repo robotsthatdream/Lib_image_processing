@@ -17,13 +17,15 @@ namespace ip = image_processing;
 
 int main(int argc, char **argv) {
 
-    if (argc != 3) {
-        std::cerr << "Usage : \n\t- pcd file\n\t- gmm archive" << std::endl;
+    if (argc != 4) {
+        std::cerr << "Usage : \n\t- pcd file\n\t- gmm archive\n\t- label"
+                  << std::endl;
         return 1;
     }
 
     std::string pcd_file = argv[1];
     std::string gmm_archive = argv[2];
+    std::string label = argv[3];
 
     //* Load pcd file into a pointcloud
     ip::PointCloudT::Ptr input_cloud(new ip::PointCloudT);
@@ -74,8 +76,16 @@ int main(int argc, char **argv) {
     std::cout << obj_hypotheses.size() << " objects hypothesis extracted"
               << std::endl;
 
+    std::string windowTitle;
+
+    {
+        std::stringstream ss;
+        ss << "Object fit viewer : " << label;
+        windowTitle = ss.str();
+    }
+
     boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
-        new pcl::visualization::PCLVisualizer("Coucou 3D Viewer"));
+        new pcl::visualization::PCLVisualizer(label));
     viewer->setBackgroundColor(0, 0, 0);
 
     pcl::PointCloud<pcl::PointXYZRGB> relevance_map_cloud;
