@@ -12,7 +12,7 @@ set(SOURCE_FILES
 )
 
 FILE(GLOB_RECURSE HEADFILES "include/*.hpp" "include/*.h")
-add_custom_target(headers SOURCES ${HEADFILES})
+add_custom_target(headers_image_processing SOURCES ${HEADFILES})
 
 set(OpenCVRequiredComponents core features2d video)
 
@@ -30,7 +30,25 @@ find_package(OpenCV REQUIRED COMPONENTS ${OpenCVRequiredComponents})
 find_package(PCL 1.7 REQUIRED)
 find_package(VTK REQUIRED)
 
-include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS})
+include(CMake/FindTBB.cmake)
+
+SET(IAGMM_INSTALL_TREE FALSE CACHE STRING "Path to IAGMM.")
+
+if(NOT IAGMM_INSTALL_TREE)
+  message(SEND_ERROR "Please tell me where to find a compiled IAGMM.  For example: 
+      cmake -DIAGMM_INSTALL_TREE=/path/to/iagmm.installtree/ .
+Then you can run again.")
+endif(NOT IAGMM_INSTALL_TREE)
+
+add_library(iagmm SHARED IMPORTED)
+set_property(TARGET iagmm PROPERTY IMPORTED_LOCATION "${IAGMM_INSTALL_TREE}/lib/libiagmm.so" )
+# The /lib/libiagmm.so above could be further cleaned up.
+
+
+# # find_library(IAGMM_LIBRARY iagmm)
+# find_package(iagmm)
+
+include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS} "${IAGMM_INSTALL_TREE}/include" )
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 
@@ -71,4 +89,4 @@ install(TARGETS ${PROJECT_NAME}
 #target_link_libraries(color_hist_supervoxel  image_processing ${OpenCV_LIBRARIES})
 
 add_executable(test_object_hyp test/test_object_hyp.cpp)
-target_link_libraries(test_object_hyp  image_processing iagmm tbb)
+target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb)

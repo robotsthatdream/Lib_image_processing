@@ -1,5 +1,7 @@
 #include "image_processing/BabblingDataset.h"
 
+#include "opencv2/imgcodecs/imgcodecs_c.h" // for CV_LOAD_IMAGE_COLOR and others, since OpenCV 4 alpha.
+
 
 using namespace image_processing;
 
