@@ -57,11 +57,18 @@ IMAGE_PROCESSING_SOURCE_ROOT="$( cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}
 
 cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
 
-function select_ninja()
-{
-chmod -c a+x ninja_with_args.sh
-export MY_CMAKE_GENERATOR_OPTIONS="-G Ninja -D CMAKE_MAKE_PROGRAM:STRING=\"$PWD/ninja_with_args.sh\" "
-}
+if [[ "$IMAGE_PROCESSING_SOURCE_ROOT" =~ \  ]] ; then echo >&2 "Refusing to build because current directory path has a space and this break some build steps: '$PWD'" ; exit 1 ; fi
+
+chmod -c a+x ninja_with_args.sh make_with_automatic_parallel_jobs_adjustment.sh
+
+
+# WARNING : this will break if build dir has a space.  The easy fix I tried did not work. -- FSG
+export MY_CMAKE_GENERATOR_OPTIONS_NINJA="-G Ninja -D CMAKE_MAKE_PROGRAM:STRING=$IMAGE_PROCESSING_SOURCE_ROOT/ninja_with_args.sh "
+export MY_CMAKE_GENERATOR_OPTIONS_MAKE=" -D CMAKE_MAKE_PROGRAM:STRING=$IMAGE_PROCESSING_SOURCE_ROOT/make_with_automatic_parallel_jobs_adjustment.sh "
+# -G 'Unix Makefiles'
+
+export MY_CMAKE_GENERATOR_OPTIONS="$MY_CMAKE_GENERATOR_OPTIONS_MAKE"
+
 
 IMAGE_PROCESSING_BUILD_ROOT=${PWD}.dependencies_and_generated
 
@@ -98,8 +105,8 @@ else
         fi
 
         cd opencv
-
-        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
+        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
+        cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                    -D CMAKE_BUILD_TYPE:STRING=Release \
                                    -D BUILD_JAVA:BOOL=OFF \
                                    -D BUILD_PACKAGE:BOOL=OFF \
@@ -139,7 +146,8 @@ else
         fi
 
         cd pcl
-        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
+        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
+        cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                    -DCMAKE_BUILD_TYPE:STRING=Release \
                                    -DCMAKE_CXX_STANDARD=11 \
                                    -DWITH_QHULL=ON \
@@ -163,7 +171,8 @@ else(
     fi
 
     cd IAGMM_Lib
-        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
+    export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
+    cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                -DCMAKE_BUILD_TYPE=Release \
 
     cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.Release
@@ -184,7 +193,8 @@ else(
 #    fi
 
     cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
-    cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
+    export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
+    cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                -DCMAKE_BUILD_TYPE=Release \
                                -DIAGMM_INSTALL_TREE:STRING="${IAGMM_IT}" \
 
