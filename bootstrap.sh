@@ -141,7 +141,7 @@ else
         cd pcl
         cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
                                    -DCMAKE_BUILD_TYPE:STRING=Release \
-                                   -DCMAKE_CXX_STANDARD=11 . \
+                                   -DCMAKE_CXX_STANDARD=11 \
                                    -DWITH_QHULL=ON \
                                    -DWITH_VTK=ON \
                                    -DBUILD_visualization=ON
