@@ -142,7 +142,8 @@ else
     (
         if [[ ! -d pcl ]]
         then
-            git clone https://github.com/PointCloudLibrary/pcl
+            git clone -b feature_implement_pcl__SampleConsensusModelSphere_PointT___projectPoints https://github.com/fidergo-stephane-gourichon/pcl
+            #https://github.com/PointCloudLibrary/pcl
         fi
 
         cd pcl
