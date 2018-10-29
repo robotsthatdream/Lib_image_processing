@@ -92,7 +92,7 @@ else
     (
         if [[ ! -d opencv ]]
         then
-            git clone https://github.com/opencv/opencv/
+            git clone --branch 3.4.3 https://github.com/opencv/opencv/
         fi
 
         cd opencv
