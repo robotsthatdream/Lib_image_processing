@@ -181,7 +181,9 @@ fi
 
 #export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${IAGMM_IT}"
 
-IMAGE_PROCESSING_IT=${IMAGE_PROCESSING_BUILD_ROOT}/image_processing.OSID_${OS_ID}.installtree.Release
+IMAGE_PROCESSING_BUILD_TYPE=Debug
+
+IMAGE_PROCESSING_IT=${IMAGE_PROCESSING_BUILD_ROOT}/image_processing.OSID_${OS_ID}.installtree.${IMAGE_PROCESSING_BUILD_TYPE}
 if [[ -d "${IMAGE_PROCESSING_IT}" ]]
 then
     echo "Image_Processing already in $IMAGE_PROCESSING_IT"
@@ -194,11 +196,11 @@ else(
     cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
     export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
     cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
-                               -DCMAKE_BUILD_TYPE=Release \
+                               -DCMAKE_BUILD_TYPE=${IMAGE_PROCESSING_BUILD_TYPE} \
                                -DIAGMM_INSTALL_TREE:STRING="${IAGMM_IT}" \
 
 
-    cd ${IMAGE_PROCESSING_SOURCE_ROOT}.OSID_${OS_ID}.buildtree.Release
+    cd ${IMAGE_PROCESSING_SOURCE_ROOT}.OSID_${OS_ID}.buildtree.${IMAGE_PROCESSING_BUILD_TYPE}
     time cmake --build . -- install
 )
 fi
