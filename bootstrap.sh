@@ -15,6 +15,14 @@ git:git
 /usr/include/qhull/qhull.h:libqhull-dev
 "
 
+# On Ubuntu 16.04, libproj-dev is an implicit dependency of vtk*.
+if
+    find /usr/lib/ -iname "libvtk*geovis*.so" | xargs ldd | grep -q libproj
+then
+    TOOLS="$TOOLS
+/usr/include/proj_api.h:libproj-dev"
+fi
+
 MISSING=""
 for TOOLNP in ${TOOLS}
 do IFS=: read FNAME PNAME <<< "$TOOLNP"
