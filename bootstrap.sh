@@ -157,7 +157,7 @@ then
 else(
     if [[ ! -d IAGMM_Lib ]]
     then
-        git clone https://github.com/LeniLeGoff/IAGMM_Lib
+        git clone https://github.com/robotsthatdream/IAGMM_Lib
     fi
 
     cd IAGMM_Lib
