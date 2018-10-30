@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
 
     fg::PointCloudTP supervoxel_cloud_ptr(new fg::PointCloudT());
 
-    fg::PointCloudTP sphere_projected_all_cloud_ptr(new fg::PointCloudT());
+    fg::PointCloudTP model_projected_all_cloud_ptr(new fg::PointCloudT());
 
     fg::PointCloudTP inliers_cloud_ptr(new fg::PointCloudT());
 
@@ -370,7 +370,7 @@ int main(int argc, char **argv) {
                 pt.r = r;
                 pt.g = g;
                 pt.b = b;
-                sphere_projected_all_cloud_ptr->push_back(pt);
+                model_projected_all_cloud_ptr->push_back(pt);
             }
 
             // copies all inliers of the model computed to another PointCloud
@@ -404,7 +404,7 @@ int main(int argc, char **argv) {
     cloud_reg_t clouds[] = {
         {"1", input_cloud_ptr, "input", true},
         {"2", supervoxel_cloud_ptr, "supervoxel", true},
-        {"3", sphere_projected_all_cloud_ptr, "sphere_projected_all", true},
+        {"3", model_projected_all_cloud_ptr, "model_projected_all", true},
         {"4", inliers_cloud_ptr, "inliers", true},
         //{ "t", superellipsoid_cloud, "superellipsoid_cloud" },
     };
