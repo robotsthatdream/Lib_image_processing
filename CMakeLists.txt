@@ -52,7 +52,16 @@ include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCL
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O3 ${CMAKE_CXX_FLAGS}")
+add_compile_options("$<$<CONFIG:RELEASE>:-O3>")
+
+if (CMAKE_VERSION VERSION_LESS "3.1")
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_compile_options("-std=c++11")
+  endif ()
+else ()
+  set (CMAKE_CXX_STANDARD 11)
+endif ()
+
 set(LIBRARY_OUTPUT_PATH lib/${CMAKE_BUILD_TYPE})
 
 install(DIRECTORY include/image_processing/  DESTINATION include/${PROJECT_NAME})
