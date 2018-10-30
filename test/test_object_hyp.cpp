@@ -162,13 +162,13 @@ int main(int argc, char **argv) {
         new pcl::visualization::PCLVisualizer(label));
     viewer->setBackgroundColor(0, 0, 0);
 
-    fg::PointCloudT input_cloud;
+    fg::PointCloudTP input_cloud_ptr(new fg::PointCloudT());
 
-    fg::PointCloudT supervoxel_cloud;
+    fg::PointCloudTP supervoxel_cloud_ptr(new fg::PointCloudT());
 
-    fg::PointCloudT sphere_projected_all_cloud;
+    fg::PointCloudTP sphere_projected_all_cloud_ptr(new fg::PointCloudT());
 
-    fg::PointCloudT inliers_cloud;
+    fg::PointCloudTP inliers_cloud_ptr(new fg::PointCloudT());
 
     {
         std::string modality = "meanFPFHLabHist";
@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
                 pt.r = it_p->r / 8;
                 pt.g = it_p->g / 4;
                 pt.b = (it_p->r + it_p->g + it_p->b) / 6;
-                input_cloud.push_back(pt);
+                input_cloud_ptr->push_back(pt);
             }
         }
 
@@ -233,7 +233,7 @@ int main(int argc, char **argv) {
                 pt.r = r;
                 pt.g = g;
                 pt.b = b;
-                supervoxel_cloud.push_back(pt);
+                supervoxel_cloud_ptr->push_back(pt);
             }
         }
         std::cout << "Thresholding kept " << kept << " supervoxels out of "
@@ -377,7 +377,7 @@ int main(int argc, char **argv) {
                 pt.r = r;
                 pt.g = g;
                 pt.b = b;
-                sphere_projected_all_cloud.push_back(pt);
+                sphere_projected_all_cloud_ptr->push_back(pt);
             }
 
             // copies all inliers of the model computed to another PointCloud
@@ -401,21 +401,12 @@ int main(int argc, char **argv) {
                 pt.r = r;
                 pt.g = g;
                 pt.b = b;
-                inliers_cloud.push_back(pt);
+                inliers_cloud_ptr->push_back(pt);
             }
             std::cout << "End new obj hyp, id=" << obj_index_i_s << "."
                       << std::endl;
         }
     }
-
-    fg::PointCloudTP input_cloud_ptr(&input_cloud);
-
-    fg::PointCloudTP supervoxel_cloud_ptr(&supervoxel_cloud);
-
-    fg::PointCloudTP sphere_projected_all_cloud_ptr(
-        &sphere_projected_all_cloud);
-
-    fg::PointCloudTP inliers_cloud_ptr(&inliers_cloud);
 
     cloud_reg_t clouds[] = {
         {"1", input_cloud_ptr, "input", true},
