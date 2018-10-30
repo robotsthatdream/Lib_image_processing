@@ -331,12 +331,14 @@ int main(int argc, char **argv) {
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr relevance_map_cloud_ptr(
         &relevance_map_cloud);
 
-    viewer->addPointCloud<pcl::PointXYZRGB>(relevance_map_cloud_ptr, "cloud");
+    viewer->addPointCloud<pcl::PointXYZRGB>(relevance_map_cloud_ptr, "relevance_map_cloud");
+    viewer->setPointCloudRenderingProperties(
+        pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, "relevance_map_cloud");
+    
     // viewer->addCoordinateSystem (1.0);
     viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
 
-    viewer->setPointCloudRenderingProperties(
-        pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, "cloud");
+    
     while (!viewer->wasStopped()) {
         viewer->spinOnce(100);
         boost::this_thread::sleep(boost::posix_time::microseconds(100000));
