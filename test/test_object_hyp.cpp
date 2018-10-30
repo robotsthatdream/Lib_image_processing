@@ -41,16 +41,16 @@ class Context {
 };
 
 void Context::updateInViewer(cloud_reg_t &cr) {
-    if (cr.active) {
-        m_viewer->addPointCloud<pcl::PointXYZRGB>(cr.cloud, cr.name);
-    } else {
-        m_viewer->removePointCloud(cr.name);
+    m_viewer->setPointCloudRenderingProperties(
+        pcl::visualization::PCL_VISUALIZER_OPACITY, cr.active?1.0:0.0, cr.name);
     }
-}
 
 void Context::addCloud(cloud_reg_t &reg) {
     std::cout << "Adding cloud with key " << reg.key << ", name " << reg.name
               << std::endl;
+
+    m_viewer->addPointCloud<pcl::PointXYZRGB>(reg.cloud, reg.name);
+
     clouds.push_front(reg);
     updateInViewer(reg);
     //    cloud_reg_t *newreg = &clouds.front();
