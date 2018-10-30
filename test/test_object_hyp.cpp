@@ -90,6 +90,8 @@ int main(int argc, char **argv) {
 
     pcl::PointCloud<pcl::PointXYZRGB> relevance_map_cloud;
 
+    pcl::PointCloud<pcl::PointXYZRGB> input_cloud;
+
     {
         std::string modality = "meanFPFHLabHist";
         int lbl = 1;
@@ -109,7 +111,7 @@ int main(int argc, char **argv) {
                 pt.r = it_p->r / 8;
                 pt.g = it_p->g / 4;
                 pt.b = (it_p->r + it_p->g + it_p->b) / 6;
-                relevance_map_cloud.push_back(pt);
+                input_cloud.push_back(pt);
             }
         }
 
@@ -330,6 +332,12 @@ int main(int argc, char **argv) {
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr relevance_map_cloud_ptr(
         &relevance_map_cloud);
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud_ptr(
+        &input_cloud);
+
+    
+    viewer->addPointCloud<pcl::PointXYZRGB>(input_cloud_ptr, "input_cloud");
 
     viewer->addPointCloud<pcl::PointXYZRGB>(relevance_map_cloud_ptr, "relevance_map_cloud");
     viewer->setPointCloudRenderingProperties(
