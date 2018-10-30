@@ -1,3 +1,4 @@
+#include <forward_list>
 #include <iostream>
 
 #include <pcl/console/parse.h>
@@ -18,6 +19,69 @@ namespace ip = image_processing;
 namespace fg {
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudT;
 typedef fg::PointCloudT::Ptr PointCloudTP;
+}
+
+typedef struct cloud_reg {
+    const char *key;
+    const fg::PointCloudTP cloud;
+    const char *const name;
+    bool active; // code smell: tied to a specific viewer
+} cloud_reg_t;
+
+class Context {
+    const pcl::visualization::PCLVisualizer::Ptr m_viewer;
+    std::forward_list<cloud_reg_t> clouds;
+
+  public:
+    Context(pcl::visualization::PCLVisualizer::Ptr &viewer)
+        : m_viewer(viewer), clouds(){};
+    void addCloud(cloud_reg_t &reg);
+    void handleKeyboardEvent(const pcl::visualization::KeyboardEvent &event);
+    void updateInViewer(cloud_reg_t &cr);
+};
+
+void Context::updateInViewer(cloud_reg_t &cr) {
+    if (cr.active) {
+        m_viewer->addPointCloud<pcl::PointXYZRGB>(cr.cloud, cr.name);
+    } else {
+        m_viewer->removePointCloud(cr.name);
+    }
+}
+
+void Context::addCloud(cloud_reg_t &reg) {
+    std::cout << "Adding cloud with key " << reg.key << ", name " << reg.name
+              << std::endl;
+    clouds.push_front(reg);
+    updateInViewer(reg);
+    //    cloud_reg_t *newreg = &clouds.front();
+}
+
+void Context::handleKeyboardEvent(
+    const pcl::visualization::KeyboardEvent &event) {
+    if (event.keyUp()) {
+        const std::string keySym = event.getKeySym();
+        std::cout << "Key pressed '" << keySym << "'" << std::endl;
+        for (auto &cr : clouds) {
+            std::cout << "Checking key " << cr.key << ", name " << cr.name
+                      << std::endl;
+            if ((keySym.compare(cr.key) == 0)) {
+                std::cout << "keysym " << keySym << " matches cloud name "
+                          << cr.name << " => toggling (was " << cr.active << ")"
+                          << std::endl;
+
+                cr.active = !cr.active;
+                updateInViewer(cr);
+            }
+        }
+    }
+}
+
+void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event,
+                           void *context_void) {
+    boost::shared_ptr<Context> context =
+        *static_cast<boost::shared_ptr<Context> *>(context_void);
+
+    context->handleKeyboardEvent(event);
 }
 
 int main(int argc, char **argv) {
@@ -97,7 +161,7 @@ int main(int argc, char **argv) {
 
     fg::PointCloudT supervoxel_cloud;
 
-    fg::PointCloudT fitted_sphere_cloud;
+    fg::PointCloudT sphere_projected_all_cloud;
 
     fg::PointCloudT inliers_cloud;
 
@@ -308,7 +372,7 @@ int main(int argc, char **argv) {
                 pt.r = r;
                 pt.g = g;
                 pt.b = b;
-                fitted_sphere_cloud.push_back(pt);
+                sphere_projected_all_cloud.push_back(pt);
             }
 
             // copies all inliers of the model computed to another PointCloud
@@ -343,29 +407,23 @@ int main(int argc, char **argv) {
 
     fg::PointCloudTP supervoxel_cloud_ptr(&supervoxel_cloud);
 
-    fg::PointCloudTP fitted_sphere_cloud_ptr(&fitted_sphere_cloud);
+    fg::PointCloudTP sphere_projected_all_cloud_ptr(
+        &sphere_projected_all_cloud);
 
     fg::PointCloudTP inliers_cloud_ptr(&inliers_cloud);
 
-    typedef struct cloud_reg
-    {
-        const char key;
-        const fg::PointCloudTP cloud;
-        const char *const name;
-    } cloud_reg_t;
-
-    cloud_reg_t clouds[] =
-    {
-        { 'a', input_cloud_ptr, "input" },
-        { 'z', supervoxel_cloud_ptr, "supervoxel" },
-        { 'e', fitted_sphere_cloud_ptr, "fitted_sphere" },
-        { 'r', inliers_cloud_ptr, "inliers" },
-        //{ 't', superellipsoid_cloud, "superellipsoid_cloud" },
+    cloud_reg_t clouds[] = {
+        {"1", input_cloud_ptr, "input", true},
+        {"2", supervoxel_cloud_ptr, "supervoxel", true},
+        {"3", sphere_projected_all_cloud_ptr, "sphere_projected_all", true},
+        {"4", inliers_cloud_ptr, "inliers", true},
+        //{ "t", superellipsoid_cloud, "superellipsoid_cloud" },
     };
 
-    for (auto &cr: clouds)
-    {
-        viewer->addPointCloud<pcl::PointXYZRGB>(cr.cloud, cr.name);
+    boost::shared_ptr<Context> context_p(new Context(viewer));
+
+    for (auto &cr : clouds) {
+        context_p->addCloud(cr);
     }
 
     viewer->setPointCloudRenderingProperties(
@@ -373,6 +431,8 @@ int main(int argc, char **argv) {
 
     // viewer->addCoordinateSystem (1.0);
     viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
+
+    viewer->registerKeyboardCallback(keyboardEventOccurred, (void *)&context_p);
 
     while (!viewer->wasStopped()) {
         viewer->spinOnce(100);
