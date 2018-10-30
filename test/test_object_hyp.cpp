@@ -175,7 +175,6 @@ int main(int argc, char **argv) {
         int lbl = 1;
 
         /* Draw all points in dark blueish tint, to see overall scene. */
-        // ip::PointCloudT::Ptr input_cloud_soi = soi.getInputCloud();
 
         {
             pcl::PointXYZRGB pt;
@@ -239,8 +238,6 @@ int main(int argc, char **argv) {
         std::cout << "Thresholding kept " << kept << " supervoxels out of "
                   << supervoxels.size() << std::endl;
 
-        // vector < PointCloud<PointXYZ>::Ptr, Eigen::aligned_allocator
-        // <PointCloud <PointXYZ>::Ptr > > sourceClouds;
 
         /* Populate again with cloud fitted with shape. */
 
