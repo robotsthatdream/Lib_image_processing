@@ -15,10 +15,9 @@
 
 namespace ip = image_processing;
 
-namespace fg
-{
-    typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudT;
-    typedef fg::PointCloudT::Ptr PointCloudTP;
+namespace fg {
+typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudT;
+typedef fg::PointCloudT::Ptr PointCloudTP;
 }
 
 int main(int argc, char **argv) {
@@ -94,7 +93,6 @@ int main(int argc, char **argv) {
         new pcl::visualization::PCLVisualizer(label));
     viewer->setBackgroundColor(0, 0, 0);
 
-
     fg::PointCloudT input_cloud;
 
     fg::PointCloudT supervoxel_cloud;
@@ -108,12 +106,12 @@ int main(int argc, char **argv) {
         int lbl = 1;
 
         /* Draw all points in dark blueish tint, to see overall scene. */
-        //ip::PointCloudT::Ptr input_cloud_soi = soi.getInputCloud();
+        // ip::PointCloudT::Ptr input_cloud_soi = soi.getInputCloud();
 
         {
             pcl::PointXYZRGB pt;
-            for (auto it_p = input_cloud_soi->begin(); it_p != input_cloud_soi->end();
-                 it_p++) {
+            for (auto it_p = input_cloud_soi->begin();
+                 it_p != input_cloud_soi->end(); it_p++) {
                 // auto current_p = it_p->second;
                 pt.x = it_p->x;
                 pt.y = it_p->y;
@@ -341,7 +339,6 @@ int main(int argc, char **argv) {
         }
     }
 
-
     fg::PointCloudTP input_cloud_ptr(&input_cloud);
 
     fg::PointCloudTP supervoxel_cloud_ptr(&supervoxel_cloud);
@@ -350,26 +347,26 @@ int main(int argc, char **argv) {
 
     fg::PointCloudTP inliers_cloud_ptr(&inliers_cloud);
 
-
-
     viewer->addPointCloud<pcl::PointXYZRGB>(input_cloud_ptr, "input_cloud");
-    viewer->addPointCloud<pcl::PointXYZRGB>(supervoxel_cloud_ptr, "supervoxel_cloud");
-    viewer->addPointCloud<pcl::PointXYZRGB>(fitted_sphere_cloud_ptr, "fitted_sphere_cloud");
+    viewer->addPointCloud<pcl::PointXYZRGB>(supervoxel_cloud_ptr,
+                                            "supervoxel_cloud");
+    viewer->addPointCloud<pcl::PointXYZRGB>(fitted_sphere_cloud_ptr,
+                                            "fitted_sphere_cloud");
     viewer->addPointCloud<pcl::PointXYZRGB>(inliers_cloud_ptr, "inliers_cloud");
 
     viewer->setPointCloudRenderingProperties(
-        pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, "relevance_map_cloud");
-    
+        pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4,
+        "relevance_map_cloud");
+
     // viewer->addCoordinateSystem (1.0);
     viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
 
-    
     while (!viewer->wasStopped()) {
         viewer->spinOnce(100);
         boost::this_thread::sleep(boost::posix_time::microseconds(100000));
     }
 
     viewer->close();
-    
+
     return 0;
 }
