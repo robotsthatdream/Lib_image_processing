@@ -15,6 +15,12 @@
 
 namespace ip = image_processing;
 
+namespace fg
+{
+    typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudT;
+    typedef fg::PointCloudT::Ptr PointCloudTP;
+}
+
 int main(int argc, char **argv) {
 
     if (argc != 4) {
@@ -88,13 +94,14 @@ int main(int argc, char **argv) {
         new pcl::visualization::PCLVisualizer(label));
     viewer->setBackgroundColor(0, 0, 0);
 
-    pcl::PointCloud<pcl::PointXYZRGB> input_cloud;
 
-    pcl::PointCloud<pcl::PointXYZRGB> supervoxel_cloud;
+    fg::PointCloudT input_cloud;
 
-    pcl::PointCloud<pcl::PointXYZRGB> fitted_sphere_cloud;
+    fg::PointCloudT supervoxel_cloud;
 
-    pcl::PointCloud<pcl::PointXYZRGB> inliers_cloud;
+    fg::PointCloudT fitted_sphere_cloud;
+
+    fg::PointCloudT inliers_cloud;
 
     {
         std::string modality = "meanFPFHLabHist";
@@ -334,17 +341,14 @@ int main(int argc, char **argv) {
         }
     }
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud_ptr(
-        &input_cloud);
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr supervoxel_cloud_ptr(
-        &supervoxel_cloud);
+    fg::PointCloudTP input_cloud_ptr(&input_cloud);
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fitted_sphere_cloud_ptr(
-        &fitted_sphere_cloud);
+    fg::PointCloudTP supervoxel_cloud_ptr(&supervoxel_cloud);
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr inliers_cloud_ptr(
-        &inliers_cloud);
+    fg::PointCloudTP fitted_sphere_cloud_ptr(&fitted_sphere_cloud);
+
+    fg::PointCloudTP inliers_cloud_ptr(&inliers_cloud);
 
 
 
