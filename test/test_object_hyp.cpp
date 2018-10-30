@@ -61,6 +61,11 @@ void Context::handleKeyboardEvent(
     if (event.keyUp()) {
         const std::string keySym = event.getKeySym();
         std::cout << "Key pressed '" << keySym << "'" << std::endl;
+
+        if (keySym.compare("twosuperior") == 0) {
+            m_viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
+        }
+
         for (auto &cr : clouds) {
             std::cout << "Checking key " << cr.key << ", name " << cr.name
                       << std::endl;
