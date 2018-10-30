@@ -88,9 +88,13 @@ int main(int argc, char **argv) {
         new pcl::visualization::PCLVisualizer(label));
     viewer->setBackgroundColor(0, 0, 0);
 
-    pcl::PointCloud<pcl::PointXYZRGB> relevance_map_cloud;
-
     pcl::PointCloud<pcl::PointXYZRGB> input_cloud;
+
+    pcl::PointCloud<pcl::PointXYZRGB> supervoxel_cloud;
+
+    pcl::PointCloud<pcl::PointXYZRGB> fitted_sphere_cloud;
+
+    pcl::PointCloud<pcl::PointXYZRGB> inliers_cloud;
 
     {
         std::string modality = "meanFPFHLabHist";
@@ -155,7 +159,7 @@ int main(int argc, char **argv) {
                 pt.r = r;
                 pt.g = g;
                 pt.b = b;
-                relevance_map_cloud.push_back(pt);
+                supervoxel_cloud.push_back(pt);
             }
         }
         std::cout << "Thresholding kept " << kept << " supervoxels out of "
@@ -299,7 +303,7 @@ int main(int argc, char **argv) {
                 pt.r = r;
                 pt.g = g;
                 pt.b = b;
-                relevance_map_cloud.push_back(pt);
+                fitted_sphere_cloud.push_back(pt);
             }
 
             // copies all inliers of the model computed to another PointCloud
@@ -323,23 +327,32 @@ int main(int argc, char **argv) {
                 pt.r = r;
                 pt.g = g;
                 pt.b = b;
-                relevance_map_cloud.push_back(pt);
+                inliers_cloud.push_back(pt);
             }
             std::cout << "End new obj hyp, id=" << obj_index_i_s << "."
                       << std::endl;
         }
     }
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr relevance_map_cloud_ptr(
-        &relevance_map_cloud);
-
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud_ptr(
         &input_cloud);
 
-    
-    viewer->addPointCloud<pcl::PointXYZRGB>(input_cloud_ptr, "input_cloud");
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr supervoxel_cloud_ptr(
+        &supervoxel_cloud);
 
-    viewer->addPointCloud<pcl::PointXYZRGB>(relevance_map_cloud_ptr, "relevance_map_cloud");
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr fitted_sphere_cloud_ptr(
+        &fitted_sphere_cloud);
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr inliers_cloud_ptr(
+        &inliers_cloud);
+
+
+
+    viewer->addPointCloud<pcl::PointXYZRGB>(input_cloud_ptr, "input_cloud");
+    viewer->addPointCloud<pcl::PointXYZRGB>(supervoxel_cloud_ptr, "supervoxel_cloud");
+    viewer->addPointCloud<pcl::PointXYZRGB>(fitted_sphere_cloud_ptr, "fitted_sphere_cloud");
+    viewer->addPointCloud<pcl::PointXYZRGB>(inliers_cloud_ptr, "inliers_cloud");
+
     viewer->setPointCloudRenderingProperties(
         pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, "relevance_map_cloud");
     
