@@ -347,12 +347,26 @@ int main(int argc, char **argv) {
 
     fg::PointCloudTP inliers_cloud_ptr(&inliers_cloud);
 
-    viewer->addPointCloud<pcl::PointXYZRGB>(input_cloud_ptr, "input_cloud");
-    viewer->addPointCloud<pcl::PointXYZRGB>(supervoxel_cloud_ptr,
-                                            "supervoxel_cloud");
-    viewer->addPointCloud<pcl::PointXYZRGB>(fitted_sphere_cloud_ptr,
-                                            "fitted_sphere_cloud");
-    viewer->addPointCloud<pcl::PointXYZRGB>(inliers_cloud_ptr, "inliers_cloud");
+    typedef struct cloud_reg
+    {
+        const char key;
+        const fg::PointCloudTP cloud;
+        const char *const name;
+    } cloud_reg_t;
+
+    cloud_reg_t clouds[] =
+    {
+        { 'a', input_cloud_ptr, "input" },
+        { 'z', supervoxel_cloud_ptr, "supervoxel" },
+        { 'e', fitted_sphere_cloud_ptr, "fitted_sphere" },
+        { 'r', inliers_cloud_ptr, "inliers" },
+        //{ 't', superellipsoid_cloud, "superellipsoid_cloud" },
+    };
+
+    for (auto &cr: clouds)
+    {
+        viewer->addPointCloud<pcl::PointXYZRGB>(cr.cloud, cr.name);
+    }
 
     viewer->setPointCloudRenderingProperties(
         pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4,
