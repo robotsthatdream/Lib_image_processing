@@ -28,8 +28,8 @@ int main(int argc, char **argv) {
     std::string label = argv[3];
 
     //* Load pcd file into a pointcloud
-    ip::PointCloudT::Ptr input_cloud(new ip::PointCloudT);
-    pcl::io::loadPCDFile(pcd_file, *input_cloud);
+    ip::PointCloudT::Ptr input_cloud_soi(new ip::PointCloudT);
+    pcl::io::loadPCDFile(pcd_file, *input_cloud_soi);
     //*/
 
     std::cout << "pcd file loaded:" << pcd_file << std::endl;
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     std::cout << "classifier archive loaded:" << gmm_archive << std::endl;
 
     //* Generate relevance map on the pointcloud
-    ip::SurfaceOfInterest soi(input_cloud);
+    ip::SurfaceOfInterest soi(input_cloud_soi);
     std::cout << "computing supervoxel" << std::endl;
     soi.computeSupervoxel();
 
@@ -95,11 +95,11 @@ int main(int argc, char **argv) {
         int lbl = 1;
 
         /* Draw all points in dark blueish tint, to see overall scene. */
-        ip::PointCloudT::Ptr input_cloud = soi.getInputCloud();
+        //ip::PointCloudT::Ptr input_cloud_soi = soi.getInputCloud();
 
         {
             pcl::PointXYZRGB pt;
-            for (auto it_p = input_cloud->begin(); it_p != input_cloud->end();
+            for (auto it_p = input_cloud_soi->begin(); it_p != input_cloud_soi->end();
                  it_p++) {
                 // auto current_p = it_p->second;
                 pt.x = it_p->x;
