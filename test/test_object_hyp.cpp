@@ -1,6 +1,7 @@
 #include <forward_list>
 #include <iostream>
 
+#include <boost/range/adaptor/indexed.hpp>
 #include <pcl/console/parse.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/io/pcd_io.h>
@@ -254,16 +255,11 @@ int main(int argc, char **argv) {
         // Rappel : typedef std::map<uint32_t, pcl::Supervoxel<PointT>::Ptr>
         // SupervoxelArray;
 
-        // for(auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
-        // it_sv++)
         /* each object */
-        for (int obj_index_i; obj_index_i < obj_hypotheses.size();
-             obj_index_i++)
-        // for(auto it_obj_hyp = obj_hypotheses.begin(); it_obj_hyp !=
-        // obj_hypotheses.end(); it_obj_hyp++)
+        for (const auto& obj_hyp: obj_hypotheses | boost::adaptors::indexed(0) )
         {
-            std::string obj_index_i_s = std::to_string(obj_index_i);
-            std::set<uint32_t> *p_obj_hyp = &(obj_hypotheses[obj_index_i]);
+            std::string obj_index_i_s = std::to_string(obj_hyp.index());
+            std::set<uint32_t> *p_obj_hyp = &(obj_hyp.value());
 
             int r = float(dist(_gen) << 4);
             int g = float(dist(_gen) << 4);
