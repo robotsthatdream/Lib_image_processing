@@ -120,8 +120,8 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &psi, float &theta,
        object/book).
     */
     psi = atan2(-m(2, 0), m(0, 0));
-    theta = 42;
-    phi = 42;
+    theta = 0;
+    phi = 0;
 }
 
 /*
