@@ -1,7 +1,6 @@
+#include <boost/range/adaptor/indexed.hpp>
 #include <forward_list>
 #include <iostream>
-
-#include <boost/range/adaptor/indexed.hpp>
 #include <pcl/console/parse.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/io/pcd_io.h>
@@ -43,8 +42,9 @@ class Context {
 
 void Context::updateInViewer(cloud_reg_t &cr) {
     m_viewer->setPointCloudRenderingProperties(
-        pcl::visualization::PCL_VISUALIZER_OPACITY, cr.active?1.0:0.0, cr.name);
-    }
+        pcl::visualization::PCL_VISUALIZER_OPACITY, cr.active ? 1.0 : 0.0,
+        cr.name);
+}
 
 void Context::addCloud(cloud_reg_t &reg) {
     std::cout << "Adding cloud with key " << reg.key << ", name " << reg.name
@@ -256,8 +256,8 @@ int main(int argc, char **argv) {
         // SupervoxelArray;
 
         /* each object */
-        for (const auto& obj_hyp: obj_hypotheses | boost::adaptors::indexed(0) )
-        {
+        for (const auto &obj_hyp :
+             obj_hypotheses | boost::adaptors::indexed(0)) {
             std::string obj_index_i_s = std::to_string(obj_hyp.index());
             std::set<uint32_t> *p_obj_hyp = &(obj_hyp.value());
 
