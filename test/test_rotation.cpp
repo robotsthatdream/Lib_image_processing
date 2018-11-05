@@ -3,7 +3,7 @@
 #include <Eigen/Geometry>
 
 namespace robotsthatdream {
-    
+
 /* rotational_matrix_OBB M is defined by: its columns are the
  * components of the major (e1), middle (e2), minor (e3) axes.
 
@@ -110,16 +110,16 @@ namespace robotsthatdream {
 
 */
 
-void matrix_to_angles(const Eigen::Matrix3f &m, float &psi, float &theta, float &phi)
-{
-/* Ok, so how do we compute our angles?
+void matrix_to_angles(const Eigen::Matrix3f &m, float &psi, float &theta,
+                      float &phi) {
+    /* Ok, so how do we compute our angles?
 
-   Let's call our rotation matrix M[l,c] = [ e1 e2 e3 ]
+       Let's call our rotation matrix M[l,c] = [ e1 e2 e3 ]
 
-   First angle psi depends only on e1 (vector of the major axis of the
-   object/book).
-*/
-    psi = atan2(-m(2,0), m(0,0));
+       First angle psi depends only on e1 (vector of the major axis of the
+       object/book).
+    */
+    psi = atan2(-m(2, 0), m(0, 0));
     theta = 42;
     phi = 42;
 }
@@ -143,47 +143,43 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &psi, float &theta, float 
 
 */
 
-
-
-
 // The fixture for testing class DreamRotationMatrixAngles.
 class RotMatToAnglesTest : public ::testing::Test {
- protected:
-  // You can remove any or all of the following functions if its body
-  // is empty.
+  protected:
+    // You can remove any or all of the following functions if its body
+    // is empty.
 
-  Eigen::Matrix3f m;
-  float psi, theta, phi;
+    Eigen::Matrix3f m;
+    float psi, theta, phi;
 
-  RotMatToAnglesTest() {
-     // You can do set-up work for each test here.
-  }
+    RotMatToAnglesTest() {
+        // You can do set-up work for each test here.
+    }
 
-  ~RotMatToAnglesTest() override {
-     // You can do clean-up work that doesn't throw exceptions here.
-  }
+    ~RotMatToAnglesTest() override {
+        // You can do clean-up work that doesn't throw exceptions here.
+    }
 
-  // If the constructor and destructor are not enough for setting up
-  // and cleaning up each test, you can define the following methods:
+    // If the constructor and destructor are not enough for setting up
+    // and cleaning up each test, you can define the following methods:
 
-  void SetUp() override {
-     // Code here will be called immediately after the constructor (right
-     // before each test).
-  }
+    void SetUp() override {
+        // Code here will be called immediately after the constructor (right
+        // before each test).
+    }
 
-  void TearDown() override {
-    std::cerr << m << std::endl;
-    std::cerr << "psi=" << psi << " theta=" << theta << " phi=" << phi << std::endl;
-  }
+    void TearDown() override {
+        std::cerr << m << std::endl;
+        std::cerr << "psi=" << psi << " theta=" << theta << " phi=" << phi
+                  << std::endl;
+    }
 
-  // Objects declared here can be used by all tests in the test case for DreamRotationMatrixAngles.
+    // Objects declared here can be used by all tests in the test case for
+    // DreamRotationMatrixAngles.
 };
 
-    
 TEST_F(RotMatToAnglesTest, Identity) {
-    m << 1, 0, 0,
-         0, 1, 0,
-         0, 0, 1;
+    m << 1, 0, 0, 0, 1, 0, 0, 0, 1;
 
     matrix_to_angles(m, psi, theta, phi);
 
@@ -191,9 +187,7 @@ TEST_F(RotMatToAnglesTest, Identity) {
     EXPECT_NEAR(theta, 0, 1e-5);
     EXPECT_NEAR(phi, 0, 1e-5);
 }
-
 }
-
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
