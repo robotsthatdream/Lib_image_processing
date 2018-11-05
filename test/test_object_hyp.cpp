@@ -344,86 +344,8 @@ int main(int argc, char **argv) {
                 min_point_OBB, max_point_OBB, position_OBB,
                 rotational_matrix_OBB); // FIXME should check return value
 
-            /* rotational_matrix_OBB M is defined by: its columns are
-             * the components of the major (e1), middle (e2), minor (e3)
-             * axes.
 
-             Properties:
-
-              M*[1 0 0] -> e1
-              M*[0 1 0] -> e2
-              M*[0 0 1] -> e3
-
-              This, the rotational_matrix sends X to e1, Y to e2, Z to e3.
-
-              So, the rotational matrix sends any point in space to
-              the point that would have same coordinates in the
-              object's reference frame.
-
-              Okay.
-             */
-
-            /*
-
-                We have to choose an angle convention,
-                cf. https://en.wikipedia.org/wiki/Euler_angles .
-
-                We choose Tait-Bryan with strongest moment aligned
-                with X axis, and weakest with Z axis.
-
-                Why ? It is intuitive.  Consider a book with rigid cover in 3D.
-                Strongest moment is page height (longest dimension),
-                second page width, third book thickness (shortest
-                dimension).
-
-                - First angle provides general orientation (with
-                  respect to north) viewed from above.
-
-                - Second angle corresponds to lifting the top of the
-                  page towards you.
-
-                - Third angle corresponds to opening the book cover.
-
-                These angles correspond also to "natural" ways to
-                describe aircraft orientation and orientation of a
-                camera on a tripod.
-             */
-
-            /* Ok, so how do we compute our angles?
-
-               Converting from angles to rotation matrix: [c++ - How to
-               calculate the angle from rotation matrix - Stack
-               Overflow](https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
-               "c++ - How to calculate the angle from rotation matrix - Stack
-               Overflow")
-
-               The first angle only depends on e1.
-
-               Let's define horizontal as z=0. FIXME?
-
-               Angle is atan2(e1.x, e1.y). TODO
-
-             */
-
-            /*
-
-              Eigen offers ways to "easily" convert from angles to a rotation
-              matrix:
-
-              > Combined with MatrixBase::Unit{X,Y,Z}, AngleAxis can be used to
-              easily mimic Euler-angles. Here is an example:
-              > Matrix3f m;
-              > m = AngleAxisf(0.25*M_PI, Vector3f::UnitX())
-              >   * AngleAxisf(0.5*M_PI,  Vector3f::UnitY())
-              >   * AngleAxisf(0.33*M_PI, Vector3f::UnitZ());
-              > cout << m << endl << "is unitary: " << m.isUnitary() << endl;
-
-              http://eigen.tuxfamily.org/dox/classEigen_1_1Matrix.html#a2f6bdcb76b48999cb9135b828bba4e7d
-
-              TODO find correct convention.
-
-             */
-
+            
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             // model_s->projectPoints(inliers, coeff_refined, proj_points,
             // false);
