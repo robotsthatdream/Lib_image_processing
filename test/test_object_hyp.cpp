@@ -1,7 +1,9 @@
+#include <boost/assert.hpp>
 #include <boost/range/adaptor/indexed.hpp>
 #include <forward_list>
 #include <iostream>
 #include <pcl/console/parse.h>
+#include <pcl/features/moment_of_inertia_estimation.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
@@ -322,49 +324,114 @@ int main(int argc, char **argv) {
                 continue;
             }
 
-            std::vector<int> inliers;
+            /* Okay, we've got one point cloud for this object. */
 
-            pcl::SampleConsensusModelSphere<pcl::PointXYZ>::Ptr model_s(
-                new pcl::SampleConsensusModelSphere<pcl::PointXYZ>(cloud_xyz));
+            pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
+            feature_extractor.setInputCloud(cloud_xyz);
+            // Minimize eccentricity computation.
+            feature_extractor.setAngleStep(360);
+            feature_extractor.compute();
 
-            pcl::RandomSampleConsensus<pcl::PointXYZ> ransac(model_s);
-            ransac.setDistanceThreshold(.001);
-            ransac.computeModel();
-            ransac.getInliers(inliers);
+            Eigen::Vector3f mass_center;
+            feature_extractor.getMassCenter(
+                mass_center); // FIXME should check return value
 
-            Eigen::VectorXf coeff;
-            ransac.getModelCoefficients(coeff);
+            std::vector<float> moment_of_inertia;
+            pcl::PointXYZ min_point_OBB;
+            pcl::PointXYZ max_point_OBB;
+            pcl::PointXYZ position_OBB;
+            Eigen::Matrix3f rotational_matrix_OBB;
+            feature_extractor.getOBB(
+                min_point_OBB, max_point_OBB, position_OBB,
+                rotational_matrix_OBB); // FIXME should check return value
 
-            std::cerr << "coeff: " << coeff << std::endl;
+            /* rotational_matrix_OBB M is defined by: its columns are
+             * the components of the major (e1), middle (e2), minor (e3)
+             * axes.
 
-            Eigen::VectorXf coeff_refined;
-            model_s->optimizeModelCoefficients(inliers, coeff, coeff_refined);
-            // EXPECT_EQ (4, coeff_refined.size ());
+             Properties:
 
-            std::cerr << "coeff_refined: " << coeff_refined << std::endl;
+              M*[1 0 0] -> e1
+              M*[0 1 0] -> e2
+              M*[0 0 1] -> e3
+
+              This, the rotational_matrix sends X to e1, Y to e2, Z to e3.
+
+              So, the rotational matrix sends any point in space to
+              the point that would have same coordinates in the
+              object's reference frame.
+
+              Okay.
+             */
+
+            /*
+
+                We have to choose an angle convention,
+                cf. https://en.wikipedia.org/wiki/Euler_angles .
+
+                We choose Tait-Bryan with strongest moment aligned
+                with X axis, and weakest with Z axis.
+
+                Why ? It is intuitive.  Consider a book with rigid cover in 3D.
+                Strongest moment is page height (longest dimension),
+                second page width, third book thickness (shortest
+                dimension).
+
+                - First angle provides general orientation (with
+                  respect to north) viewed from above.
+
+                - Second angle corresponds to lifting the top of the
+                  page towards you.
+
+                - Third angle corresponds to opening the book cover.
+
+                These angles correspond also to "natural" ways to
+                describe aircraft orientation and orientation of a
+                camera on a tripod.
+             */
+
+            /* Ok, so how do we compute our angles?
+
+               Converting from angles to rotation matrix: [c++ - How to
+               calculate the angle from rotation matrix - Stack
+               Overflow](https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
+               "c++ - How to calculate the angle from rotation matrix - Stack
+               Overflow")
+
+               The first angle only depends on e1.
+
+               Let's define horizontal as z=0. FIXME?
+
+               Angle is atan2(e1.x, e1.y). TODO
+
+             */
+
+            /*
+
+              Eigen offers ways to "easily" convert from angles to a rotation
+              matrix:
+
+              > Combined with MatrixBase::Unit{X,Y,Z}, AngleAxis can be used to
+              easily mimic Euler-angles. Here is an example:
+              > Matrix3f m;
+              > m = AngleAxisf(0.25*M_PI, Vector3f::UnitX())
+              >   * AngleAxisf(0.5*M_PI,  Vector3f::UnitY())
+              >   * AngleAxisf(0.33*M_PI, Vector3f::UnitZ());
+              > cout << m << endl << "is unitary: " << m.isUnitary() << endl;
+
+              http://eigen.tuxfamily.org/dox/classEigen_1_1Matrix.html#a2f6bdcb76b48999cb9135b828bba4e7d
+
+              TODO find correct convention.
+
+             */
 
             pcl::PointCloud<pcl::PointXYZ> proj_points;
-            model_s->projectPoints(inliers, coeff_refined, proj_points, false);
-
-            pcl::PointXYZ sphereCenter(coeff[0], coeff[1], coeff[2]);
-
-            std::string sphereId("sphere" + obj_index_i_s);
-
-            std::cerr << "will add sphere with id: " << sphereId << std::endl;
-
-            viewer->addSphere(sphereCenter, coeff[3], ((float)r) / 255.0,
-                              ((float)g) / 255.0, ((float)b) / 255.0, sphereId);
-
-            viewer->setShapeRenderingProperties(
-                pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
-                pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME,
-                sphereId);
-
-            std::cerr << "added sphere with id: " << sphereId << std::endl;
+            // model_s->projectPoints(inliers, coeff_refined, proj_points,
+            // false);
 
             pcl::PointXYZRGB pt;
 
-            for (auto v : proj_points) {
+            for (auto v : *cloud_xyz) {
                 pt.x = v.x;
                 pt.y = v.y;
                 pt.z = v.z;
@@ -375,29 +442,6 @@ int main(int argc, char **argv) {
                 model_projected_all_cloud_ptr->push_back(pt);
             }
 
-            // copies all inliers of the model computed to another PointCloud
-            pcl::PointCloud<pcl::PointXYZ>::Ptr final(
-                new pcl::PointCloud<pcl::PointXYZ>);
-            pcl::copyPointCloud<pcl::PointXYZ>(*cloud_xyz, inliers, * final);
-
-            r = r * 2;
-            g = g * 2;
-            b = b * 2;
-
-            std::cout << std::endl
-                      << "Adding to output cloud obj hyp, id=" << obj_index_i_s
-                      << ", color = " << r << "," << g << "," << b << std::endl;
-
-            for (auto v : *(final)) {
-                pt.x = v.x;
-                pt.y = v.y;
-                pt.z = v.z;
-
-                pt.r = r;
-                pt.g = g;
-                pt.b = b;
-                inliers_cloud_ptr->push_back(pt);
-            }
             std::cout << "End new obj hyp, id=" << obj_index_i_s << "."
                       << std::endl;
         }
