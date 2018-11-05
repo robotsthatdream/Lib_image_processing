@@ -243,7 +243,6 @@ int main(int argc, char **argv) {
         std::cout << "Thresholding kept " << kept << " supervoxels out of "
                   << supervoxels.size() << std::endl;
 
-
         /* Populate again with cloud fitted with shape. */
 
         /* We have to express what supervoxels belong together.
