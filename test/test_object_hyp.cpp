@@ -200,7 +200,7 @@ int main(int argc, char **argv) {
         /* Draw all supervoxels points in various colors. */
 
         boost::random::mt19937 _gen;
-        boost::random::uniform_int_distribution<> dist(4, 7);
+        boost::random::uniform_int_distribution<> dist(1, 3);
         // _gen.seed(0); No seed, we want it deterministic.
 
         int kept = 0;
@@ -219,11 +219,13 @@ int main(int argc, char **argv) {
             // weight " << c << std::endl;
             ++kept;
 
-            // Colors between quarter and half the max.  Not too weak, not too
-            // bright.
-            int r = float(dist(_gen) << 4) * (c + 1.0);
-            int g = float(dist(_gen) << 4) * (c + 1.0);
-            int b = float(dist(_gen) << 4) * (c + 1.0);
+            // This chooses random colors amont a palette of 3^3 = 27
+            // different colors, then multiplied by biased relevance.
+            // Hope this allows to easily distinguish supervoxels by
+            // colors.
+            int r = float(dist(_gen) * 56) * (c + 0.5);
+            int g = float(dist(_gen) * 56) * (c + 0.5);
+            int b = float(dist(_gen) * 56) * (c + 0.5);
 
             pcl::PointXYZRGB pt;
             for (auto v : *(current_sv->voxels_)) {
