@@ -344,8 +344,6 @@ int main(int argc, char **argv) {
                 min_point_OBB, max_point_OBB, position_OBB,
                 rotational_matrix_OBB); // FIXME should check return value
 
-
-            
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             // model_s->projectPoints(inliers, coeff_refined, proj_points,
             // false);
