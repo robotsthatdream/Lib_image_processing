@@ -1,6 +1,8 @@
+#define _USE_MATH_DEFINES
 #include "gtest/gtest.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <cmath>
 
 namespace robotsthatdream {
 
@@ -116,10 +118,10 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &psi, float &theta,
 
        Let's call our rotation matrix M[l,c] = [ e1 e2 e3 ]
 
-       First angle psi depends only on e1 (vector of the major axis of the
-       object/book).
+       First angle psi depends only on e3 (vector of the major axis of
+       the object/book) and e1 (second axis).
     */
-    psi = atan2(-m(2, 0), m(0, 0));
+    psi = atan2(-m(0, 2), m(0, 0));
     theta = 0;
     phi = 0;
 }
@@ -186,6 +188,18 @@ TEST_F(RotMatToAnglesTest, Identity) {
     matrix_to_angles(m, psi, theta, phi);
 
     EXPECT_NEAR(psi, 0, 1e-5);
+    EXPECT_NEAR(theta, 0, 1e-5);
+    EXPECT_NEAR(phi, 0, 1e-5);
+}
+
+TEST_F(RotMatToAnglesTest, RotateBookCounterClockwise) {
+    m.row(0) << 0, 0, -1;
+    m.row(1) << 0, 1, 0;
+    m.row(2) << 1, 0, 0;
+
+    matrix_to_angles(m, psi, theta, phi);
+
+    EXPECT_NEAR(psi, M_PI_2, 1e-5);
     EXPECT_NEAR(theta, 0, 1e-5);
     EXPECT_NEAR(phi, 0, 1e-5);
 }
