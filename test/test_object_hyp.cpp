@@ -186,9 +186,9 @@ int main(int argc, char **argv) {
                 pt.y = it_p->y;
                 pt.z = it_p->z;
 
-                pt.r = it_p->r / 8;
-                pt.g = it_p->g / 4;
-                pt.b = (it_p->r + it_p->g + it_p->b) / 6;
+                pt.r = it_p->r;
+                pt.g = it_p->g;
+                pt.b = it_p->b; //(it_p->r + it_p->g + it_p->b) / 6;
                 input_cloud_ptr->push_back(pt);
             }
         }
