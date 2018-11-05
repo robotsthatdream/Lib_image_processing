@@ -2,6 +2,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+namespace robotsthatdream {
+    
 /* rotational_matrix_OBB M is defined by: its columns are the
  * components of the major (e1), middle (e2), minor (e3) axes.
 
@@ -142,25 +144,56 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &psi, float &theta, float 
 */
 
 
-TEST(DreamRotationMatrixAngles, Identity) {
-    float psi, theta, phi;
 
-    Eigen::Matrix3f identity_matrix;
 
-    identity_matrix << 1, 0, 0,
-        0, 1, 0,
-        0, 0, 1;
+// The fixture for testing class DreamRotationMatrixAngles.
+class RotMatToAnglesTest : public ::testing::Test {
+ protected:
+  // You can remove any or all of the following functions if its body
+  // is empty.
 
-    std::cerr << identity_matrix << std::endl;
+  Eigen::Matrix3f m;
+  float psi, theta, phi;
 
-    matrix_to_angles(identity_matrix, psi, theta, phi);
+  RotMatToAnglesTest() {
+     // You can do set-up work for each test here.
+  }
 
+  ~RotMatToAnglesTest() override {
+     // You can do clean-up work that doesn't throw exceptions here.
+  }
+
+  // If the constructor and destructor are not enough for setting up
+  // and cleaning up each test, you can define the following methods:
+
+  void SetUp() override {
+     // Code here will be called immediately after the constructor (right
+     // before each test).
+  }
+
+  void TearDown() override {
+    std::cerr << m << std::endl;
     std::cerr << "psi=" << psi << " theta=" << theta << " phi=" << phi << std::endl;
+  }
+
+  // Objects declared here can be used by all tests in the test case for DreamRotationMatrixAngles.
+};
+
+    
+TEST_F(RotMatToAnglesTest, Identity) {
+    m << 1, 0, 0,
+         0, 1, 0,
+         0, 0, 1;
+
+    matrix_to_angles(m, psi, theta, phi);
 
     EXPECT_NEAR(psi, 0, 1e-5);
     EXPECT_NEAR(theta, 0, 1e-5);
     EXPECT_NEAR(phi, 0, 1e-5);
 }
+
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
