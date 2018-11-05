@@ -179,7 +179,9 @@ class RotMatToAnglesTest : public ::testing::Test {
 };
 
 TEST_F(RotMatToAnglesTest, Identity) {
-    m << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+    m.row(0) << 1, 0, 0;
+    m.row(1) << 0, 1, 0;
+    m.row(2) << 0, 0, 1;
 
     matrix_to_angles(m, psi, theta, phi);
 
