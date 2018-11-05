@@ -415,10 +415,9 @@ int main(int argc, char **argv) {
 
     for (auto &cr : clouds) {
         context_p->addCloud(cr);
+        viewer->setPointCloudRenderingProperties(
+            pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, cr.name);
     }
-
-    viewer->setPointCloudRenderingProperties(
-        pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, "inliers");
 
     // viewer->addCoordinateSystem (1.0);
     viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
