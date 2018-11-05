@@ -263,9 +263,9 @@ int main(int argc, char **argv) {
             std::string obj_index_i_s = std::to_string(obj_hyp.index());
             std::set<uint32_t> *p_obj_hyp = &(obj_hyp.value());
 
-            int r = float(dist(_gen) << 4);
-            int g = float(dist(_gen) << 4);
-            int b = float(dist(_gen) << 4);
+            int r = float(dist(_gen) * 85);
+            int g = float(dist(_gen) * 85);
+            int b = float(dist(_gen) * 85);
 
             std::cout << std::endl
                       << "Begin new obj hyp, id=" << obj_index_i_s << ", "
