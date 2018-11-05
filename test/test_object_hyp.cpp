@@ -221,9 +221,9 @@ int main(int argc, char **argv) {
 
             // Colors between quarter and half the max.  Not too weak, not too
             // bright.
-            int r = float(dist(_gen) << 2) * (c + 1.0);
-            int g = float(dist(_gen) << 2) * (c + 1.0);
-            int b = float(dist(_gen) << 2) * (c + 1.0);
+            int r = float(dist(_gen) << 4) * (c + 1.0);
+            int g = float(dist(_gen) << 4) * (c + 1.0);
+            int b = float(dist(_gen) << 4) * (c + 1.0);
 
             pcl::PointXYZRGB pt;
             for (auto v : *(current_sv->voxels_)) {
