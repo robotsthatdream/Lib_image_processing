@@ -197,7 +197,7 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
     const Eigen::Matrix3f m_without_yaw =
         Eigen::AngleAxisf(-yaw, Eigen::Vector3f::UnitZ()) * m;
 
-    std::cerr << "m_without_yaw" << std::endl << m_without_yaw << std::endl;
+    //std::cerr << "m_without_yaw" << std::endl << m_without_yaw << std::endl;
 
     // pitch = atan2(m(2, 0), hypot( m(2, 2) ) );
 
@@ -338,10 +338,10 @@ class TwoWayTest : public ::testing::Test {
     void TearDown() override {}
 
     void CheckTwoWays() {
-        std::cerr << model_m << std::endl
-                  << " model_yaw=" << model_yaw
-                  << " model_pitch=" << model_pitch
-                  << " model_roll=" << model_roll << std::endl;
+        // std::cerr << model_m << std::endl
+        //           << " model_yaw=" << model_yaw
+        //           << " model_pitch=" << model_pitch
+        //           << " model_roll=" << model_roll << std::endl;
 
         if (!model_m.isUnitary()) {
             check_if_unitary(model_m);
