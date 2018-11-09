@@ -236,9 +236,9 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
      */
 
     roll = atan2(m(2, 1), hypot(m(2, 0), m(2, 2)));
-    //std::cerr << "roll=" << roll << std::endl;
-    //roll = atan2(-m(2, 1), hypot(m(1, 0), m(0, 0)));
-    //std::cerr << "roll=" << roll << std::endl;
+    // std::cerr << "roll=" << roll << std::endl;
+    // roll = atan2(-m(2, 1), hypot(m(1, 0), m(0, 0)));
+    // std::cerr << "roll=" << roll << std::endl;
 }
 
 /*
@@ -378,7 +378,6 @@ TEST_F(RotMatToAnglesTest,
     EXPECT_NEAR(pitch, M_PI_4, 1e-5);
     EXPECT_NEAR(roll, 0, 1e-5);
 }
-
 
 TEST_F(RotMatToAnglesTest,
        PitchTest_OpenBookCoverQuarterTurnMustYieldRollMinusPi2) {
