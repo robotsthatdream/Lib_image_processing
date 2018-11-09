@@ -10,7 +10,7 @@ namespace robotsthatdream {
 
   ===== Defition of rotational matrix =====
 
-  Rotational_matrix_OBB M is defined by: its columns are the
+  Rotational_matrix_OBB M is defined by: its *columns* are the
   components of the major (e1), middle (e2), minor (e3) axes.
 
   Properties:
