@@ -190,7 +190,30 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
     */
     yaw = atan2f(m(1, 0), m(0, 0));
-    pitch = 0;
+
+    /* Ok, we have found yaw.
+
+       We can continue with "next angle" by rotating the whole matrix
+       to cancel the yaw, and compute pitch.
+
+       We can also compute pitch directly.
+
+       Basically, the matrix send Z to a vector which Z component is
+       cos(pitch).  So, we get cos(pitch) for free in m(2,2).
+
+       If yaw = 0, the matrix sends X to a vector which Z component is sin(pitch).
+       If yaw = PI/2, the matrix sends X to a vector which Z component is sin(pitch).
+       Actually, whatever the yaw, the matrix sends X to a vector which Z component is sin(pitch).
+
+       What is the Z component of M(X)?  M(X) is defined in column 1.  We want m(0,2).
+
+       Take atan2 of those and we're done.
+     */
+
+    std::cerr << "m(2,0)=" << m(2,0) << ", m(2,2)=" << m(2,2) << std::endl;
+    
+    pitch = atan2( m(2,0), m(2,2) );
+
     roll = 0;
 }
 
@@ -305,6 +328,38 @@ TEST_F(RotMatToAnglesTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldY
     EXPECT_NEAR(pitch, 0, 1e-5);
     EXPECT_NEAR(roll, 0, 1e-5);
 }
+
+
+TEST_F(RotMatToAnglesTest, PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2) {
+    // This matrix sends X to Z.
+    // This matrix sends Y to Y.
+    // This matrix sends Z to -X.
+    m.row(0) << 0, 0, -1;
+    m.row(1) << 0, 1, 0;
+    m.row(2) << 1, 0, 0;
+
+    matrix_to_angles(m, yaw, pitch, roll);
+
+    EXPECT_NEAR(yaw, 0, 1e-5);
+    EXPECT_NEAR(pitch, M_PI_2, 1e-5);
+    EXPECT_NEAR(roll, 0, 1e-5);
+}
+
+TEST_F(RotMatToAnglesTest, PitchTest_LiftBookPagetopEigthTurnMustYieldPitchPi2) {
+    // This matrix sends X to Z.
+    // This matrix sends Y to Y.
+    // This matrix sends Z to -X.
+    m.row(0) << M_SQRT2, 0, -M_SQRT2;
+    m.row(1) << 0, 1, 0;
+    m.row(2) << M_SQRT2, 0, M_SQRT2;
+
+    matrix_to_angles(m, yaw, pitch, roll);
+
+    EXPECT_NEAR(yaw, 0, 1e-5);
+    EXPECT_NEAR(pitch, M_PI_4, 1e-5);
+    EXPECT_NEAR(roll, 0, 1e-5);
+}
+
 }
 
 int main(int argc, char **argv) {
