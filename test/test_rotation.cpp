@@ -236,7 +236,7 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
 */
 
-// The fixture for testing class DreamRotationMatrixAngles.
+// The fixture for testing class RotMatToAnglesTest.
 class RotMatToAnglesTest : public ::testing::Test {
   protected:
     // You can remove any or all of the following functions if its body
@@ -271,7 +271,7 @@ class RotMatToAnglesTest : public ::testing::Test {
     }
 
     // Objects declared here can be used by all tests in the test case for
-    // DreamRotationMatrixAngles.
+    // RotMatToAnglesTest.
 };
 
     
