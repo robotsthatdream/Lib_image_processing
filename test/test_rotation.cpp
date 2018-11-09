@@ -28,8 +28,6 @@ namespace robotsthatdream {
 
 */
 
-
-
 /*
 
   ===== Definition of coordinate system: axis convention =====
@@ -201,18 +199,22 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
        Basically, the matrix send Z to a vector which Z component is
        cos(pitch).  So, we get cos(pitch) for free in m(2,2).
 
-       If yaw = 0, the matrix sends X to a vector which Z component is sin(pitch).
-       If yaw = PI/2, the matrix sends X to a vector which Z component is sin(pitch).
-       Actually, whatever the yaw, the matrix sends X to a vector which Z component is sin(pitch).
+       If yaw = 0, the matrix sends X to a vector which Z component is
+       sin(pitch).
+       If yaw = PI/2, the matrix sends X to a vector which Z component is
+       sin(pitch).
+       Actually, whatever the yaw, the matrix sends X to a vector which Z
+       component is sin(pitch).
 
-       What is the Z component of M(X)?  M(X) is defined in column 1.  We want m(0,2).
+       What is the Z component of M(X)?  M(X) is defined in column 1.  We want
+       m(0,2).
 
        Take atan2 of those and we're done.
      */
 
-    std::cerr << "m(2,0)=" << m(2,0) << ", m(2,2)=" << m(2,2) << std::endl;
-    
-    pitch = atan2( m(2,0), m(2,2) );
+    std::cerr << "m(2,0)=" << m(2, 0) << ", m(2,2)=" << m(2, 2) << std::endl;
+
+    pitch = atan2(m(2, 0), m(2, 2));
 
     roll = 0;
 }
@@ -256,15 +258,10 @@ class RotMatToAnglesTest : public ::testing::Test {
     // If the constructor and destructor are not enough for setting up
     // and cleaning up each test, you can define the following methods:
 
-    void SetUp() override {
-        std::cerr << m << std::endl;
-    }
+    void SetUp() override { std::cerr << m << std::endl; }
 
     void TearDown() override {
-        std::cerr
-                  << " yaw=" << yaw
-                  << " pitch=" << pitch
-                  << " roll=" << roll
+        std::cerr << " yaw=" << yaw << " pitch=" << pitch << " roll=" << roll
                   << std::endl;
     }
 
@@ -272,19 +269,18 @@ class RotMatToAnglesTest : public ::testing::Test {
     // RotMatToAnglesTest.
 };
 
-    
 TEST_F(RotMatToAnglesTest, EigenTest_CoeffAccessIsMRowColumn) {
-    m.row(0) << 1,2,3;
-    m.row(1) << 4,5,6;
-    m.row(2) << 7,8,9;
+    m.row(0) << 1, 2, 3;
+    m.row(1) << 4, 5, 6;
+    m.row(2) << 7, 8, 9;
 
-    EXPECT_EQ(m(0,0), 1);
-    EXPECT_EQ(m(1,0), 4);
-    EXPECT_EQ(m(2,0), 7);
-    EXPECT_EQ(m(2,1), 8);
-    EXPECT_EQ(m(2,2), 9);
+    EXPECT_EQ(m(0, 0), 1);
+    EXPECT_EQ(m(1, 0), 4);
+    EXPECT_EQ(m(2, 0), 7);
+    EXPECT_EQ(m(2, 1), 8);
+    EXPECT_EQ(m(2, 2), 9);
 }
-    
+
 TEST_F(RotMatToAnglesTest, Identity) {
     m.row(0) << 1, 0, 0;
     m.row(1) << 0, 1, 0;
@@ -297,7 +293,8 @@ TEST_F(RotMatToAnglesTest, Identity) {
     EXPECT_NEAR(roll, 0, 1e-5);
 }
 
-TEST_F(RotMatToAnglesTest, YawTest_RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2) {
+TEST_F(RotMatToAnglesTest,
+       YawTest_RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2) {
     // This matrix sends X to Y.
     // This matrix sends Y to -X.
     // This matrix sends Z to Z.
@@ -312,7 +309,8 @@ TEST_F(RotMatToAnglesTest, YawTest_RotateBookCounterClockwiseQuarterTurnMustYiel
     EXPECT_NEAR(roll, 0, 1e-5);
 }
 
-TEST_F(RotMatToAnglesTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4) {
+TEST_F(RotMatToAnglesTest,
+       YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4) {
     // This matrix sends X to Y.
     // This matrix sends Y to -X.
     // This matrix sends Z to Z.
@@ -327,8 +325,8 @@ TEST_F(RotMatToAnglesTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldY
     EXPECT_NEAR(roll, 0, 1e-5);
 }
 
-
-TEST_F(RotMatToAnglesTest, PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2) {
+TEST_F(RotMatToAnglesTest,
+       PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2) {
     // This matrix sends X to Z.
     // This matrix sends Y to Y.
     // This matrix sends Z to -X.
@@ -343,7 +341,8 @@ TEST_F(RotMatToAnglesTest, PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2
     EXPECT_NEAR(roll, 0, 1e-5);
 }
 
-TEST_F(RotMatToAnglesTest, PitchTest_LiftBookPagetopEigthTurnMustYieldPitchPi2) {
+TEST_F(RotMatToAnglesTest,
+       PitchTest_LiftBookPagetopEigthTurnMustYieldPitchPi2) {
     // This matrix sends X to Z.
     // This matrix sends Y to Y.
     // This matrix sends Z to -X.
@@ -357,7 +356,6 @@ TEST_F(RotMatToAnglesTest, PitchTest_LiftBookPagetopEigthTurnMustYieldPitchPi2) 
     EXPECT_NEAR(pitch, M_PI_4, 1e-5);
     EXPECT_NEAR(roll, 0, 1e-5);
 }
-
 }
 
 int main(int argc, char **argv) {
