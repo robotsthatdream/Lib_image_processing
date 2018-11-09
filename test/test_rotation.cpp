@@ -425,13 +425,14 @@ TEST_F(RotMatToAnglesTest,
 
 TEST_F(RotMatToAnglesTest, PitchTest_AnyComboMustConvertAndBack) {
 
-    const float increment = M_PI / 8;
+    const float increment = 1;
 
     for (float orig_yaw = 0; orig_yaw < 2.0 * M_PI; orig_yaw += increment) {
-        for (float orig_pitch = -M_PI_2; orig_pitch < M_PI_2;
+        for (float orig_pitch = 0; orig_pitch < 1.5;
              orig_pitch += increment) {
-            for (float orig_roll = -M_PI_2; orig_roll < M_PI_2;
+            for (float orig_roll = 0; orig_roll < 1.5;
                  orig_roll += increment) {
+                
                 angles_to_matrix(orig_yaw, orig_pitch, orig_roll, m);
 
                 matrix_to_angles(m, yaw, pitch, roll);
