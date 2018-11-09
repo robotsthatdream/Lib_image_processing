@@ -280,13 +280,17 @@ class RotMatToAnglesTest : public ::testing::Test {
     float pitch, yaw, roll;
 
     RotMatToAnglesTest() {
-        std::cerr << std::endl << "========================================================================" << std::endl;
+        std::cerr << std::endl
+                  << "========================================================="
+                  << std::endl;
         // You can do set-up work for each test here.
     }
 
     ~RotMatToAnglesTest() override {
         // You can do clean-up work that doesn't throw exceptions here.
-        std::cerr << "========================================================================" << std::endl << std::endl;
+        std::cerr << "========================================================="
+                  << std::endl
+                  << std::endl;
     }
 
     // If the constructor and destructor are not enough for setting up
