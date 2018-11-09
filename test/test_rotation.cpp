@@ -257,12 +257,10 @@ class RotMatToAnglesTest : public ::testing::Test {
     // and cleaning up each test, you can define the following methods:
 
     void SetUp() override {
-        // Code here will be called immediately after the constructor (right
-        // before each test).
+        std::cerr << m << std::endl;
     }
 
     void TearDown() override {
-        std::cerr << m << std::endl;
         std::cerr
                   << " yaw=" << yaw
                   << " pitch=" << pitch
