@@ -262,42 +262,49 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
 void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
                       Eigen::Matrix3f &m) {
-    std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch
-              << " roll=" << roll << std::endl;
-    m = Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ()) *
-        Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX()) *
-        Eigen::AngleAxisf(-pitch, Eigen::Vector3f::UnitY());
+    // std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch
+    //           << " roll=" << roll << std::endl;
+    m = Eigen::AngleAxisf(-pitch, Eigen::Vector3f::UnitY()) *
+        Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ()) *
+
+        Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX());
     // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
     // std::endl;
 }
 
 // The fixture for testing class RotMatToAnglesTest.
-class RotMatToAnglesTest : public ::testing::Test {
+class RotMatTest : public ::testing::Test {
   protected:
     // You can remove any or all of the following functions if its body
     // is empty.
 
     Eigen::Matrix3f m;
-    float pitch, yaw, roll;
+    const Eigen::Matrix3f identity = Eigen::MatrixXf::Identity(3, 3);
+    float yaw, pitch, roll;
 
-    RotMatToAnglesTest() {
-        std::cerr << std::endl
-                  << "========================================================="
-                  << std::endl;
+    RotMatTest() {
+        // std::cerr << std::endl
+        //           <<
+        //           "========================================================="
+        //           << std::endl;
         // You can do set-up work for each test here.
     }
 
-    ~RotMatToAnglesTest() override {
+    ~RotMatTest() override {
         // You can do clean-up work that doesn't throw exceptions here.
-        std::cerr << "========================================================="
-                  << std::endl
-                  << std::endl;
+        // std::cerr <<
+        // "========================================================="
+        //           << std::endl
+        //           << std::endl;
     }
+};
 
+class RotMatToAnglesTest : public RotMatTest {
+  protected:
     // If the constructor and destructor are not enough for setting up
     // and cleaning up each test, you can define the following methods:
 
-    void SetUp() override { std::cerr << m << std::endl; }
+    void SetUp() override {}
 
     void TearDown() override {
         std::cerr << " yaw=" << yaw << " pitch=" << pitch << " roll=" << roll
@@ -308,7 +315,54 @@ class RotMatToAnglesTest : public ::testing::Test {
     // RotMatToAnglesTest.
 };
 
-TEST_F(RotMatToAnglesTest, EigenTest_CoeffAccessIsMRowColumn) {
+void expect_identical_3x3_matrices(const Eigen::Matrix3f &m1,
+                                   const Eigen::Matrix3f &m2,
+                                   const float epsilon = 1e-5) {
+    for (int row = 0; row <= 2; row++) {
+        for (int col = 0; col <= 2; col++) {
+            EXPECT_NEAR(m1(row, col), m2(row, col), epsilon) << "row=" << row
+                                                             << ", col=" << col;
+        }
+    }
+}
+
+class TwoWayTest : public ::testing::Test {
+  protected:
+    Eigen::Matrix3f model_m;
+    float model_yaw, model_pitch, model_roll;
+
+    // If the constructor and destructor are not enough for setting up
+    // and cleaning up each test, you can define the following methods:
+
+    void SetUp() override {}
+
+    void TearDown() override {}
+
+    void CheckTwoWays() {
+        std::cerr << model_m << std::endl
+                  << " model_yaw=" << model_yaw
+                  << " model_pitch=" << model_pitch
+                  << " model_roll=" << model_roll << std::endl;
+
+        ASSERT_TRUE(model_m.isUnitary());
+
+        float yaw_computed, pitch_computed, roll_computed;
+        matrix_to_angles(model_m, yaw_computed, pitch_computed, roll_computed);
+
+        EXPECT_NEAR(model_yaw, yaw_computed, 1e-5);
+        EXPECT_NEAR(model_pitch, pitch_computed, 1e-5);
+        EXPECT_NEAR(model_roll, roll_computed, 1e-5);
+
+        Eigen::Matrix3f m_computed;
+        angles_to_matrix(model_yaw, model_pitch, model_roll, m_computed);
+        expect_identical_3x3_matrices(model_m, m_computed);
+    }
+
+    // Objects declared here can be used by all tests in the test case for
+    // RotMatToAnglesTest.
+};
+
+TEST_F(RotMatTest, EigenTest_CoeffAccessIsMRowColumn) {
     m.row(0) << 1, 2, 3;
     m.row(1) << 4, 5, 6;
     m.row(2) << 7, 8, 9;
@@ -320,115 +374,178 @@ TEST_F(RotMatToAnglesTest, EigenTest_CoeffAccessIsMRowColumn) {
     EXPECT_EQ(m(2, 2), 9);
 }
 
-TEST_F(RotMatToAnglesTest, Identity) {
-    m.row(0) << 1, 0, 0;
-    m.row(1) << 0, 1, 0;
-    m.row(2) << 0, 0, 1;
+TEST_F(TwoWayTest, Identity) {
+    model_m.row(0) << 1, 0, 0;
+    model_m.row(1) << 0, 1, 0;
+    model_m.row(2) << 0, 0, 1;
 
-    matrix_to_angles(m, yaw, pitch, roll);
+    model_yaw = model_pitch = model_roll = 0;
 
-    EXPECT_NEAR(yaw, 0, 1e-5);
-    EXPECT_NEAR(pitch, 0, 1e-5);
-    EXPECT_NEAR(roll, 0, 1e-5);
+    CheckTwoWays();
 }
 
-TEST_F(RotMatToAnglesTest,
+TEST_F(TwoWayTest,
        YawTest_RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2) {
     // This matrix sends X to Y.
     // This matrix sends Y to -X.
     // This matrix sends Z to Z.
-    m.row(0) << 0, -1, 0;
-    m.row(1) << 1, 0, 0;
-    m.row(2) << 0, 0, 1;
+    model_m.row(0) << 0, -1, 0;
+    model_m.row(1) << 1, 0, 0;
+    model_m.row(2) << 0, 0, 1;
 
-    matrix_to_angles(m, yaw, pitch, roll);
+    model_yaw = M_PI_2;
+    model_pitch = model_roll = 0;
 
-    EXPECT_NEAR(yaw, M_PI_2, 1e-5);
-    EXPECT_NEAR(pitch, 0, 1e-5);
-    EXPECT_NEAR(roll, 0, 1e-5);
+    CheckTwoWays();
 }
 
-TEST_F(RotMatToAnglesTest,
-       YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4) {
+#define M_SQRT2_2 ((M_SQRT2) / 2.0)
+
+TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4) {
     // This matrix sends X to Y.
     // This matrix sends Y to -X.
     // This matrix sends Z to Z.
-    m.row(0) << M_SQRT2, -M_SQRT2, 0;
-    m.row(1) << M_SQRT2, M_SQRT2, 0;
-    m.row(2) << 0, 0, 1;
+    model_m.row(0) << M_SQRT2_2, -M_SQRT2_2, 0;
+    model_m.row(1) << M_SQRT2_2, M_SQRT2_2, 0;
+    model_m.row(2) << 0, 0, 1;
 
-    matrix_to_angles(m, yaw, pitch, roll);
+    model_yaw = M_PI_4;
+    model_pitch = model_roll = 0;
 
-    EXPECT_NEAR(yaw, M_PI_4, 1e-5);
-    EXPECT_NEAR(pitch, 0, 1e-5);
-    EXPECT_NEAR(roll, 0, 1e-5);
+    CheckTwoWays();
 }
 
-TEST_F(RotMatToAnglesTest,
-       PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2) {
+TEST_F(TwoWayTest, PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2) {
     // This matrix sends X to Z.
     // This matrix sends Y to Y.
     // This matrix sends Z to -X.
-    m.row(0) << 0, 0, -1;
-    m.row(1) << 0, 1, 0;
-    m.row(2) << 1, 0, 0;
+    model_m.row(0) << 0, 0, -1;
+    model_m.row(1) << 0, 1, 0;
+    model_m.row(2) << 1, 0, 0;
 
-    matrix_to_angles(m, yaw, pitch, roll);
+    model_yaw = model_roll = 0;
+    model_pitch = M_PI_2;
 
-    EXPECT_NEAR(yaw, 0, 1e-5);
-    EXPECT_NEAR(pitch, M_PI_2, 1e-5);
-    EXPECT_NEAR(roll, 0, 1e-5);
+    CheckTwoWays();
 }
 
-TEST_F(RotMatToAnglesTest,
-       PitchTest_LiftBookPagetopEighthTurnMustYieldPitchPi4) {
+TEST_F(TwoWayTest, PitchTest_LiftBookPagetopEighthTurnMustYieldPitchPi4) {
     // This matrix sends X to Z.
     // This matrix sends Y to Y.
     // This matrix sends Z to -X.
-    m.row(0) << M_SQRT2, 0, -M_SQRT2;
-    m.row(1) << 0, 1, 0;
-    m.row(2) << M_SQRT2, 0, M_SQRT2;
+    model_m.row(0) << M_SQRT2_2, 0, -M_SQRT2_2;
+    model_m.row(1) << 0, 1, 0;
+    model_m.row(2) << M_SQRT2_2, 0, M_SQRT2_2;
 
-    matrix_to_angles(m, yaw, pitch, roll);
+    model_yaw = model_roll = 0;
+    model_pitch = M_PI_4;
 
-    EXPECT_NEAR(yaw, 0, 1e-5);
-    EXPECT_NEAR(pitch, M_PI_4, 1e-5);
-    EXPECT_NEAR(roll, 0, 1e-5);
+    CheckTwoWays();
 }
 
-TEST_F(RotMatToAnglesTest,
-       PitchTest_OpenBookCoverQuarterTurnMustYieldRollMinusPi2) {
+TEST_F(TwoWayTest, RollTest_OpenBookCoverQuarterTurnMustYieldRollMinusPi2) {
     // This matrix sends X to X.
     // This matrix sends Y to -Z.
     // This matrix sends Z to Y.
-    m.row(0) << 1, 0, 0;
-    m.row(1) << 0, 0, 1;
-    m.row(2) << 0, -1, 0;
+    model_m.row(0) << 1, 0, 0;
+    model_m.row(1) << 0, 0, 1;
+    model_m.row(2) << 0, -1, 0;
 
-    matrix_to_angles(m, yaw, pitch, roll);
+    model_yaw = model_pitch = 0;
+    model_roll = -M_PI_2;
 
-    EXPECT_NEAR(yaw, 0, 1e-5);
-    EXPECT_NEAR(pitch, 0, 1e-5);
-    EXPECT_NEAR(roll, -M_PI_2, 1e-5);
+    CheckTwoWays();
 }
 
-TEST_F(RotMatToAnglesTest,
-       PitchTest_OpenBookCoverEighthTurnMustYieldRollMinusPi4) {
+TEST_F(TwoWayTest, RollTest_OpenBookCoverEighthTurnMustYieldRollMinusPi4) {
     // This matrix sends X to X.
     // This matrix sends Y to -Z.
     // This matrix sends Z to Y.
-    m.row(0) << 1, 0, 0;
-    m.row(1) << 0, M_SQRT2, M_SQRT2;
-    m.row(2) << 0, -M_SQRT2, M_SQRT2;
+    model_m.row(0) << 1, 0, 0;
+    model_m.row(1) << 0, M_SQRT2_2, M_SQRT2_2;
+    model_m.row(2) << 0, -M_SQRT2_2, M_SQRT2_2;
 
-    matrix_to_angles(m, yaw, pitch, roll);
+    model_yaw = model_pitch = 0;
+    model_roll = -M_PI_4;
 
-    EXPECT_NEAR(yaw, 0, 1e-5);
-    EXPECT_NEAR(pitch, 0, 1e-5);
-    EXPECT_NEAR(roll, -M_PI_4, 1e-5);
+    CheckTwoWays();
 }
 
-TEST_F(RotMatToAnglesTest, PitchTest_AnyComboMustConvertAndBack) {
+TEST_F(TwoWayTest, YawAndHalfPitchTest) {
+    // This matrix sends X to (Y+Z)/SQRT2.
+    // This matrix sends Y to -X.
+    // This matrix sends Z to (-Y+Z)/SQRT2.
+    model_m.row(0) << 0, -1, 0;
+    model_m.row(1) << M_SQRT2_2, 0, -M_SQRT2_2;
+    model_m.row(2) << M_SQRT2_2, 0, M_SQRT2_2;
+
+    model_yaw = M_PI_2;
+    model_pitch = M_PI_4;
+    model_roll = 0;
+
+    CheckTwoWays();
+}
+
+TEST_F(TwoWayTest, YawAndRollTest) {
+    // This matrix sends X to Y.
+    // This matrix sends Y to Z.
+    // This matrix sends Z to X.
+    model_m.row(0) << 0, 0, 1;
+    model_m.row(1) << 1, 0, 0;
+    model_m.row(2) << 0, 1, 0;
+    
+    model_yaw = model_roll = M_PI_2;
+    model_pitch = 0;
+
+    CheckTwoWays();
+}
+
+TEST_F(TwoWayTest, PitchAndRollTest) {
+    // This matrix sends X to Z.
+    // This matrix sends Y to -X.
+    // This matrix sends Z to -Y.
+    model_m.row(0) << 0, -1, 0;
+    model_m.row(1) << 0, 0, -1;
+    model_m.row(2) << 1, 0, 0;
+    
+    model_pitch = model_roll = M_PI_2;
+    model_yaw = 0;
+
+    CheckTwoWays();
+}
+
+TEST_F(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX) {
+    float yaw = 1, pitch = 1, roll = 1;
+    Eigen::Vector3f x = Eigen::Vector3f::UnitX();
+    Eigen::Vector3f y = Eigen::Vector3f::UnitY();
+
+    angles_to_matrix(yaw, 0, 0, m);
+    Eigen::Vector3f x1 = m * x;
+    Eigen::Vector3f y1 = m * y;
+
+    angles_to_matrix(yaw, pitch, 0, m);
+    Eigen::Vector3f x2 = m * x;
+    Eigen::Vector3f y2 = m * x;
+
+    EXPECT_NEAR(y1(0), y2(0), 1e-5)
+        << "Adding pitch must not change image of y.";
+    EXPECT_NEAR(y1(1), y2(1), 1e-5)
+        << "Adding pitch must not change image of y.";
+    EXPECT_NEAR(y1(2), y2(2), 1e-5)
+        << "Adding pitch must not change image of y.";
+
+    angles_to_matrix(yaw, pitch, roll, m);
+    Eigen::Vector3f x3 = m * x;
+
+    EXPECT_NEAR(x2(0), x3(0), 1e-5)
+        << "Adding roll must not change image of x.";
+    EXPECT_NEAR(x2(1), x3(1), 1e-5)
+        << "Adding roll must not change image of x.";
+    EXPECT_NEAR(x2(2), x3(2), 1e-5)
+        << "Adding roll must not change image of x.";
+}
+
+TEST_F(RotMatToAnglesTest, FullTest_AnyComboMustConvertAndBack) {
 
     const float increment = 1;
 
@@ -438,6 +555,7 @@ TEST_F(RotMatToAnglesTest, PitchTest_AnyComboMustConvertAndBack) {
 
                 angles_to_matrix(orig_yaw, orig_pitch, orig_roll, m);
 
+                std::cerr << m << std::endl;
                 matrix_to_angles(m, yaw, pitch, roll);
 
                 EXPECT_NEAR(yaw, orig_yaw, 1e-5);
