@@ -526,7 +526,7 @@ TEST_F(TwoWayTest, YawAndRollTest) {
     model_m.row(0) << 0, 0, 1;
     model_m.row(1) << 1, 0, 0;
     model_m.row(2) << 0, 1, 0;
-    
+
     model_yaw = model_roll = M_PI_2;
     model_pitch = 0;
 
