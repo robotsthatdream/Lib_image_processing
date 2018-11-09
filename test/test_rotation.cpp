@@ -177,11 +177,12 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
        Yaw is the one we can compute first.
 
-       It's the angle from X to its image.
+       It's the angle from X to the projection of its image on the XY plane.
 
        The image of X is in the first column of the matrix.
 
-       So, we'll use only m(0,0) and m(1,0).
+       Projection of its image on the XY plane, so, we'll use only
+       m(0,0) and m(1,0).
 
        Note: in case pitch is +-PI, the image of X has both X and Y
        components equal to 0.  From "man atan2":
@@ -192,6 +193,23 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
     */
     yaw = atan2f(m(1, 0), m(0, 0));
+
+    const Eigen::Matrix3f m_without_yaw =
+        Eigen::AngleAxisf(-yaw, Eigen::Vector3f::UnitZ()) * m;
+
+    std::cerr << "m_without_yaw" << std::endl << m_without_yaw << std::endl;
+
+    // pitch = atan2(m(2, 0), hypot( m(2, 2) ) );
+
+    /* Now we want pitch.  We know the matrix no longer has yaw.
+
+       It's the angle from X to the projection of its image on the XZ plane.
+
+       In other words, it's the atan2 (component of image of X on Z, component
+       of image of X on X).
+    */
+
+    pitch = atan2(m_without_yaw(2, 0), m_without_yaw(0, 0));
 
     /* Ok, we have found yaw.
 
@@ -218,7 +236,7 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
     // std::cerr << "m(2,0)=" << m(2, 0) << ", m(2,2)=" << m(2, 2) << std::endl;
 
-    pitch = atan2(m(2, 0), m(2, 2));
+    // pitch = atan2(m(2, 0), m(2, 2));
 
     /* Ok, we're nearly there.
 
