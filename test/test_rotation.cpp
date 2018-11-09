@@ -216,7 +216,7 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
        Take atan2 of those and we're done.
      */
 
-    //std::cerr << "m(2,0)=" << m(2, 0) << ", m(2,2)=" << m(2, 2) << std::endl;
+    // std::cerr << "m(2,0)=" << m(2, 0) << ", m(2,2)=" << m(2, 2) << std::endl;
 
     pitch = atan2(m(2, 0), m(2, 2));
 
@@ -262,12 +262,13 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
 void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
                       Eigen::Matrix3f &m) {
-    std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch << " roll=" << roll
-                  << std::endl;
+    std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch
+              << " roll=" << roll << std::endl;
     m = Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ()) *
         Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX()) *
         Eigen::AngleAxisf(-pitch, Eigen::Vector3f::UnitY());
-    //std::cerr << m << std::endl << "is unitary: " << m.isUnitary() << std::endl;
+    // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
+    // std::endl;
 }
 
 // The fixture for testing class RotMatToAnglesTest.
@@ -432,11 +433,9 @@ TEST_F(RotMatToAnglesTest, PitchTest_AnyComboMustConvertAndBack) {
     const float increment = 1;
 
     for (float orig_yaw = 0; orig_yaw < M_PI; orig_yaw += increment) {
-        for (float orig_pitch = 0; orig_pitch < 1.5;
-             orig_pitch += increment) {
-            for (float orig_roll = 0; orig_roll < 1.5;
-                 orig_roll += increment) {
-                
+        for (float orig_pitch = 0; orig_pitch < 1.5; orig_pitch += increment) {
+            for (float orig_roll = 0; orig_roll < 1.5; orig_roll += increment) {
+
                 angles_to_matrix(orig_yaw, orig_pitch, orig_roll, m);
 
                 matrix_to_angles(m, yaw, pitch, roll);
