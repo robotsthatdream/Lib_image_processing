@@ -264,9 +264,8 @@ void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
                       Eigen::Matrix3f &m) {
     // std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch
     //           << " roll=" << roll << std::endl;
-    m = Eigen::AngleAxisf(-pitch, Eigen::Vector3f::UnitY()) *
-        Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ()) *
-
+    m = Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ()) *
+        Eigen::AngleAxisf(-pitch, Eigen::Vector3f::UnitY()) *
         Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX());
     // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
     // std::endl;
