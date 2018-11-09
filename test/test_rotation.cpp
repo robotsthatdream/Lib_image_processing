@@ -276,7 +276,7 @@ TEST_F(RotMatToAnglesTest, Identity) {
     EXPECT_NEAR(roll, 0, 1e-5);
 }
 
-TEST_F(RotMatToAnglesTest, RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2) {
+TEST_F(RotMatToAnglesTest, YawTest_RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2) {
     // This matrix sends X to Y.
     // This matrix sends Y to -X.
     // This matrix sends Z to Z.
@@ -291,7 +291,7 @@ TEST_F(RotMatToAnglesTest, RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2)
     EXPECT_NEAR(roll, 0, 1e-5);
 }
 
-TEST_F(RotMatToAnglesTest, RotateBookCounterClockwiseEigthTurnMustYieldYawPi4) {
+TEST_F(RotMatToAnglesTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4) {
     // This matrix sends X to Y.
     // This matrix sends Y to -X.
     // This matrix sends Z to Z.
