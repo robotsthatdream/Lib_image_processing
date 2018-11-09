@@ -277,6 +277,21 @@ TEST_F(RotMatToAnglesTest, RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2)
     EXPECT_NEAR(pitch, 0, 1e-5);
     EXPECT_NEAR(roll, 0, 1e-5);
 }
+
+TEST_F(RotMatToAnglesTest, RotateBookCounterClockwiseEigthTurnMustYieldYawPi4) {
+    // This matrix sends X to Y.
+    // This matrix sends Y to -X.
+    // This matrix sends Z to Z.
+    m.row(0) << M_SQRT2, -M_SQRT2, 0;
+    m.row(1) << M_SQRT2, M_SQRT2, 0;
+    m.row(2) << 0, 0, 1;
+
+    matrix_to_angles(m, yaw, pitch, roll);
+
+    EXPECT_NEAR(yaw, M_PI_4, 1e-5);
+    EXPECT_NEAR(pitch, 0, 1e-5);
+    EXPECT_NEAR(roll, 0, 1e-5);
+}
 }
 
 int main(int argc, char **argv) {
