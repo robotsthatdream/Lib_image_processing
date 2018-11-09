@@ -549,22 +549,17 @@ TEST_F(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX) {
         << "Adding roll must not change image of x.";
 }
 
-TEST_F(RotMatToAnglesTest, FullTest_AnyComboMustConvertAndBack) {
+TEST_F(TwoWayTest, FullTest_AnyComboMustConvertAndBack) {
 
     const float increment = 1;
 
-    for (float orig_yaw = 0; orig_yaw < M_PI; orig_yaw += increment) {
-        for (float orig_pitch = 0; orig_pitch < 1.5; orig_pitch += increment) {
-            for (float orig_roll = 0; orig_roll < 1.5; orig_roll += increment) {
+    for (model_yaw = 0; model_yaw < M_PI; model_yaw += increment) {
+        for (model_pitch = 0; model_pitch < 1.5; model_pitch += increment) {
+            for (model_roll = 0; model_roll < 1.5; model_roll += increment) {
 
-                angles_to_matrix(orig_yaw, orig_pitch, orig_roll, m);
+                angles_to_matrix(model_yaw, model_pitch, model_roll, model_m);
 
-                std::cerr << m << std::endl;
-                matrix_to_angles(m, yaw, pitch, roll);
-
-                EXPECT_NEAR(yaw, orig_yaw, 1e-5);
-                EXPECT_NEAR(pitch, orig_pitch, 1e-5);
-                EXPECT_NEAR(roll, orig_roll, 1e-5);
+                CheckTwoWays();
             }
         }
     }
