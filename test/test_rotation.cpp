@@ -216,7 +216,7 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
        Take atan2 of those and we're done.
      */
 
-    std::cerr << "m(2,0)=" << m(2, 0) << ", m(2,2)=" << m(2, 2) << std::endl;
+    //std::cerr << "m(2,0)=" << m(2, 0) << ", m(2,2)=" << m(2, 2) << std::endl;
 
     pitch = atan2(m(2, 0), m(2, 2));
 
@@ -262,10 +262,12 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
 void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
                       Eigen::Matrix3f &m) {
+    std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch << " roll=" << roll
+                  << std::endl;
     m = Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX()) *
         Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY()) *
         Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ());
-    std::cerr << m << std::endl << "is unitary: " << m.isUnitary() << std::endl;
+    //std::cerr << m << std::endl << "is unitary: " << m.isUnitary() << std::endl;
 }
 
 // The fixture for testing class RotMatToAnglesTest.
@@ -278,11 +280,13 @@ class RotMatToAnglesTest : public ::testing::Test {
     float pitch, yaw, roll;
 
     RotMatToAnglesTest() {
+        std::cerr << std::endl << "========================================================================" << std::endl;
         // You can do set-up work for each test here.
     }
 
     ~RotMatToAnglesTest() override {
         // You can do clean-up work that doesn't throw exceptions here.
+        std::cerr << "========================================================================" << std::endl << std::endl;
     }
 
     // If the constructor and destructor are not enough for setting up
