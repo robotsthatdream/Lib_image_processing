@@ -220,7 +220,25 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
     pitch = atan2(m(2, 0), m(2, 2));
 
-    roll = 0;
+    /* Ok, we're nearly there.
+
+       Roll sends ... ok je sors la formule de mon chapeau, adaptée
+       par essai et erreur de
+       https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
+
+       Plus rigoureusement, le lien ci-dessus prétend que la forme est correcte.
+
+       Il y a un petit nombre de combinaisons (en fait 2 * 2).
+
+       Si la formule donne de bons résultats sur un grand nombre de
+       cas, c'est nécessairement la bonne.
+
+     */
+
+    roll = atan2(m(2, 1), hypot(m(2, 0), m(2, 2)));
+    //std::cerr << "roll=" << roll << std::endl;
+    //roll = atan2(-m(2, 1), hypot(m(1, 0), m(0, 0)));
+    //std::cerr << "roll=" << roll << std::endl;
 }
 
 /*
@@ -359,6 +377,23 @@ TEST_F(RotMatToAnglesTest,
     EXPECT_NEAR(yaw, 0, 1e-5);
     EXPECT_NEAR(pitch, M_PI_4, 1e-5);
     EXPECT_NEAR(roll, 0, 1e-5);
+}
+
+
+TEST_F(RotMatToAnglesTest,
+       PitchTest_OpenBookCoverQuarterTurnMustYieldRollMinusPi2) {
+    // This matrix sends X to X.
+    // This matrix sends Y to -Z.
+    // This matrix sends Z to Y.
+    m.row(0) << 1, 0, 0;
+    m.row(1) << 0, 0, 1;
+    m.row(2) << 0, -1, 0;
+
+    matrix_to_angles(m, yaw, pitch, roll);
+
+    EXPECT_NEAR(yaw, 0, 1e-5);
+    EXPECT_NEAR(pitch, 0, 1e-5);
+    EXPECT_NEAR(roll, -M_PI_2, 1e-5);
 }
 }
 
