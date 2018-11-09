@@ -427,7 +427,7 @@ TEST_F(RotMatToAnglesTest, PitchTest_AnyComboMustConvertAndBack) {
 
     const float increment = 1;
 
-    for (float orig_yaw = 0; orig_yaw < 2.0 * M_PI; orig_yaw += increment) {
+    for (float orig_yaw = 0; orig_yaw < M_PI; orig_yaw += increment) {
         for (float orig_pitch = 0; orig_pitch < 1.5;
              orig_pitch += increment) {
             for (float orig_roll = 0; orig_roll < 1.5;
