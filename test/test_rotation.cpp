@@ -138,16 +138,16 @@ namespace robotsthatdream {
   oh forget that, no don't even look at it, it's awful. ;-)
 
   Now, if you turn the book, keeping it still lying on the table, the
-  angle "yaw" will reflect that.  "Yaw" will increase from 0 to 2pi
-  as you rotate the book counter-clockwise.
+  angle "yaw" will reflect that.  "Yaw" will increase from 0 to pi
+  then -pi to 0 as you rotate the book counter-clockwise.
 
   Whatever the value of "yaw", if you lift the top of the pages, keeping
   the bottom of the pages on the table, you will increase the second
-  angle, "pitch".  "Pitch" can go from -pi to +pi.
+  angle, "pitch".  "Pitch" can go from -pi/2 to +pi/2.
 
   Whatever the value of "yaw" and "pitch", you can open the book.  The
-  motion of the cover page is a decrease of "roll".  "Roll" can go from -pi
-  to +pi.
+  motion of the cover page is a decrease of "roll".  "Roll" can go from -pi/2
+  to +pi/2.
 
 */
 
