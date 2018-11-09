@@ -260,6 +260,14 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
 */
 
+void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
+                      Eigen::Matrix3f &m) {
+    m = Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX()) *
+        Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY()) *
+        Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ());
+    std::cerr << m << std::endl << "is unitary: " << m.isUnitary() << std::endl;
+}
+
 // The fixture for testing class RotMatToAnglesTest.
 class RotMatToAnglesTest : public ::testing::Test {
   protected:
@@ -409,6 +417,27 @@ TEST_F(RotMatToAnglesTest,
     EXPECT_NEAR(yaw, 0, 1e-5);
     EXPECT_NEAR(pitch, 0, 1e-5);
     EXPECT_NEAR(roll, -M_PI_4, 1e-5);
+}
+
+TEST_F(RotMatToAnglesTest, PitchTest_AnyComboMustConvertAndBack) {
+
+    const float increment = M_PI / 8;
+
+    for (float orig_yaw = 0; orig_yaw < 2.0 * M_PI; orig_yaw += increment) {
+        for (float orig_pitch = -M_PI_2; orig_pitch < M_PI_2;
+             orig_pitch += increment) {
+            for (float orig_roll = -M_PI_2; orig_roll < M_PI_2;
+                 orig_roll += increment) {
+                angles_to_matrix(orig_yaw, orig_pitch, orig_roll, m);
+
+                matrix_to_angles(m, yaw, pitch, roll);
+
+                EXPECT_NEAR(yaw, orig_yaw, 1e-5);
+                EXPECT_NEAR(pitch, orig_pitch, 1e-5);
+                EXPECT_NEAR(roll, orig_roll, 1e-5);
+            }
+        }
+    }
 }
 }
 
