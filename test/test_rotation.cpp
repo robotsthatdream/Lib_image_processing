@@ -21,8 +21,12 @@ namespace robotsthatdream {
 
   Thus, the rotational_matrix sends X to e1, Y to e2, Z to e3.
 
-  So, the rotational matrix sends any point in space to the point that
-  would have same coordinates in the object's reference frame.
+  We say rotation matrix M rotates from frame F to frame G.
+
+  In other words, the rotational matrix M, for any point P in space
+  whose coordinates are expressed p1p2p3 in frame F, computes the
+  coordinates in frame F of the point Q which has coordinates p1p2p3
+  in frame G.
 
   Okay.
 
