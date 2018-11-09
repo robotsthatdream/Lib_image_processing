@@ -364,7 +364,7 @@ TEST_F(RotMatToAnglesTest,
 }
 
 TEST_F(RotMatToAnglesTest,
-       PitchTest_LiftBookPagetopEigthTurnMustYieldPitchPi4) {
+       PitchTest_LiftBookPagetopEighthTurnMustYieldPitchPi4) {
     // This matrix sends X to Z.
     // This matrix sends Y to Y.
     // This matrix sends Z to -X.
