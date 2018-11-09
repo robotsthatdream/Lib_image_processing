@@ -251,6 +251,19 @@ class RotMatToAnglesTest : public ::testing::Test {
     // DreamRotationMatrixAngles.
 };
 
+    
+TEST_F(RotMatToAnglesTest, EigenTest_CoeffAccessIsMRowColumn) {
+    m.row(0) << 1,2,3;
+    m.row(1) << 4,5,6;
+    m.row(2) << 7,8,9;
+
+    EXPECT_EQ(m(0,0), 1);
+    EXPECT_EQ(m(1,0), 4);
+    EXPECT_EQ(m(2,0), 7);
+    EXPECT_EQ(m(2,1), 8);
+    EXPECT_EQ(m(2,2), 9);
+}
+    
 TEST_F(RotMatToAnglesTest, Identity) {
     m.row(0) << 1, 0, 0;
     m.row(1) << 0, 1, 0;
