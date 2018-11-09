@@ -173,12 +173,23 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
                       float &roll) {
     /* Ok, so how do we compute our angles?
 
-       Let's call our rotation matrix M[l,c] = [ e1 e2 e3 ]
+       Yaw is the one we can compute first.
 
-       First angle roll depends only on e3 (vector of the major axis of
-       the object/book) and e1 (second axis).
+       It's the angle from X to its image.
+
+       The image of X is in the first column of the matrix.
+
+       So, we'll use only m(0,0) and m(1,0).
+
+       Note: in case pitch is +-PI, the image of X has both X and Y
+       components equal to 0.  From "man atan2":
+
+       > If y is +0 (-0) and x is +0, +0 (-0) is returned.
+
+       0 is an acceptable value in this case.
+
     */
-    yaw = atan2(-m(0, 2), m(0, 0));
+    yaw = atan2f(m(1, 0), m(0, 0));
     pitch = 0;
     roll = 0;
 }
@@ -252,10 +263,13 @@ TEST_F(RotMatToAnglesTest, Identity) {
     EXPECT_NEAR(roll, 0, 1e-5);
 }
 
-TEST_F(RotMatToAnglesTest, RotateBookCounterClockwise) {
-    m.row(0) << 0, 0, -1;
-    m.row(1) << 0, 1, 0;
-    m.row(2) << 1, 0, 0;
+TEST_F(RotMatToAnglesTest, RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2) {
+    // This matrix sends X to Y.
+    // This matrix sends Y to -X.
+    // This matrix sends Z to Z.
+    m.row(0) << 0, -1, 0;
+    m.row(1) << 1, 0, 0;
+    m.row(2) << 0, 0, 1;
 
     matrix_to_angles(m, yaw, pitch, roll);
 
