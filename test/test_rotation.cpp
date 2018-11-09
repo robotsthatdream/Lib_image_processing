@@ -499,16 +499,17 @@ TEST_F(TwoWayTest, YawAndRollTest) {
     CheckTwoWays();
 }
 
-TEST_F(TwoWayTest, PitchAndRollTest) {
-    // This matrix sends X to Z.
-    // This matrix sends Y to -X.
-    // This matrix sends Z to -Y.
-    model_m.row(0) << 0, -1, 0;
-    model_m.row(1) << 0, 0, -1;
-    model_m.row(2) << 1, 0, 0;
+TEST_F(TwoWayTest, HalfPitchAndRollTest) {
+    // This matrix sends X to (X+Z)/SQRT2.
+    // This matrix sends Y to (X-Z)/SQRT2.
+    // This matrix sends Z to Y.
+    model_m.row(0) << 0, M_SQRT2_2, 0;
+    model_m.row(1) << M_SQRT2_2, 0, 1;
+    model_m.row(2) << M_SQRT2_2, -M_SQRT2_2, 0;
     
-    model_pitch = model_roll = M_PI_2;
     model_yaw = 0;
+    model_pitch = M_PI_4;
+    model_roll = -M_PI_2;
 
     CheckTwoWays();
 }
