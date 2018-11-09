@@ -211,52 +211,22 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
     pitch = atan2(m_without_yaw(2, 0), m_without_yaw(0, 0));
 
-    /* Ok, we have found yaw.
+    const Eigen::Matrix3f m_without_yaw_nor_pitch =
+        Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY()) * m_without_yaw;
 
-       We can continue with "next angle" by rotating the whole matrix
-       to cancel the yaw, and compute pitch.
+    //std::cerr << "m_without_yaw_nor_pitch" << std::endl << m_without_yaw_nor_pitch << std::endl;
 
-       We can also compute pitch directly.
 
-       Basically, the matrix send Z to a vector which Z component is
-       cos(pitch).  So, we get cos(pitch) for free in m(2,2).
+    /* Ok, we're nearly there.  We know the matrix is only roll now.
 
-       If yaw = 0, the matrix sends X to a vector which Z component is
-       sin(pitch).
-       If yaw = PI/2, the matrix sends X to a vector which Z component is
-       sin(pitch).
-       Actually, whatever the yaw, the matrix sends X to a vector which Z
-       component is sin(pitch).
+       It's the angle from Y to the projection of its image on the YZ plane.
 
-       What is the Z component of M(X)?  M(X) is defined in column 1.  We want
-       m(0,2).
-
-       Take atan2 of those and we're done.
-     */
-
-    // std::cerr << "m(2,0)=" << m(2, 0) << ", m(2,2)=" << m(2, 2) << std::endl;
-
-    // pitch = atan2(m(2, 0), m(2, 2));
-
-    /* Ok, we're nearly there.
-
-       Roll sends ... ok je sors la formule de mon chapeau, adaptée
-       par essai et erreur de
-       https://stackoverflow.com/questions/15022630/how-to-calculate-the-angle-from-rotation-matrix
-
-       Plus rigoureusement, le lien ci-dessus prétend que la forme est correcte.
-
-       Il y a un petit nombre de combinaisons (en fait 2 * 2).
-
-       Si la formule donne de bons résultats sur un grand nombre de
-       cas, c'est nécessairement la bonne.
+       In other words, it's the atan2 (component of image of Y on Z, component
+       of image of Y on Y).
 
      */
 
-    roll = atan2(m(2, 1), hypot(m(2, 0), m(2, 2)));
-    // std::cerr << "roll=" << roll << std::endl;
-    // roll = atan2(-m(2, 1), hypot(m(1, 0), m(0, 0)));
-    // std::cerr << "roll=" << roll << std::endl;
+    roll = atan2(m_without_yaw_nor_pitch(2, 1), m_without_yaw_nor_pitch(1, 1));
 }
 
 /*
