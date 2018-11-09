@@ -6,98 +6,155 @@
 
 namespace robotsthatdream {
 
-/* rotational_matrix_OBB M is defined by: its columns are the
- * components of the major (e1), middle (e2), minor (e3) axes.
+/*
 
- Properties:
+  ===== Defition of rotational matrix =====
 
- M*[1 0 0] -> e1
- M*[0 1 0] -> e2
- M*[0 0 1] -> e3
+  Rotational_matrix_OBB M is defined by: its columns are the
+  components of the major (e1), middle (e2), minor (e3) axes.
 
- This, the rotational_matrix sends X to e1, Y to e2, Z to e3.
+  Properties:
 
- So, the rotational matrix sends any point in space to the point that
- would have same coordinates in the object's reference frame.
+  M*[1 0 0] -> e1
+  M*[0 1 0] -> e2
+  M*[0 0 1] -> e3
 
- Okay.
+  This, the rotational_matrix sends X to e1, Y to e2, Z to e3.
+
+  So, the rotational matrix sends any point in space to the point that
+  would have same coordinates in the object's reference frame.
+
+  Okay.
+
+*/
+
+
+
+/*
+
+  ===== Definition of coordinate system: axis convention =====
+
+  First, we have to choose a coordinate system convention.
+
+  We choose the axis orientation convention used by the ROS project,
+  relative to the body (not the camera) of the robot.
+  http://www.ros.org/reps/rep-0103.html#axis-orientation
+
+  - x forward
+  - y left
+  - z up
+
+           Z
+
+           |
+         x |
+          \|
+    Y -----O
+
+  To simplify things, we imagine the robot facing east.  In this case,
+  body-based axes orientation matches the ROS conventions:
+
+  > For short-range Cartesian representations of geographic locations,
+  > use the east north up [5] (ENU) convention:
+  >
+  > - X east
+  > - Y north
+  > - Z up
+
+  We'll say the "neutral" orientation of the robot is standing facing
+  east.
+
 */
 
 /*
+
+  ===== Concrete illustration of axis convention =====
+
+  Let's make things more concrete with a familiar object: a book.
+
+  Consider a book with rigid cover in 3D.
+
+  - Strongest moment is page height (longest dimension),
+
+  - second moment is page width,
+
+  - third moment is book thickness (shortest dimension).
+
+
+  We'll define a "neutral" position of the book.
+
+  - The book is lying closed on a horizontal table.
+
+  - The top of the pages is towards east.
+
+  - The right of the pages is towards south.
+
+  - From front cover to back cover (drilling through the book), is
+    going downward.
+
+  This "neutral" book position is "neutral", that is rotation matrix
+  is identity, rotation angles are zero.
+
+
+  - From bottom of pages to top of pages, x increases.
+
+  - From left of cover page to right of cover page, y decreases.
+
+  - From front cover to back cover (drilling through the book), z
+    decreases.
+
+*/
+
+/*
+
+  ===== Definition of angle convention =====
+
   We have to choose an angle convention,
-  cf. https://en.wikipedia.org/wiki/Euler_angles .
 
-  We choose Tait-Bryan with strongest moment aligned with X axis, and
-  weakest with Z axis.
+  ROS says:
 
-  Why ? It is intuitive.  Consider a book with rigid cover in 3D.
-  Strongest moment is page height (longest dimension), second page
-  width, third book thickness (shortest dimension).
+  > fixed axis roll, pitch, yaw about X, Y, Z axes respectively
+  >
+  > * No ambiguity on order
+  > * Used for angular velocities
 
-  - First angle provides general orientation (with respect to north)
-  viewed from above.
+  I understand it in a way that matches the Tait-Bryan convention (as
+  explained on https://en.wikipedia.org/wiki/Euler_angles ).
+
+  - First angle provides general orientation of the book as viewed
+    from above.
 
   - Second angle corresponds to lifting the top of the page towards
-  you.
+    you.
 
   - Third angle corresponds to opening the book cover.
 
   These angles correspond also to "natural" ways to describe aircraft
   orientation and orientation of a camera on a tripod.
-*/
 
-/* Now we need a coordinate system convention.
 
-   We choose the already existing convention of camera-centered
-   coordinates:
+  You can now refer to illustration on
+  https://en.wikipedia.org/wiki/Euler_angles#/media/File:Taitbrianzyx.svg
+  oh forget that, no don't even look at it, it's awful. ;-)
 
-   * x right
-   * y down
-   * z forward
+  Now, if you turn the book, keeping it still lying on the table, the
+  angle "yaw" will reflect that.  "Yaw" will increase from 0 to 2pi
+  as you rotate the book counter-clockwise.
 
-   O----- X
-   |\
-   | z
-   |
+  Whatever the value of "yaw", if you lift the top of the pages, keeping
+  the bottom of the pages on the table, you will increase the second
+  angle, "pitch".  "Pitch" can go from -pi to +pi.
 
-   Y
-
-   Let's elaborate the book with rigid cover, with axes.
-
-   Okay, so imagine a book with rigid cover, lying on a horizontal
-   table, oriented like you orient a book to read, and the robot is
-   looking horizontally.
-
-   * All angles are zero.
-
-   * From bottom of pages to top of pages, z increases.
-
-   * From left of cover page to right of cover page, x increases.
-
-   * From front cover to back cover (drilling through the book), y
-   increases.
-
-   You can now refer to illustration on
-   https://en.wikipedia.org/wiki/Euler_angles#/media/File:Taitbrianzyx.svg
-
-   Now, if you turn the book, keeping it still lying on the table, the
-   first angle psi will reflect that.  Psi will increase from 0 to 2pi
-   as you rotate the book counter-clockwise.
-
-   Whatever the value of psi, if you lift the top of the pages,
-   keeping the bottom of the pages on the table, you will increase the
-   second angle, theta.  Theta can go from -pi to +pi.
-
-   Whatever the value of psi and theta, you can open the book.  The
-   motion of the cover page is a decrease of phi.  Phi can go from -pi
-   to +pi.
+  Whatever the value of "yaw" and "pitch", you can open the book.  The
+  motion of the cover page is a decrease of "roll".  "Roll" can go from -pi
+  to +pi.
 
 */
 
 /*
 
-  We need a way to transform once a rotation matrix into angles psi,
-  theta, phi: to deduce angles from the matrix found by
+  We need a way to transform once a rotation matrix into angles "yaw",
+  "pitch", "roll": to deduce angles from the matrix found by
   pcl::MomentOfInertiaEstimation.
 
   Converting from angles to rotation matrix: [c++ - How to calculate
@@ -106,24 +163,24 @@ namespace robotsthatdream {
   "c++ - How to calculate the angle from rotation matrix - Stack
   Overflow")
 
-  We need a way, given angles psi, theta, phi, to rotate a point
+  We need a way, given angles "yaw", "pitch", "roll", to rotate a point
   cloud.  We'll follow
   http://pointclouds.org/documentation/tutorials/matrix_transform.php
 
 */
 
-void matrix_to_angles(const Eigen::Matrix3f &m, float &psi, float &theta,
-                      float &phi) {
+void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
+                      float &roll) {
     /* Ok, so how do we compute our angles?
 
        Let's call our rotation matrix M[l,c] = [ e1 e2 e3 ]
 
-       First angle psi depends only on e3 (vector of the major axis of
+       First angle roll depends only on e3 (vector of the major axis of
        the object/book) and e1 (second axis).
     */
-    psi = atan2(-m(0, 2), m(0, 0));
-    theta = 0;
-    phi = 0;
+    yaw = atan2(-m(0, 2), m(0, 0));
+    pitch = 0;
+    roll = 0;
 }
 
 /*
@@ -152,7 +209,7 @@ class RotMatToAnglesTest : public ::testing::Test {
     // is empty.
 
     Eigen::Matrix3f m;
-    float psi, theta, phi;
+    float pitch, yaw, roll;
 
     RotMatToAnglesTest() {
         // You can do set-up work for each test here.
@@ -172,7 +229,10 @@ class RotMatToAnglesTest : public ::testing::Test {
 
     void TearDown() override {
         std::cerr << m << std::endl;
-        std::cerr << "psi=" << psi << " theta=" << theta << " phi=" << phi
+        std::cerr
+                  << " yaw=" << yaw
+                  << " pitch=" << pitch
+                  << " roll=" << roll
                   << std::endl;
     }
 
@@ -185,11 +245,11 @@ TEST_F(RotMatToAnglesTest, Identity) {
     m.row(1) << 0, 1, 0;
     m.row(2) << 0, 0, 1;
 
-    matrix_to_angles(m, psi, theta, phi);
+    matrix_to_angles(m, yaw, pitch, roll);
 
-    EXPECT_NEAR(psi, 0, 1e-5);
-    EXPECT_NEAR(theta, 0, 1e-5);
-    EXPECT_NEAR(phi, 0, 1e-5);
+    EXPECT_NEAR(yaw, 0, 1e-5);
+    EXPECT_NEAR(pitch, 0, 1e-5);
+    EXPECT_NEAR(roll, 0, 1e-5);
 }
 
 TEST_F(RotMatToAnglesTest, RotateBookCounterClockwise) {
@@ -197,11 +257,11 @@ TEST_F(RotMatToAnglesTest, RotateBookCounterClockwise) {
     m.row(1) << 0, 1, 0;
     m.row(2) << 1, 0, 0;
 
-    matrix_to_angles(m, psi, theta, phi);
+    matrix_to_angles(m, yaw, pitch, roll);
 
-    EXPECT_NEAR(psi, M_PI_2, 1e-5);
-    EXPECT_NEAR(theta, 0, 1e-5);
-    EXPECT_NEAR(phi, 0, 1e-5);
+    EXPECT_NEAR(yaw, M_PI_2, 1e-5);
+    EXPECT_NEAR(pitch, 0, 1e-5);
+    EXPECT_NEAR(roll, 0, 1e-5);
 }
 }
 
