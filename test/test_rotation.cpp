@@ -19,7 +19,7 @@ namespace robotsthatdream {
   M*[0 1 0] -> e2
   M*[0 0 1] -> e3
 
-  This, the rotational_matrix sends X to e1, Y to e2, Z to e3.
+  Thus, the rotational_matrix sends X to e1, Y to e2, Z to e3.
 
   So, the rotational matrix sends any point in space to the point that
   would have same coordinates in the object's reference frame.
