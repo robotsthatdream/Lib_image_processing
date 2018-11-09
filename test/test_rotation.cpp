@@ -325,6 +325,18 @@ void expect_identical_3x3_matrices(const Eigen::Matrix3f &m1,
     }
 }
 
+bool check_if_unitary(const Eigen::Matrix3f &m) {
+    for (int i = 0; i < 3; ++i) {
+        std::cerr << "norm(col(" << i << ")) = " << m.col(i).squaredNorm()
+                  << std::endl;
+        for (int j = 0; j < i; ++j) {
+            std::cerr << "(col(" << i << ")).(col(" << j
+                      << ")) = " << m.col(i).dot(m.col(j)) << std::endl;
+        }
+    }
+    return true;
+}
+
 class TwoWayTest : public ::testing::Test {
   protected:
     Eigen::Matrix3f model_m;
@@ -342,6 +354,10 @@ class TwoWayTest : public ::testing::Test {
                   << " model_yaw=" << model_yaw
                   << " model_pitch=" << model_pitch
                   << " model_roll=" << model_roll << std::endl;
+
+        if (!model_m.isUnitary()) {
+            check_if_unitary(model_m);
+        }
 
         ASSERT_TRUE(model_m.isUnitary());
 
@@ -501,15 +517,15 @@ TEST_F(TwoWayTest, YawAndRollTest) {
 
 TEST_F(TwoWayTest, HalfPitchAndRollTest) {
     // This matrix sends X to (X+Z)/SQRT2.
-    // This matrix sends Y to (X-Z)/SQRT2.
-    // This matrix sends Z to Y.
-    model_m.row(0) << 0, M_SQRT2_2, 0;
-    model_m.row(1) << M_SQRT2_2, 0, 1;
-    model_m.row(2) << M_SQRT2_2, -M_SQRT2_2, 0;
-    
+    // This matrix sends Y to (Z-X)/SQRT2.
+    // This matrix sends Z to -Y.
+    model_m.row(0) << M_SQRT2_2, -M_SQRT2_2, 0;
+    model_m.row(1) << 0, 0, -1;
+    model_m.row(2) << M_SQRT2_2, M_SQRT2_2, 0;
+
     model_yaw = 0;
     model_pitch = M_PI_4;
-    model_roll = -M_PI_2;
+    model_roll = M_PI_2;
 
     CheckTwoWays();
 }
