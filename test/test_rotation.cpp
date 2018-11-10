@@ -510,17 +510,18 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX) {
 
 TEST_F(TwoWayTest, FullTest_AnyComboMustConvertAndBack) {
 
-    const float increment = 1;
+    const float increment = M_PI_2/10;
 
-    for (model_yaw = 0; model_yaw < M_PI; model_yaw += increment) {
-        for (model_pitch = 0; model_pitch < 1.5; model_pitch += increment) {
-            for (model_roll = 0; model_roll < 1.5; model_roll += increment) {
-
+    for (model_yaw = -M_PI * 0.98; model_yaw < M_PI; model_yaw += increment) {
+        for (model_pitch = -M_PI_2 * 0.98; model_pitch < M_PI_2; model_pitch += increment) {
+            for (model_roll = -M_PI_2; model_roll < M_PI_2; model_roll += increment) {
                 angles_to_matrix(model_yaw, model_pitch, model_roll, model_m);
 
                 CheckTwoWays();
             }
+                std::cerr << ".";
         }
+        std::cerr << std::endl;
     }
 }
 }
