@@ -488,7 +488,7 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX) {
 
     angles_to_matrix(yaw, pitch, 0, m);
     Eigen::Vector3f x2 = m * x;
-    Eigen::Vector3f y2 = m * x;
+    Eigen::Vector3f y2 = m * y;
 
     EXPECT_NEAR(y1(0), y2(0), 1e-5)
         << "Adding pitch must not change image of y.";
