@@ -259,48 +259,6 @@ void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
     // std::endl;
 }
 
-// The fixture for testing class RotMatToAnglesTest.
-class RotMatTest : public ::testing::Test {
-  protected:
-    // You can remove any or all of the following functions if its body
-    // is empty.
-
-    Eigen::Matrix3f m;
-    const Eigen::Matrix3f identity = Eigen::MatrixXf::Identity(3, 3);
-    float yaw, pitch, roll;
-
-    RotMatTest() {
-        // std::cerr << std::endl
-        //           <<
-        //           "========================================================="
-        //           << std::endl;
-        // You can do set-up work for each test here.
-    }
-
-    ~RotMatTest() override {
-        // You can do clean-up work that doesn't throw exceptions here.
-        // std::cerr <<
-        // "========================================================="
-        //           << std::endl
-        //           << std::endl;
-    }
-};
-
-class RotMatToAnglesTest : public RotMatTest {
-  protected:
-    // If the constructor and destructor are not enough for setting up
-    // and cleaning up each test, you can define the following methods:
-
-    void SetUp() override {}
-
-    void TearDown() override {
-        std::cerr << " yaw=" << yaw << " pitch=" << pitch << " roll=" << roll
-                  << std::endl;
-    }
-
-    // Objects declared here can be used by all tests in the test case for
-    // RotMatToAnglesTest.
-};
 
 void expect_identical_3x3_matrices(const Eigen::Matrix3f &m1,
                                    const Eigen::Matrix3f &m2,
@@ -360,12 +318,11 @@ class TwoWayTest : public ::testing::Test {
         angles_to_matrix(model_yaw, model_pitch, model_roll, m_computed);
         expect_identical_3x3_matrices(model_m, m_computed);
     }
-
-    // Objects declared here can be used by all tests in the test case for
-    // RotMatToAnglesTest.
 };
 
-TEST_F(RotMatTest, EigenTest_CoeffAccessIsMRowColumn) {
+TEST(RotMatTest, EigenTest_CoeffAccessIsMRowColumn) {
+    Eigen::Matrix3f m;
+
     m.row(0) << 1, 2, 3;
     m.row(1) << 4, 5, 6;
     m.row(2) << 7, 8, 9;
@@ -518,10 +475,12 @@ TEST_F(TwoWayTest, HalfPitchAndRollTest) {
     CheckTwoWays();
 }
 
-TEST_F(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX) {
+TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX) {
     float yaw = 1, pitch = 1, roll = 1;
     Eigen::Vector3f x = Eigen::Vector3f::UnitX();
     Eigen::Vector3f y = Eigen::Vector3f::UnitY();
+
+    Eigen::Matrix3f m;
 
     angles_to_matrix(yaw, 0, 0, m);
     Eigen::Vector3f x1 = m * x;
