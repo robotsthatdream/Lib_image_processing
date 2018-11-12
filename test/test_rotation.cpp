@@ -199,8 +199,7 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
     //std::cerr << "m_without_yaw" << std::endl << m_without_yaw << std::endl;
 
-    // pitch = atan2(m(2, 0), hypot( m(2, 2) ) );
-
+    
     /* Now we want pitch.  We know the matrix no longer has yaw.
 
        It's the angle from X to the projection of its image on the XZ plane.
@@ -228,25 +227,6 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 
     roll = atan2(m_without_yaw_nor_pitch(2, 1), m_without_yaw_nor_pitch(1, 1));
 }
-
-/*
-
-  Eigen offers ways to "easily" convert from angles to a rotation
-  matrix:
-
-  > Combined with MatrixBase::Unit{X,Y,Z}, AngleAxis can be used to
-  easily mimic Euler-angles. Here is an example:
-  > Matrix3f m;
-  > m = AngleAxisf(0.25*M_PI, Vector3f::UnitX())
-  >   * AngleAxisf(0.5*M_PI,  Vector3f::UnitY())
-  >   * AngleAxisf(0.33*M_PI, Vector3f::UnitZ());
-  > cout << m << endl << "is unitary: " << m.isUnitary() << endl;
-
-  http://eigen.tuxfamily.org/dox/classEigen_1_1Matrix.html#a2f6bdcb76b48999cb9135b828bba4e7d
-
-  TODO find correct convention.
-
-*/
 
 void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
                       Eigen::Matrix3f &m) {
@@ -287,13 +267,6 @@ class TwoWayTest : public ::testing::Test {
   protected:
     Eigen::Matrix3f model_m;
     float model_yaw, model_pitch, model_roll;
-
-    // If the constructor and destructor are not enough for setting up
-    // and cleaning up each test, you can define the following methods:
-
-    void SetUp() override {}
-
-    void TearDown() override {}
 
     void CheckTwoWays() {
         // std::cerr << model_m << std::endl
