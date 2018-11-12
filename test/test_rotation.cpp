@@ -197,9 +197,8 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
     const Eigen::Matrix3f m_without_yaw =
         Eigen::AngleAxisf(-yaw, Eigen::Vector3f::UnitZ()) * m;
 
-    //std::cerr << "m_without_yaw" << std::endl << m_without_yaw << std::endl;
+    // std::cerr << "m_without_yaw" << std::endl << m_without_yaw << std::endl;
 
-    
     /* Now we want pitch.  We know the matrix no longer has yaw.
 
        It's the angle from X to the projection of its image on the XZ plane.
@@ -213,8 +212,8 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
     const Eigen::Matrix3f m_without_yaw_nor_pitch =
         Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY()) * m_without_yaw;
 
-    //std::cerr << "m_without_yaw_nor_pitch" << std::endl << m_without_yaw_nor_pitch << std::endl;
-
+    // std::cerr << "m_without_yaw_nor_pitch" << std::endl <<
+    // m_without_yaw_nor_pitch << std::endl;
 
     /* Ok, we're nearly there.  We know the matrix is only roll now.
 
@@ -238,7 +237,6 @@ void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
     // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
     // std::endl;
 }
-
 
 void expect_identical_3x3_matrices(const Eigen::Matrix3f &m1,
                                    const Eigen::Matrix3f &m2,
@@ -483,16 +481,18 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX) {
 
 TEST_F(TwoWayTest, FullTest_AnyComboMustConvertAndBack) {
 
-    const float increment = M_PI_2/10;
+    const float increment = M_PI_2 / 10;
 
     for (model_yaw = -M_PI * 0.98; model_yaw < M_PI; model_yaw += increment) {
-        for (model_pitch = -M_PI_2 * 0.98; model_pitch < M_PI_2; model_pitch += increment) {
-            for (model_roll = -M_PI_2; model_roll < M_PI_2; model_roll += increment) {
+        for (model_pitch = -M_PI_2 * 0.98; model_pitch < M_PI_2;
+             model_pitch += increment) {
+            for (model_roll = -M_PI_2; model_roll < M_PI_2;
+                 model_roll += increment) {
                 angles_to_matrix(model_yaw, model_pitch, model_roll, model_m);
 
                 CheckTwoWays();
             }
-                std::cerr << ".";
+            std::cerr << ".";
         }
         std::cerr << std::endl;
     }
