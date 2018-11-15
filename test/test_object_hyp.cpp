@@ -13,10 +13,13 @@
 #include <pcl/visualization/pcl_visualizer.h>
 
 #include "../include/image_processing/SurfaceOfInterest.h"
+#include "test_rotation.hpp"
 #include <boost/archive/text_iarchive.hpp>
 #include <iagmm/gmm.hpp>
 
 namespace ip = image_processing;
+
+using namespace fsg::matrixrotationangles;
 
 namespace fg {
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudT;
@@ -343,6 +346,14 @@ int main(int argc, char **argv) {
             feature_extractor.getOBB(
                 min_point_OBB, max_point_OBB, position_OBB,
                 rotational_matrix_OBB); // FIXME should check return value
+
+            float yaw, pitch, roll;
+            matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
+
+            std::cout << "yaw=" << yaw
+                      << ", pitch=" << pitch
+                      << ", roll=" << roll
+                      << std::endl;
 
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             // model_s->projectPoints(inliers, coeff_refined, proj_points,
