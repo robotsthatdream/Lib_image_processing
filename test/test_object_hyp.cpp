@@ -21,14 +21,14 @@ namespace ip = image_processing;
 
 using namespace fsg::matrixrotationangles;
 
-namespace fg {
+namespace fsg {
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudT;
-typedef fg::PointCloudT::Ptr PointCloudTP;
+typedef fsg::PointCloudT::Ptr PointCloudTP;
 }
 
 typedef struct cloud_reg {
     const char *key;
-    const fg::PointCloudTP cloud;
+    const fsg::PointCloudTP cloud;
     const char *const name;
     bool active; // code smell: tied to a specific viewer
 } cloud_reg_t;
@@ -168,13 +168,13 @@ int main(int argc, char **argv) {
         new pcl::visualization::PCLVisualizer(label));
     viewer->setBackgroundColor(0, 0, 0);
 
-    fg::PointCloudTP input_cloud_ptr(new fg::PointCloudT());
+    fsg::PointCloudTP input_cloud_ptr(new fsg::PointCloudT());
 
-    fg::PointCloudTP supervoxel_cloud_ptr(new fg::PointCloudT());
+    fsg::PointCloudTP supervoxel_cloud_ptr(new fsg::PointCloudT());
 
-    fg::PointCloudTP model_projected_all_cloud_ptr(new fg::PointCloudT());
+    fsg::PointCloudTP model_projected_all_cloud_ptr(new fsg::PointCloudT());
 
-    fg::PointCloudTP inliers_cloud_ptr(new fg::PointCloudT());
+    fsg::PointCloudTP inliers_cloud_ptr(new fsg::PointCloudT());
 
     {
         std::string modality = "meanFPFHLabHist";
