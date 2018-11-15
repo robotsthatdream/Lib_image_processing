@@ -32,11 +32,11 @@ typedef struct cloud_reg {
 
 class Context {
     const pcl::visualization::PCLVisualizer::Ptr m_viewer;
-    std::forward_list<cloud_reg_t> clouds;
+    std::forward_list<cloud_reg_t> m_clouds;
 
   public:
     Context(pcl::visualization::PCLVisualizer::Ptr &viewer)
-        : m_viewer(viewer), clouds(){};
+        : m_viewer(viewer), m_clouds(){};
     void addCloud(cloud_reg_t &reg);
     void handleKeyboardEvent(const pcl::visualization::KeyboardEvent &event);
     void updateInViewer(cloud_reg_t &cr);
@@ -54,9 +54,9 @@ void Context::addCloud(cloud_reg_t &reg) {
 
     m_viewer->addPointCloud<pcl::PointXYZRGB>(reg.cloud, reg.name);
 
-    clouds.push_front(reg);
+    m_clouds.push_front(reg);
     updateInViewer(reg);
-    //    cloud_reg_t *newreg = &clouds.front();
+    //    cloud_reg_t *newreg = &m_clouds.front();
 }
 
 void Context::handleKeyboardEvent(
@@ -69,7 +69,7 @@ void Context::handleKeyboardEvent(
             m_viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
         }
 
-        for (auto &cr : clouds) {
+        for (auto &cr : m_clouds) {
             std::cout << "Checking key " << cr.key << ", name " << cr.name
                       << std::endl;
             if ((keySym.compare(cr.key) == 0)) {
