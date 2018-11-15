@@ -97,7 +97,7 @@ install(TARGETS ${PROJECT_NAME}
 #add_executable(color_hist_supervoxel test/color_hist_supervoxel.cpp)
 #target_link_libraries(color_hist_supervoxel  image_processing ${OpenCV_LIBRARIES})
 
-add_executable(test_object_hyp test/test_object_hyp.cpp)
+add_executable(test_object_hyp test/test_object_hyp.cpp test/test_rotation.cpp)
 target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb)
 
 
@@ -138,5 +138,6 @@ endif()
 
 # Now simply link against gtest or gtest_main as needed. Eg
 add_executable(test_rotation test/test_rotation.cpp)
+target_compile_definitions(test_rotation PRIVATE -DFSG_COMPILING_GTEST_EXECUTABLE=1)
 target_link_libraries(test_rotation gtest_main)
 add_test(NAME test_rotation COMMAND test_rotation)

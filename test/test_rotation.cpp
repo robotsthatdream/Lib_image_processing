@@ -4,7 +4,8 @@
 #include <Eigen/Geometry>
 #include <cmath>
 
-namespace robotsthatdream {
+namespace fsg {
+namespace matrixrotationangles {
 
 /*
 
@@ -237,6 +238,18 @@ void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
     // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
     // std::endl;
 }
+
+
+}
+}
+
+// =====================================================================
+// Test below
+// =====================================================================
+
+#ifdef FSG_COMPILING_GTEST_EXECUTABLE
+    
+using namespace fsg::matrixrotationangles;
 
 void expect_identical_3x3_matrices(const Eigen::Matrix3f &m1,
                                    const Eigen::Matrix3f &m2,
@@ -497,9 +510,10 @@ TEST_F(TwoWayTest, FullTest_AnyComboMustConvertAndBack) {
         std::cerr << std::endl;
     }
 }
-}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+#endif // FSG_COMPILING_GTEST_EXECUTABLE
