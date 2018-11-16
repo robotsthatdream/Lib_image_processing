@@ -12,6 +12,8 @@
 #include <pcl/sample_consensus/sac_model_sphere.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
+#include <unsupported/Eigen/NonLinearOptimization>
+#include <unsupported/Eigen/NumericalDiff>
 #include "../include/image_processing/SurfaceOfInterest.h"
 #include "test_rotation.hpp"
 #include <boost/archive/text_iarchive.hpp>
@@ -58,7 +60,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \param[in] source cloud
      * \param[in] indices the indices of data points to evaluate
      */
-    OptimizationFunctor(const fsg::PointCloudT &cloud,
+    OptimizationFunctor(const pcl::PointCloud<pcl::PointXYZ> &cloud,
                         const std::vector<int> &indices)
         : pcl::Functor<float>(indices.size()), cloud_(cloud),
           indices_(indices) {}
@@ -86,14 +88,16 @@ struct OptimizationFunctor : pcl::Functor<float> {
             param.coeff(fsg::SuperEllipsoidFittingContext::idx::rot_roll),
             rotmat);
 
-        const float exp_1 = param.coeff(fsg::SuperEllipsoidFittingContext::idx::exp_1);
-        const float exp_2 = param.coeff(fsg::SuperEllipsoidFittingContext::idx::exp_2);
-        //float exp_1_over_exp_2 = exp_1/exp_2;
+        const float exp_1 =
+            param.coeff(fsg::SuperEllipsoidFittingContext::idx::exp_1);
+        const float exp_2 =
+            param.coeff(fsg::SuperEllipsoidFittingContext::idx::exp_2);
+        // float exp_1_over_exp_2 = exp_1/exp_2;
 
         for (int i = 0; i < values(); ++i) {
 
             // Take current point;
-            pcl::PointXYZRGB p = cloud_.points[indices_[i]];
+            pcl::PointXYZ p = cloud_.points[indices_[i]];
 
             // Compute vector from center.
             Eigen::Vector3f v_raw(p.x - cen.x, p.y - cen.y, p.z - cen.z);
@@ -104,23 +108,30 @@ struct OptimizationFunctor : pcl::Functor<float> {
             // TODO check major/middle/minor vs X,Y,Z...
 
             Eigen::Vector3f v_scaled;
-            v_scaled <<
-                v_raw(0) / param.coeff(fsg::SuperEllipsoidFittingContext::idx::rad_major),
-                v_raw(1) / param.coeff(fsg::SuperEllipsoidFittingContext::idx::rad_middle),
-                v_raw(2) / param.coeff(fsg::SuperEllipsoidFittingContext::idx::rad_minor);
+            v_scaled
+                << v_raw(0) /
+                       param.coeff(
+                           fsg::SuperEllipsoidFittingContext::idx::rad_major),
+                v_raw(1) /
+                    param.coeff(
+                        fsg::SuperEllipsoidFittingContext::idx::rad_middle),
+                v_raw(2) /
+                    param.coeff(
+                        fsg::SuperEllipsoidFittingContext::idx::rad_minor);
 
             float term = pow(v_scaled(0), exp_2) + pow(v_scaled(1), exp_2);
 
-            float outside_if_over_1 = pow(term, exp_1 / exp_2) + pow (v_scaled(2), exp_1);
+            float outside_if_over_1 =
+                pow(term, exp_1 / exp_2) + pow(v_scaled(2), exp_1);
 
-            float deviation = fabs ( outside_if_over_1 - 1 );
+            float deviation = fabs(outside_if_over_1 - 1);
 
             fvec[i] = deviation;
         }
         return (0);
     }
 
-    const fsg::PointCloudT &cloud_;
+    const pcl::PointCloud<pcl::PointXYZ> &cloud_;
     const std::vector<int> &indices_;
 };
 
@@ -531,6 +542,17 @@ int main(int argc, char **argv) {
                 fittingContext.coeff(
                     fsg::SuperEllipsoidFittingContext::idx::exp_2) = 2;
             }
+
+            std::vector<int> indices(cloud_xyz->size());
+            for (int i = 0; i < cloud_xyz->size(); ++i) {
+                indices[i] = i;
+            }
+
+            OptimizationFunctor functor(*cloud_xyz, indices);
+            Eigen::NumericalDiff<OptimizationFunctor> num_diff(functor);
+            Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>,
+                                      float>
+                lm(num_diff);
 
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             // model_s->projectPoints(inliers, coeff_refined, proj_points,
