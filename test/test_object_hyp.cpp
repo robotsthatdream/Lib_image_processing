@@ -338,7 +338,11 @@ int main(int argc, char **argv) {
             feature_extractor.getMassCenter(
                 mass_center); // FIXME should check return value
 
-            std::vector<float> moment_of_inertia;
+            Eigen::Vector3f major_vector, middle_vector, minor_vector;
+
+            feature_extractor.getEigenVectors(major_vector, middle_vector,
+                                              minor_vector);
+
             pcl::PointXYZ min_point_OBB;
             pcl::PointXYZ max_point_OBB;
             pcl::PointXYZ position_OBB;
@@ -346,6 +350,45 @@ int main(int argc, char **argv) {
             feature_extractor.getOBB(
                 min_point_OBB, max_point_OBB, position_OBB,
                 rotational_matrix_OBB); // FIXME should check return value
+
+            // From
+            // http://pointclouds.org/documentation/tutorials/moment_of_inertia.php
+
+            Eigen::Vector3f position(position_OBB.x, position_OBB.y,
+                                     position_OBB.z);
+            Eigen::Quaternionf quat(rotational_matrix_OBB);
+
+            std::string obbId(obj_index_i_s + ":obb");
+
+            std::cerr << "will add obb with id: " << obbId << std::endl;
+
+            viewer->addCube(position, quat, max_point_OBB.x - min_point_OBB.x,
+                            max_point_OBB.y - min_point_OBB.y,
+                            max_point_OBB.z - min_point_OBB.z, obbId);
+
+            viewer->setShapeRenderingProperties(
+                pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
+                pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME,
+                obbId);
+
+            pcl::PointXYZ center(mass_center(0), mass_center(1),
+                                 mass_center(2));
+            pcl::PointXYZ x_axis(major_vector(0) + mass_center(0),
+                                 major_vector(1) + mass_center(1),
+                                 major_vector(2) + mass_center(2));
+            pcl::PointXYZ y_axis(middle_vector(0) + mass_center(0),
+                                 middle_vector(1) + mass_center(1),
+                                 middle_vector(2) + mass_center(2));
+            pcl::PointXYZ z_axis(minor_vector(0) + mass_center(0),
+                                 minor_vector(1) + mass_center(1),
+                                 minor_vector(2) + mass_center(2));
+
+            viewer->addLine(center, x_axis, 1.0f, 0.0f, 0.0f,
+                            obj_index_i_s + ":major eigen vector");
+            viewer->addLine(center, y_axis, 0.0f, 1.0f, 0.0f,
+                            obj_index_i_s + ":middle eigen vector");
+            viewer->addLine(center, z_axis, 0.0f, 0.0f, 1.0f,
+                            obj_index_i_s + ":minor eigen vector");
 
             float yaw, pitch, roll;
             matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
