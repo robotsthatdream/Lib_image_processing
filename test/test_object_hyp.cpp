@@ -24,6 +24,32 @@ using namespace fsg::matrixrotationangles;
 namespace fsg {
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudT;
 typedef fsg::PointCloudT::Ptr PointCloudTP;
+
+/**
+    center x,y,z,
+    rotation angles yaw, pitch, roll,
+    radii 1,2,3,
+    exponent1, exponent 2
+
+    Total 11 parameters
+*/
+struct SuperEllipsoidFittingContext {
+    Eigen::Matrix<float, 11, 1> coeff;
+
+    enum idx {
+        cen_x = 0,
+        cen_y,
+        cen_z,
+        rad_major,
+        rad_middle,
+        rad_minor,
+        rot_yaw,
+        rot_pitch,
+        rot_roll,
+        exp_1,
+        exp_2
+    };
+};
 }
 
 typedef struct cloud_reg {
@@ -390,11 +416,49 @@ int main(int argc, char **argv) {
             viewer->addLine(center, z_axis, 0.0f, 0.0f, 1.0f,
                             obj_index_i_s + ":minor eigen vector");
 
-            float yaw, pitch, roll;
-            matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
+            fsg::SuperEllipsoidFittingContext fittingContext;
 
-            std::cout << "yaw=" << yaw << ", pitch=" << pitch
-                      << ", roll=" << roll << std::endl;
+            {
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::cen_x) =
+                    (min_point_OBB.x + max_point_OBB.x) / 2.0;
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::cen_y) =
+                    (min_point_OBB.y + max_point_OBB.y) / 2.0;
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::cen_z) =
+                    (min_point_OBB.z + max_point_OBB.z) / 2.0;
+
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::rad_major) =
+                    major_vector.norm();
+
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::rad_middle) =
+                    middle_vector.norm();
+
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::rad_minor) =
+                    minor_vector.norm();
+
+                float yaw, pitch, roll;
+                matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
+
+                std::cout << "yaw=" << yaw << ", pitch=" << pitch
+                          << ", roll=" << roll << std::endl;
+
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::rot_yaw) = yaw;
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::rot_pitch) = pitch;
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::rot_roll) = roll;
+
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::exp_1) = 2;
+                fittingContext.coeff(
+                    fsg::SuperEllipsoidFittingContext::idx::exp_2) = 2;
+            }
 
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             // model_s->projectPoints(inliers, coeff_refined, proj_points,
