@@ -37,6 +37,10 @@ typedef fsg::PointCloudT::Ptr PointCloudTP;
     Total 11 parameters
 */
 struct SuperEllipsoidFittingContext {
+    Eigen::VectorXf coeff;
+
+    SuperEllipsoidFittingContext() : coeff(11){};
+
     enum idx {
         cen_x = 0,
         cen_y,
@@ -68,8 +72,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \param[out] fvec the resultant functions evaluations
      * \return 0
      */
-    int operator()(const Eigen::VectorXf &param,
-                   Eigen::VectorXf &fvec) const {
+    int operator()(const Eigen::VectorXf &param, Eigen::VectorXf &fvec) const {
         FG_TRACE_THIS_SCOPE();
 
         // Extract center;
@@ -493,26 +496,24 @@ int main(int argc, char **argv) {
             viewer->addLine(center, z_axis, 0.0f, 0.0f, 1.0f,
                             obj_index_i_s + ":minor eigen vector");
 
-            Eigen::VectorXf fittingContext(11);
+            fsg::SuperEllipsoidFittingContext fittingContext;
 
             {
-                fittingContext(fsg::SuperEllipsoidFittingContext::idx::cen_x) =
+                Eigen::VectorXf &coeff = fittingContext.coeff;
+                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_x) =
                     (min_point_OBB.x + max_point_OBB.x) / 2.0;
-                fittingContext(fsg::SuperEllipsoidFittingContext::idx::cen_y) =
+                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_y) =
                     (min_point_OBB.y + max_point_OBB.y) / 2.0;
-                fittingContext(fsg::SuperEllipsoidFittingContext::idx::cen_z) =
+                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_z) =
                     (min_point_OBB.z + max_point_OBB.z) / 2.0;
 
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::rad_major) =
+                coeff(fsg::SuperEllipsoidFittingContext::idx::rad_major) =
                     major_vector.norm();
 
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::rad_middle) =
+                coeff(fsg::SuperEllipsoidFittingContext::idx::rad_middle) =
                     middle_vector.norm();
 
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::rad_minor) =
+                coeff(fsg::SuperEllipsoidFittingContext::idx::rad_minor) =
                     minor_vector.norm();
 
                 float yaw, pitch, roll;
@@ -521,17 +522,13 @@ int main(int argc, char **argv) {
                 std::cout << "yaw=" << yaw << ", pitch=" << pitch
                           << ", roll=" << roll << std::endl;
 
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::rot_yaw) = yaw;
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::rot_pitch) = pitch;
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::rot_roll) = roll;
+                coeff(fsg::SuperEllipsoidFittingContext::idx::rot_yaw) = yaw;
+                coeff(fsg::SuperEllipsoidFittingContext::idx::rot_pitch) =
+                    pitch;
+                coeff(fsg::SuperEllipsoidFittingContext::idx::rot_roll) = roll;
 
-                fittingContext(fsg::SuperEllipsoidFittingContext::idx::exp_1) =
-                    2;
-                fittingContext(fsg::SuperEllipsoidFittingContext::idx::exp_2) =
-                    2;
+                coeff(fsg::SuperEllipsoidFittingContext::idx::exp_1) = 2;
+                coeff(fsg::SuperEllipsoidFittingContext::idx::exp_2) = 2;
             }
 
             std::vector<int> indices(cloud_xyz->size());
@@ -544,7 +541,7 @@ int main(int argc, char **argv) {
             Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>,
                                       float>
                 lm(num_diff);
-            int minimizationResult = lm.minimize(fittingContext);
+            int minimizationResult = lm.minimize(fittingContext.coeff);
 
             std::cerr << "Minimization result: " << (int)minimizationResult
                       << std::endl;
