@@ -36,8 +36,7 @@ typedef fsg::PointCloudT::Ptr PointCloudTP;
 
     Total 11 parameters
 */
-struct SuperEllipsoidFittingContext : Eigen::Matrix<float, 11, 1>
-{
+struct SuperEllipsoidFittingContext {
     enum idx {
         cen_x = 0,
         cen_y,
@@ -69,7 +68,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \param[out] fvec the resultant functions evaluations
      * \return 0
      */
-    int operator()(const fsg::SuperEllipsoidFittingContext &param,
+    int operator()(const Eigen::VectorXf &param,
                    Eigen::VectorXf &fvec) const {
         FG_TRACE_THIS_SCOPE();
 
@@ -494,7 +493,7 @@ int main(int argc, char **argv) {
             viewer->addLine(center, z_axis, 0.0f, 0.0f, 1.0f,
                             obj_index_i_s + ":minor eigen vector");
 
-            fsg::SuperEllipsoidFittingContext fittingContext;
+            Eigen::VectorXf fittingContext(11);
 
             {
                 fittingContext(fsg::SuperEllipsoidFittingContext::idx::cen_x) =
@@ -545,6 +544,10 @@ int main(int argc, char **argv) {
             Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>,
                                       float>
                 lm(num_diff);
+            int minimizationResult = lm.minimize(fittingContext);
+
+            std::cerr << "Minimization result: " << (int)minimizationResult
+                      << std::endl;
 
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             // model_s->projectPoints(inliers, coeff_refined, proj_points,
