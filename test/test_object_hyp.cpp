@@ -16,6 +16,7 @@
 #include "test_rotation.hpp"
 #include <boost/archive/text_iarchive.hpp>
 #include <iagmm/gmm.hpp>
+#include <math.h>
 
 namespace ip = image_processing;
 
@@ -51,6 +52,77 @@ struct SuperEllipsoidFittingContext {
     };
 };
 }
+
+struct OptimizationFunctor : pcl::Functor<float> {
+    /** Functor constructor
+     * \param[in] source cloud
+     * \param[in] indices the indices of data points to evaluate
+     */
+    OptimizationFunctor(const fsg::PointCloudT &cloud,
+                        const std::vector<int> &indices)
+        : pcl::Functor<float>(indices.size()), cloud_(cloud),
+          indices_(indices) {}
+
+    /** Cost function to be minimized
+     * \param[in] x the variables array
+     * \param[out] fvec the resultant functions evaluations
+     * \return 0
+     */
+    int operator()(const fsg::SuperEllipsoidFittingContext &param,
+                   Eigen::VectorXf &fvec) const {
+        FG_TRACE_THIS_SCOPE();
+
+        // Extract center;
+        ip::PointT cen;
+        cen.x = param.coeff(fsg::SuperEllipsoidFittingContext::idx::cen_x);
+        cen.y = param.coeff(fsg::SuperEllipsoidFittingContext::idx::cen_y);
+        cen.z = param.coeff(fsg::SuperEllipsoidFittingContext::idx::cen_z);
+
+        // Compute rotation matrix
+        Eigen::Matrix3f rotmat;
+        angles_to_matrix(
+            param.coeff(fsg::SuperEllipsoidFittingContext::idx::rot_yaw),
+            param.coeff(fsg::SuperEllipsoidFittingContext::idx::rot_pitch),
+            param.coeff(fsg::SuperEllipsoidFittingContext::idx::rot_roll),
+            rotmat);
+
+        const float exp_1 = param.coeff(fsg::SuperEllipsoidFittingContext::idx::exp_1);
+        const float exp_2 = param.coeff(fsg::SuperEllipsoidFittingContext::idx::exp_2);
+        //float exp_1_over_exp_2 = exp_1/exp_2;
+
+        for (int i = 0; i < values(); ++i) {
+
+            // Take current point;
+            pcl::PointXYZRGB p = cloud_.points[indices_[i]];
+
+            // Compute vector from center.
+            Eigen::Vector3f v_raw(p.x - cen.x, p.y - cen.y, p.z - cen.z);
+
+            // Rotate vector
+            Eigen::Vector3f v_aligned = rotmat * v_raw;
+
+            // TODO check major/middle/minor vs X,Y,Z...
+
+            Eigen::Vector3f v_scaled;
+            v_scaled <<
+                v_raw(0) / param.coeff(fsg::SuperEllipsoidFittingContext::idx::rad_major),
+                v_raw(1) / param.coeff(fsg::SuperEllipsoidFittingContext::idx::rad_middle),
+                v_raw(2) / param.coeff(fsg::SuperEllipsoidFittingContext::idx::rad_minor);
+
+            float term = pow(v_scaled(0), exp_2) + pow(v_scaled(1), exp_2);
+
+            float outside_if_over_1 = pow(term, exp_1 / exp_2) + pow (v_scaled(2), exp_1);
+
+            float deviation = fabs ( outside_if_over_1 - 1 );
+
+            fvec[i] = deviation;
+        }
+        return (0);
+    }
+
+    const fsg::PointCloudT &cloud_;
+    const std::vector<int> &indices_;
+};
 
 typedef struct cloud_reg {
     const char *key;
