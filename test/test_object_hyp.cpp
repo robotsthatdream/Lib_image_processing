@@ -393,10 +393,8 @@ int main(int argc, char **argv) {
             float yaw, pitch, roll;
             matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
 
-            std::cout << "yaw=" << yaw
-                      << ", pitch=" << pitch
-                      << ", roll=" << roll
-                      << std::endl;
+            std::cout << "yaw=" << yaw << ", pitch=" << pitch
+                      << ", roll=" << roll << std::endl;
 
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             // model_s->projectPoints(inliers, coeff_refined, proj_points,

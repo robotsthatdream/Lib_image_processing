@@ -1,9 +1,9 @@
 #define _USE_MATH_DEFINES
+#include "test_rotation.hpp"
 #include "gtest/gtest.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <cmath>
-#include "test_rotation.hpp"
 
 namespace fsg {
 namespace matrixrotationangles {
@@ -86,8 +86,6 @@ void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
     // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
     // std::endl;
 }
-
-
 }
 }
 
