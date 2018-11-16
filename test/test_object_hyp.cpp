@@ -84,8 +84,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
         angles_to_matrix(
             param(fsg::SuperEllipsoidFittingContext::idx::rot_yaw),
             param(fsg::SuperEllipsoidFittingContext::idx::rot_pitch),
-            param(fsg::SuperEllipsoidFittingContext::idx::rot_roll),
-            rotmat);
+            param(fsg::SuperEllipsoidFittingContext::idx::rot_roll), rotmat);
 
         const float exp_1 =
             param(fsg::SuperEllipsoidFittingContext::idx::exp_1);
@@ -109,14 +108,11 @@ struct OptimizationFunctor : pcl::Functor<float> {
             Eigen::Vector3f v_scaled;
             v_scaled
                 << v_raw(0) /
-                       param(
-                           fsg::SuperEllipsoidFittingContext::idx::rad_major),
+                       param(fsg::SuperEllipsoidFittingContext::idx::rad_major),
                 v_raw(1) /
-                    param(
-                        fsg::SuperEllipsoidFittingContext::idx::rad_middle),
+                    param(fsg::SuperEllipsoidFittingContext::idx::rad_middle),
                 v_raw(2) /
-                    param(
-                        fsg::SuperEllipsoidFittingContext::idx::rad_minor);
+                    param(fsg::SuperEllipsoidFittingContext::idx::rad_minor);
 
             float term = pow(v_scaled(0), exp_2) + pow(v_scaled(1), exp_2);
 
@@ -501,14 +497,11 @@ int main(int argc, char **argv) {
             fsg::SuperEllipsoidFittingContext fittingContext;
 
             {
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::cen_x) =
+                fittingContext(fsg::SuperEllipsoidFittingContext::idx::cen_x) =
                     (min_point_OBB.x + max_point_OBB.x) / 2.0;
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::cen_y) =
+                fittingContext(fsg::SuperEllipsoidFittingContext::idx::cen_y) =
                     (min_point_OBB.y + max_point_OBB.y) / 2.0;
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::cen_z) =
+                fittingContext(fsg::SuperEllipsoidFittingContext::idx::cen_z) =
                     (min_point_OBB.z + max_point_OBB.z) / 2.0;
 
                 fittingContext(
@@ -536,10 +529,10 @@ int main(int argc, char **argv) {
                 fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::rot_roll) = roll;
 
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::exp_1) = 2;
-                fittingContext(
-                    fsg::SuperEllipsoidFittingContext::idx::exp_2) = 2;
+                fittingContext(fsg::SuperEllipsoidFittingContext::idx::exp_1) =
+                    2;
+                fittingContext(fsg::SuperEllipsoidFittingContext::idx::exp_2) =
+                    2;
             }
 
             std::vector<int> indices(cloud_xyz->size());
