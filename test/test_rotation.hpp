@@ -1,3 +1,5 @@
+#include <Eigen/Core>
+
 namespace fsg {
 namespace matrixrotationangles {
 
