@@ -54,7 +54,29 @@ struct SuperEllipsoidFittingContext {
         exp_1,
         exp_2
     };
+
+    friend ostream &operator<<(ostream &os,
+                               const SuperEllipsoidFittingContext &sefc);
 };
+
+ostream &operator<<(ostream &os, const SuperEllipsoidFittingContext &sefc) {
+    const Eigen::VectorXf &c = sefc.coeff;
+    os << "[SEFC "
+       << "center=(" << c(fsg::SuperEllipsoidFittingContext::idx::cen_x) << ","
+       << c(fsg::SuperEllipsoidFittingContext::idx::cen_y) << ","
+       << c(fsg::SuperEllipsoidFittingContext::idx::cen_z) << "), "
+       << "radii=(" << c(fsg::SuperEllipsoidFittingContext::idx::rad_major)
+       << "," << c(fsg::SuperEllipsoidFittingContext::idx::rad_middle) << ","
+       << c(fsg::SuperEllipsoidFittingContext::idx::rad_minor) << "), "
+       << "yaw=" << c(fsg::SuperEllipsoidFittingContext::idx::rot_yaw) << ", "
+       << "pitch=" << c(fsg::SuperEllipsoidFittingContext::idx::rot_pitch)
+       << ", "
+       << "roll=" << c(fsg::SuperEllipsoidFittingContext::idx::rot_roll) << ", "
+       << "exp_1=" << c(fsg::SuperEllipsoidFittingContext::idx::exp_1) << ", "
+       << "exp_2=" << c(fsg::SuperEllipsoidFittingContext::idx::exp_2) << ", "
+       << "]";
+    return os;
+}
 }
 
 struct OptimizationFunctor : pcl::Functor<float> {
@@ -531,6 +553,8 @@ int main(int argc, char **argv) {
                 coeff(fsg::SuperEllipsoidFittingContext::idx::exp_2) = 2;
             }
 
+            std::cerr << "Initial estimation : " << fittingContext << std::endl;
+
             std::vector<int> indices(cloud_xyz->size());
             for (int i = 0; i < cloud_xyz->size(); ++i) {
                 indices[i] = i;
@@ -545,6 +569,8 @@ int main(int argc, char **argv) {
 
             std::cerr << "Minimization result: " << (int)minimizationResult
                       << std::endl;
+
+            std::cerr << "After minimization : " << fittingContext << std::endl;
 
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             // model_s->projectPoints(inliers, coeff_refined, proj_points,
