@@ -36,9 +36,8 @@ typedef fsg::PointCloudT::Ptr PointCloudTP;
 
     Total 11 parameters
 */
-struct SuperEllipsoidFittingContext {
-    Eigen::Matrix<float, 11, 1> coeff;
-
+struct SuperEllipsoidFittingContext : Eigen::Matrix<float, 11, 1>
+{
     enum idx {
         cen_x = 0,
         cen_y,
@@ -76,22 +75,22 @@ struct OptimizationFunctor : pcl::Functor<float> {
 
         // Extract center;
         ip::PointT cen;
-        cen.x = param.coeff(fsg::SuperEllipsoidFittingContext::idx::cen_x);
-        cen.y = param.coeff(fsg::SuperEllipsoidFittingContext::idx::cen_y);
-        cen.z = param.coeff(fsg::SuperEllipsoidFittingContext::idx::cen_z);
+        cen.x = param(fsg::SuperEllipsoidFittingContext::idx::cen_x);
+        cen.y = param(fsg::SuperEllipsoidFittingContext::idx::cen_y);
+        cen.z = param(fsg::SuperEllipsoidFittingContext::idx::cen_z);
 
         // Compute rotation matrix
         Eigen::Matrix3f rotmat;
         angles_to_matrix(
-            param.coeff(fsg::SuperEllipsoidFittingContext::idx::rot_yaw),
-            param.coeff(fsg::SuperEllipsoidFittingContext::idx::rot_pitch),
-            param.coeff(fsg::SuperEllipsoidFittingContext::idx::rot_roll),
+            param(fsg::SuperEllipsoidFittingContext::idx::rot_yaw),
+            param(fsg::SuperEllipsoidFittingContext::idx::rot_pitch),
+            param(fsg::SuperEllipsoidFittingContext::idx::rot_roll),
             rotmat);
 
         const float exp_1 =
-            param.coeff(fsg::SuperEllipsoidFittingContext::idx::exp_1);
+            param(fsg::SuperEllipsoidFittingContext::idx::exp_1);
         const float exp_2 =
-            param.coeff(fsg::SuperEllipsoidFittingContext::idx::exp_2);
+            param(fsg::SuperEllipsoidFittingContext::idx::exp_2);
         // float exp_1_over_exp_2 = exp_1/exp_2;
 
         for (int i = 0; i < values(); ++i) {
@@ -110,13 +109,13 @@ struct OptimizationFunctor : pcl::Functor<float> {
             Eigen::Vector3f v_scaled;
             v_scaled
                 << v_raw(0) /
-                       param.coeff(
+                       param(
                            fsg::SuperEllipsoidFittingContext::idx::rad_major),
                 v_raw(1) /
-                    param.coeff(
+                    param(
                         fsg::SuperEllipsoidFittingContext::idx::rad_middle),
                 v_raw(2) /
-                    param.coeff(
+                    param(
                         fsg::SuperEllipsoidFittingContext::idx::rad_minor);
 
             float term = pow(v_scaled(0), exp_2) + pow(v_scaled(1), exp_2);
@@ -502,25 +501,25 @@ int main(int argc, char **argv) {
             fsg::SuperEllipsoidFittingContext fittingContext;
 
             {
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::cen_x) =
                     (min_point_OBB.x + max_point_OBB.x) / 2.0;
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::cen_y) =
                     (min_point_OBB.y + max_point_OBB.y) / 2.0;
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::cen_z) =
                     (min_point_OBB.z + max_point_OBB.z) / 2.0;
 
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::rad_major) =
                     major_vector.norm();
 
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::rad_middle) =
                     middle_vector.norm();
 
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::rad_minor) =
                     minor_vector.norm();
 
@@ -530,16 +529,16 @@ int main(int argc, char **argv) {
                 std::cout << "yaw=" << yaw << ", pitch=" << pitch
                           << ", roll=" << roll << std::endl;
 
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::rot_yaw) = yaw;
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::rot_pitch) = pitch;
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::rot_roll) = roll;
 
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::exp_1) = 2;
-                fittingContext.coeff(
+                fittingContext(
                     fsg::SuperEllipsoidFittingContext::idx::exp_2) = 2;
             }
 
