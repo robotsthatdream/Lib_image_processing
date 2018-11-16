@@ -522,12 +522,9 @@ int main(int argc, char **argv) {
 
             {
                 Eigen::VectorXf &coeff = fittingContext.coeff;
-                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_x) =
-                    (min_point_OBB.x + max_point_OBB.x) / 2.0;
-                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_y) =
-                    (min_point_OBB.y + max_point_OBB.y) / 2.0;
-                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_z) =
-                    (min_point_OBB.z + max_point_OBB.z) / 2.0;
+                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_x) = mass_center(0);
+                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_y) = mass_center(1);
+                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_z) = mass_center(2);
 
                 coeff(fsg::SuperEllipsoidFittingContext::idx::rad_major) =
                     major_vector.norm();
