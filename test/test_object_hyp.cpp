@@ -108,7 +108,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \return 0
      */
     int operator()(const Eigen::VectorXf &param, Eigen::VectorXf &fvec) const {
-        FG_TRACE_THIS_SCOPE();
+        //FG_TRACE_THIS_SCOPE();
 
         // Extract center;
         ip::PointT cen;
