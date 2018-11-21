@@ -530,35 +530,28 @@ int main(int argc, char **argv) {
 
             fsg::SuperEllipsoidParameters fittingContext;
 
-            {
-                Eigen::VectorXf &coeff = fittingContext.coeff;
-                coeff(fsg::SuperEllipsoidParameters::idx::cen_x) = mass_center(0);
-                coeff(fsg::SuperEllipsoidParameters::idx::cen_y) = mass_center(1);
-                coeff(fsg::SuperEllipsoidParameters::idx::cen_z) = mass_center(2);
+            fittingContext.set_cen_x(mass_center(0));
+            fittingContext.set_cen_y(mass_center(1));
+            fittingContext.set_cen_z(mass_center(2));
 
-                coeff(fsg::SuperEllipsoidParameters::idx::rad_major) =
-                    major_vector.norm();
+            fittingContext.set_rad_major(major_vector.norm());
 
-                coeff(fsg::SuperEllipsoidParameters::idx::rad_middle) =
-                    middle_vector.norm();
+            fittingContext.set_rad_middle(middle_vector.norm());
 
-                coeff(fsg::SuperEllipsoidParameters::idx::rad_minor) =
-                    minor_vector.norm();
+            fittingContext.set_rad_minor(minor_vector.norm());
 
-                float yaw, pitch, roll;
-                matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
+            float yaw, pitch, roll;
+            matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
 
-                std::cout << "yaw=" << yaw << ", pitch=" << pitch
-                          << ", roll=" << roll << std::endl;
+            std::cout << "yaw=" << yaw << ", pitch=" << pitch
+                      << ", roll=" << roll << std::endl;
 
-                coeff(fsg::SuperEllipsoidParameters::idx::rot_yaw) = yaw;
-                coeff(fsg::SuperEllipsoidParameters::idx::rot_pitch) =
-                    pitch;
-                coeff(fsg::SuperEllipsoidParameters::idx::rot_roll) = roll;
+            fittingContext.set_rot_yaw(yaw);
+            fittingContext.set_rot_pitch(pitch);
+            fittingContext.set_rot_roll(roll);
 
-                coeff(fsg::SuperEllipsoidParameters::idx::exp_1) = 2;
-                coeff(fsg::SuperEllipsoidParameters::idx::exp_2) = 2;
-            }
+            fittingContext.set_exp_1(2);
+            fittingContext.set_exp_2(2);
 
             std::cout << "Initial estimation : " << fittingContext << std::endl;
 
