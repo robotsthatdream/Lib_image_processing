@@ -41,39 +41,52 @@ struct SuperEllipsoidParameters {
 
     SuperEllipsoidParameters() : coeff(11){};
 
+// https://en.wikipedia.org/wiki/X_Macro
+
+#define ALL_SuperEllipsoidParameters_FIELDS                                    \
+    FSGX(cen_x)                                                                \
+    FSGX(cen_y)                                                                \
+    FSGX(cen_z)                                                                \
+    FSGX(rad_major)                                                            \
+    FSGX(rad_middle)                                                           \
+    FSGX(rad_minor)                                                            \
+    FSGX(rot_yaw)                                                              \
+    FSGX(rot_pitch)                                                            \
+    FSGX(rot_roll)                                                             \
+    FSGX(exp_1)                                                                \
+    FSGX(exp_2)
+
     enum idx {
-        cen_x = 0,
-        cen_y,
-        cen_z,
-        rad_major,
-        rad_middle,
-        rad_minor,
-        rot_yaw,
-        rot_pitch,
-        rot_roll,
-        exp_1,
-        exp_2
+#define FSGX(name) name,
+        ALL_SuperEllipsoidParameters_FIELDS
+#undef FSGX
     };
 
-    friend ostream &operator<<(ostream &os,
-                               const SuperEllipsoidParameters &sefc);
+#define FSGX(name)                                                             \
+    void set_##name(float f) { coeff(idx::name) = f; };
+    ALL_SuperEllipsoidParameters_FIELDS
+#undef FSGX
+
+#define FSGX(name)                                                             \
+    float get_##name() const { return coeff(idx::name); };
+        ALL_SuperEllipsoidParameters_FIELDS
+#undef FSGX
+
+        friend ostream &
+        operator<<(ostream &os, const SuperEllipsoidParameters &sefc);
 };
 
 ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
-    const Eigen::VectorXf &c = sefc.coeff;
     os << "[SEFC "
-       << "center=(" << c(fsg::SuperEllipsoidParameters::idx::cen_x) << ","
-       << c(fsg::SuperEllipsoidParameters::idx::cen_y) << ","
-       << c(fsg::SuperEllipsoidParameters::idx::cen_z) << "), "
-       << "radii=(" << c(fsg::SuperEllipsoidParameters::idx::rad_major)
-       << "," << c(fsg::SuperEllipsoidParameters::idx::rad_middle) << ","
-       << c(fsg::SuperEllipsoidParameters::idx::rad_minor) << "), "
-       << "yaw=" << c(fsg::SuperEllipsoidParameters::idx::rot_yaw) << ", "
-       << "pitch=" << c(fsg::SuperEllipsoidParameters::idx::rot_pitch)
-       << ", "
-       << "roll=" << c(fsg::SuperEllipsoidParameters::idx::rot_roll) << ", "
-       << "exp_1=" << c(fsg::SuperEllipsoidParameters::idx::exp_1) << ", "
-       << "exp_2=" << c(fsg::SuperEllipsoidParameters::idx::exp_2) << ", "
+       << "center=(" << sefc.get_cen_x() << "," << sefc.get_cen_y() << ","
+       << sefc.get_cen_z() << "(), "
+       << "radii=(" << sefc.get_rad_major() << "," << sefc.get_rad_middle()
+       << "," << sefc.get_rad_minor() << "(), "
+       << "yaw=" << sefc.get_rot_yaw() << ", "
+       << "pitch=" << sefc.get_rot_pitch() << ", "
+       << "roll=" << sefc.get_rot_roll() << ", "
+       << "exp_1=" << sefc.get_exp_1() << ", "
+       << "exp_2=" << sefc.get_exp_2() << ", "
        << "]";
     return os;
 }
@@ -105,15 +118,13 @@ struct OptimizationFunctor : pcl::Functor<float> {
 
         // Compute rotation matrix
         Eigen::Matrix3f rotmat;
-        angles_to_matrix(
-            param(fsg::SuperEllipsoidParameters::idx::rot_yaw),
-            param(fsg::SuperEllipsoidParameters::idx::rot_pitch),
-            param(fsg::SuperEllipsoidParameters::idx::rot_roll), rotmat);
+        angles_to_matrix(param(fsg::SuperEllipsoidParameters::idx::rot_yaw),
+                         param(fsg::SuperEllipsoidParameters::idx::rot_pitch),
+                         param(fsg::SuperEllipsoidParameters::idx::rot_roll),
+                         rotmat);
 
-        const float exp_1 =
-            param(fsg::SuperEllipsoidParameters::idx::exp_1);
-        const float exp_2 =
-            param(fsg::SuperEllipsoidParameters::idx::exp_2);
+        const float exp_1 = param(fsg::SuperEllipsoidParameters::idx::exp_1);
+        const float exp_2 = param(fsg::SuperEllipsoidParameters::idx::exp_2);
         // float exp_1_over_exp_2 = exp_1/exp_2;
 
         for (int i = 0; i < values(); ++i) {
@@ -130,13 +141,12 @@ struct OptimizationFunctor : pcl::Functor<float> {
             // TODO check major/middle/minor vs X,Y,Z...
 
             Eigen::Vector3f v_scaled;
-            v_scaled
-                << v_raw(0) /
-                       param(fsg::SuperEllipsoidParameters::idx::rad_major),
+            v_scaled << v_raw(0) /
+                            param(
+                                fsg::SuperEllipsoidParameters::idx::rad_major),
                 v_raw(1) /
                     param(fsg::SuperEllipsoidParameters::idx::rad_middle),
-                v_raw(2) /
-                    param(fsg::SuperEllipsoidParameters::idx::rad_minor);
+                v_raw(2) / param(fsg::SuperEllipsoidParameters::idx::rad_minor);
 
             float term = pow(v_scaled(0), exp_2) + pow(v_scaled(1), exp_2);
 
