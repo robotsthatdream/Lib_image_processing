@@ -488,7 +488,7 @@ int main(int argc, char **argv) {
 
             std::string obbId(obj_index_i_s + ":obb");
 
-            std::cerr << "will add obb with id: " << obbId << std::endl;
+            std::cout << "will add obb with id: " << obbId << std::endl;
 
             viewer->addCube(position, quat, max_point_OBB.x - min_point_OBB.x,
                             max_point_OBB.y - min_point_OBB.y,
@@ -550,7 +550,7 @@ int main(int argc, char **argv) {
                 coeff(fsg::SuperEllipsoidFittingContext::idx::exp_2) = 2;
             }
 
-            std::cerr << "Initial estimation : " << fittingContext << std::endl;
+            std::cout << "Initial estimation : " << fittingContext << std::endl;
 
             std::vector<int> indices(cloud_xyz->size());
             for (int i = 0; i < cloud_xyz->size(); ++i) {
@@ -564,10 +564,10 @@ int main(int argc, char **argv) {
                 lm(num_diff);
             int minimizationResult = lm.minimize(fittingContext.coeff);
 
-            std::cerr << "Minimization result: " << (int)minimizationResult
+            std::cout << "Minimization result: " << (int)minimizationResult
                       << std::endl;
 
-            std::cerr << "After minimization : " << fittingContext << std::endl;
+            std::cout << "After minimization : " << fittingContext << std::endl;
 
             pcl::PointCloud<pcl::PointXYZ> proj_points;
             // model_s->projectPoints(inliers, coeff_refined, proj_points,
