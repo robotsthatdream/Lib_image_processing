@@ -79,9 +79,9 @@ struct SuperEllipsoidParameters {
 ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     os << "[SEFC "
        << "center=(" << sefc.get_cen_x() << "," << sefc.get_cen_y() << ","
-       << sefc.get_cen_z() << "(), "
+       << sefc.get_cen_z() << "), "
        << "radii=(" << sefc.get_rad_major() << "," << sefc.get_rad_middle()
-       << "," << sefc.get_rad_minor() << "(), "
+       << "," << sefc.get_rad_minor() << "), "
        << "yaw=" << sefc.get_rot_yaw() << ", "
        << "pitch=" << sefc.get_rot_pitch() << ", "
        << "roll=" << sefc.get_rot_roll() << ", "
