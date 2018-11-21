@@ -36,10 +36,10 @@ typedef fsg::PointCloudT::Ptr PointCloudTP;
 
     Total 11 parameters
 */
-struct SuperEllipsoidFittingContext {
+struct SuperEllipsoidParameters {
     Eigen::VectorXf coeff;
 
-    SuperEllipsoidFittingContext() : coeff(11){};
+    SuperEllipsoidParameters() : coeff(11){};
 
     enum idx {
         cen_x = 0,
@@ -56,24 +56,24 @@ struct SuperEllipsoidFittingContext {
     };
 
     friend ostream &operator<<(ostream &os,
-                               const SuperEllipsoidFittingContext &sefc);
+                               const SuperEllipsoidParameters &sefc);
 };
 
-ostream &operator<<(ostream &os, const SuperEllipsoidFittingContext &sefc) {
+ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     const Eigen::VectorXf &c = sefc.coeff;
     os << "[SEFC "
-       << "center=(" << c(fsg::SuperEllipsoidFittingContext::idx::cen_x) << ","
-       << c(fsg::SuperEllipsoidFittingContext::idx::cen_y) << ","
-       << c(fsg::SuperEllipsoidFittingContext::idx::cen_z) << "), "
-       << "radii=(" << c(fsg::SuperEllipsoidFittingContext::idx::rad_major)
-       << "," << c(fsg::SuperEllipsoidFittingContext::idx::rad_middle) << ","
-       << c(fsg::SuperEllipsoidFittingContext::idx::rad_minor) << "), "
-       << "yaw=" << c(fsg::SuperEllipsoidFittingContext::idx::rot_yaw) << ", "
-       << "pitch=" << c(fsg::SuperEllipsoidFittingContext::idx::rot_pitch)
+       << "center=(" << c(fsg::SuperEllipsoidParameters::idx::cen_x) << ","
+       << c(fsg::SuperEllipsoidParameters::idx::cen_y) << ","
+       << c(fsg::SuperEllipsoidParameters::idx::cen_z) << "), "
+       << "radii=(" << c(fsg::SuperEllipsoidParameters::idx::rad_major)
+       << "," << c(fsg::SuperEllipsoidParameters::idx::rad_middle) << ","
+       << c(fsg::SuperEllipsoidParameters::idx::rad_minor) << "), "
+       << "yaw=" << c(fsg::SuperEllipsoidParameters::idx::rot_yaw) << ", "
+       << "pitch=" << c(fsg::SuperEllipsoidParameters::idx::rot_pitch)
        << ", "
-       << "roll=" << c(fsg::SuperEllipsoidFittingContext::idx::rot_roll) << ", "
-       << "exp_1=" << c(fsg::SuperEllipsoidFittingContext::idx::exp_1) << ", "
-       << "exp_2=" << c(fsg::SuperEllipsoidFittingContext::idx::exp_2) << ", "
+       << "roll=" << c(fsg::SuperEllipsoidParameters::idx::rot_roll) << ", "
+       << "exp_1=" << c(fsg::SuperEllipsoidParameters::idx::exp_1) << ", "
+       << "exp_2=" << c(fsg::SuperEllipsoidParameters::idx::exp_2) << ", "
        << "]";
     return os;
 }
@@ -99,21 +99,21 @@ struct OptimizationFunctor : pcl::Functor<float> {
 
         // Extract center;
         ip::PointT cen;
-        cen.x = param(fsg::SuperEllipsoidFittingContext::idx::cen_x);
-        cen.y = param(fsg::SuperEllipsoidFittingContext::idx::cen_y);
-        cen.z = param(fsg::SuperEllipsoidFittingContext::idx::cen_z);
+        cen.x = param(fsg::SuperEllipsoidParameters::idx::cen_x);
+        cen.y = param(fsg::SuperEllipsoidParameters::idx::cen_y);
+        cen.z = param(fsg::SuperEllipsoidParameters::idx::cen_z);
 
         // Compute rotation matrix
         Eigen::Matrix3f rotmat;
         angles_to_matrix(
-            param(fsg::SuperEllipsoidFittingContext::idx::rot_yaw),
-            param(fsg::SuperEllipsoidFittingContext::idx::rot_pitch),
-            param(fsg::SuperEllipsoidFittingContext::idx::rot_roll), rotmat);
+            param(fsg::SuperEllipsoidParameters::idx::rot_yaw),
+            param(fsg::SuperEllipsoidParameters::idx::rot_pitch),
+            param(fsg::SuperEllipsoidParameters::idx::rot_roll), rotmat);
 
         const float exp_1 =
-            param(fsg::SuperEllipsoidFittingContext::idx::exp_1);
+            param(fsg::SuperEllipsoidParameters::idx::exp_1);
         const float exp_2 =
-            param(fsg::SuperEllipsoidFittingContext::idx::exp_2);
+            param(fsg::SuperEllipsoidParameters::idx::exp_2);
         // float exp_1_over_exp_2 = exp_1/exp_2;
 
         for (int i = 0; i < values(); ++i) {
@@ -132,11 +132,11 @@ struct OptimizationFunctor : pcl::Functor<float> {
             Eigen::Vector3f v_scaled;
             v_scaled
                 << v_raw(0) /
-                       param(fsg::SuperEllipsoidFittingContext::idx::rad_major),
+                       param(fsg::SuperEllipsoidParameters::idx::rad_major),
                 v_raw(1) /
-                    param(fsg::SuperEllipsoidFittingContext::idx::rad_middle),
+                    param(fsg::SuperEllipsoidParameters::idx::rad_middle),
                 v_raw(2) /
-                    param(fsg::SuperEllipsoidFittingContext::idx::rad_minor);
+                    param(fsg::SuperEllipsoidParameters::idx::rad_minor);
 
             float term = pow(v_scaled(0), exp_2) + pow(v_scaled(1), exp_2);
 
@@ -518,21 +518,21 @@ int main(int argc, char **argv) {
             viewer->addLine(center, z_axis, 0.0f, 0.0f, 1.0f,
                             obj_index_i_s + ":minor eigen vector");
 
-            fsg::SuperEllipsoidFittingContext fittingContext;
+            fsg::SuperEllipsoidParameters fittingContext;
 
             {
                 Eigen::VectorXf &coeff = fittingContext.coeff;
-                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_x) = mass_center(0);
-                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_y) = mass_center(1);
-                coeff(fsg::SuperEllipsoidFittingContext::idx::cen_z) = mass_center(2);
+                coeff(fsg::SuperEllipsoidParameters::idx::cen_x) = mass_center(0);
+                coeff(fsg::SuperEllipsoidParameters::idx::cen_y) = mass_center(1);
+                coeff(fsg::SuperEllipsoidParameters::idx::cen_z) = mass_center(2);
 
-                coeff(fsg::SuperEllipsoidFittingContext::idx::rad_major) =
+                coeff(fsg::SuperEllipsoidParameters::idx::rad_major) =
                     major_vector.norm();
 
-                coeff(fsg::SuperEllipsoidFittingContext::idx::rad_middle) =
+                coeff(fsg::SuperEllipsoidParameters::idx::rad_middle) =
                     middle_vector.norm();
 
-                coeff(fsg::SuperEllipsoidFittingContext::idx::rad_minor) =
+                coeff(fsg::SuperEllipsoidParameters::idx::rad_minor) =
                     minor_vector.norm();
 
                 float yaw, pitch, roll;
@@ -541,13 +541,13 @@ int main(int argc, char **argv) {
                 std::cout << "yaw=" << yaw << ", pitch=" << pitch
                           << ", roll=" << roll << std::endl;
 
-                coeff(fsg::SuperEllipsoidFittingContext::idx::rot_yaw) = yaw;
-                coeff(fsg::SuperEllipsoidFittingContext::idx::rot_pitch) =
+                coeff(fsg::SuperEllipsoidParameters::idx::rot_yaw) = yaw;
+                coeff(fsg::SuperEllipsoidParameters::idx::rot_pitch) =
                     pitch;
-                coeff(fsg::SuperEllipsoidFittingContext::idx::rot_roll) = roll;
+                coeff(fsg::SuperEllipsoidParameters::idx::rot_roll) = roll;
 
-                coeff(fsg::SuperEllipsoidFittingContext::idx::exp_1) = 2;
-                coeff(fsg::SuperEllipsoidFittingContext::idx::exp_2) = 2;
+                coeff(fsg::SuperEllipsoidParameters::idx::exp_1) = 2;
+                coeff(fsg::SuperEllipsoidParameters::idx::exp_2) = 2;
             }
 
             std::cout << "Initial estimation : " << fittingContext << std::endl;
