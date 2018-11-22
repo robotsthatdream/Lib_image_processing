@@ -41,7 +41,7 @@
 // Interface
 
 int FSG_LOG_INDENTATION_LEVEL =
-    1; /*HACK, won't work if 2 files include this file.*/
+    0; /*HACK, won't work if 2 files include this file.*/
 
 /** Before any log, for example at the start your main() function,
  * this outputs a conventional string (emacs convention) that allows
@@ -142,7 +142,7 @@ int FSG_LOG_INDENTATION_LEVEL =
 
 #define FSG_INDENTATION()                                                      \
     (FSG_LONGEMPTY_STRING +                                                    \
-     (FSG_LONGEMPTY_STRING_SIZE - FSG_LOG_INDENTATION_LEVEL - 1))
+     (4 * (FSG_LONGEMPTY_STRING_SIZE - FSG_LOG_INDENTATION_LEVEL) - 1))
 
 #define FSG_OSTREAM_VAR(VARNAME) #VARNAME << " = " << (VARNAME)
 
