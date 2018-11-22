@@ -387,9 +387,9 @@ int main(int argc, char **argv) {
 
     fsg::PointCloudTP supervoxel_cloud_ptr(new fsg::PointCloudT());
 
-    fsg::PointCloudTP model_projected_all_cloud_ptr(new fsg::PointCloudT());
+    fsg::PointCloudTP object_hyps_cloud_ptr(new fsg::PointCloudT());
 
-    fsg::PointCloudTP inliers_cloud_ptr(new fsg::PointCloudT());
+    fsg::PointCloudTP superellipsoids_cloud_ptr(new fsg::PointCloudT());
 
     {
         std::string modality = "meanFPFHLabHist";
@@ -543,6 +543,21 @@ int main(int argc, char **argv) {
 
             /* Okay, we've got one point cloud for this object. */
 
+            {
+                pcl::PointXYZRGB pt;
+
+                for (auto v : *cloud_xyz) {
+                    pt.x = v.x;
+                    pt.y = v.y;
+                    pt.z = v.z;
+
+                    pt.r = r;
+                    pt.g = g;
+                    pt.b = b;
+                    object_hyps_cloud_ptr->push_back(pt);
+                }
+            }
+
             pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
             feature_extractor.setInputCloud(cloud_xyz);
             // Minimize eccentricity computation.
@@ -652,17 +667,22 @@ int main(int argc, char **argv) {
             pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
                 fittingContext.toPointCloud();
 
-            pcl::PointXYZRGB pt;
+            {
+                pcl::PointXYZRGB pt;
 
-            for (auto v : *proj_points) {
-                pt.x = v.x;
-                pt.y = v.y;
-                pt.z = v.z;
+                r = 255.0 - r / 2.0;
+                g = 255.0 - g / 2.0;
+                b = 255.0 - b / 2.0;
+                for (auto v : *proj_points) {
+                    pt.x = v.x;
+                    pt.y = v.y;
+                    pt.z = v.z;
 
-                pt.r = r;
-                pt.g = g;
-                pt.b = b;
-                model_projected_all_cloud_ptr->push_back(pt);
+                    pt.r = r;
+                    pt.g = g;
+                    pt.b = b;
+                    superellipsoids_cloud_ptr->push_back(pt);
+                }
             }
 
             std::cout << "End new obj hyp, id=" << obj_index_i_s << "."
@@ -673,8 +693,8 @@ int main(int argc, char **argv) {
     cloud_reg_t clouds[] = {
         {"1", input_cloud_ptr, "input", true},
         {"2", supervoxel_cloud_ptr, "supervoxel", true},
-        {"3", model_projected_all_cloud_ptr, "model_projected_all", true},
-        {"4", inliers_cloud_ptr, "inliers", true},
+        {"3", object_hyps_cloud_ptr, "object_hyps", true},
+        {"4", superellipsoids_cloud_ptr, "superellipsoids", true},
         //{ "t", superellipsoid_cloud, "superellipsoid_cloud" },
     };
 
