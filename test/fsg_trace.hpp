@@ -3,8 +3,6 @@
 #ifndef FSG_TRACE_H_
 #define FSG_TRACE_H_
 
-
-
 /** @file
  * Log system for C++ code, simple and convenient (for me at least).
  *
@@ -46,13 +44,16 @@
  * this outputs a conventional string (emacs convention) that allows
  * to jump to source code in a keypress. */
 #ifdef FSG_PROJECT_ROOT
-#define FSG_LOG_INIT__CALL_FROM_CPP_MAIN() std::cerr << "make: Entering directory '" << FSG_PROJECT_ROOT << "'" << std::endl
+#define FSG_LOG_INIT__CALL_FROM_CPP_MAIN()                                     \
+    std::cerr << "make: Entering directory '" << FSG_PROJECT_ROOT << "'"       \
+              << std::endl
 #else
-#define FSG_LOG_INIT__CALL_FROM_CPP_MAIN()                                                                                    \
-    { /* When compiled with CMake or a Makefile, this will output to stderr:                                                  \
-         "make: Entering directory 'absolute compilation path'.   */                                                          \
+#define FSG_LOG_INIT__CALL_FROM_CPP_MAIN()                                     \
+    { /* When compiled with CMake or a Makefile, this will output to stderr:   \
+         "make: Entering directory 'absolute compilation path'.   */           \
     }
-#warning "FSG_PROJECT_RELATIVE_PATHNAME not defined, will not benefit from short paths in logs."
+#warning                                                                       \
+    "FSG_PROJECT_RELATIVE_PATHNAME not defined, will not benefit from short paths in logs."
 #endif
 
 /** @name Items that Produce a full log line.
@@ -61,20 +62,23 @@
 
 /** Simplest "been there" message: just log "here" with file and line
  * info. */
-#define FSG_LOG_LOCATION() FSG_LOG_MSG( "here" );
+#define FSG_LOG_LOCATION() FSG_LOG_MSG("here");
 
 /** Convenience shortcut: simplest constant string log. */
-#define FSG_LOG_MSG( TEXT ) FSG_LOG_BEGIN() << FSG_LOCATION() << TEXT << FSG_LOG_END()
+#define FSG_LOG_MSG(TEXT)                                                      \
+    FSG_LOG_BEGIN() << FSG_LOCATION() << TEXT << FSG_LOG_END()
 
 /** Log any variable (actually, any expression). */
-#define FSG_LOG_VAR( VARNAME ) FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_OSTREAM_VAR( VARNAME ) << FSG_LOG_END()
+#define FSG_LOG_VAR(VARNAME)                                                   \
+    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_OSTREAM_VAR(VARNAME)              \
+                    << FSG_LOG_END()
 
 /** Convenience shortcut: for any class where operator<< is properly
  * defined, log a text and a dump of "this" object.  */
-#define FSG_LOG_THIS( TEXT ) FSG_LOG_BEGIN() << FSG_LOCATION() << TEXT << ":" << this << FSG_LOG_END()
+#define FSG_LOG_THIS(TEXT)                                                     \
+    FSG_LOG_BEGIN() << FSG_LOCATION() << TEXT << ":" << this << FSG_LOG_END()
 
 ///@}
-
 
 /** @name RAII-based scope tracing.
 
@@ -118,11 +122,13 @@
 
 #define FSG_LOCATION() FSG_CURRENT_FILE_NAME << ":" << __LINE__ << ":"
 
-#define FSG_OSTREAM_VAR( VARNAME ) #VARNAME << " = " << ( VARNAME )
+#define FSG_OSTREAM_VAR(VARNAME) #VARNAME << " = " << (VARNAME)
 
-#define FSG_OSTREAM_FIELD( OBJECT, FIELDNAME ) #FIELDNAME << "=" << OBJECT.FIELDNAME << " "
+#define FSG_OSTREAM_FIELD(OBJECT, FIELDNAME)                                   \
+    #FIELDNAME << "=" << OBJECT.FIELDNAME << " "
 
-#define FSG_OSTREAM_POINTED_FIELD( OBJECT, FIELDNAME ) #FIELDNAME << "=" << OBJECT->FIELDNAME << " "
+#define FSG_OSTREAM_POINTED_FIELD(OBJECT, FIELDNAME)                           \
+    #FIELDNAME << "=" << OBJECT->FIELDNAME << " "
 
 ///@}
 
@@ -139,7 +145,8 @@
 #define FSG_CURRENT_FILE_NAME FSG_PROJECT_RELATIVE_PATHNAME
 #else
 #define FSG_CURRENT_FILE_NAME __FILE__
-#warning "FSG_PROJECT_RELATIVE_PATHNAME not defined, will not benefit from short paths in logs."
+#warning                                                                       \
+    "FSG_PROJECT_RELATIVE_PATHNAME not defined, will not benefit from short paths in logs."
 #endif
 
 namespace Fidergo
@@ -166,4 +173,4 @@ namespace Fidergo
 }
 
 
-#endif    // FSG_TRACE_H_
+#endif // FSG_TRACE_H_
