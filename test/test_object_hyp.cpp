@@ -314,6 +314,7 @@ void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event,
 }
 
 int main(int argc, char **argv) {
+    FSG_LOG_INIT__CALL_FROM_CPP_MAIN();
 
     if (argc != 4) {
         std::cerr << "Usage : \n\t- pcd file\n\t- gmm archive\n\t- label"
