@@ -21,6 +21,8 @@
 #include <unsupported/Eigen/NonLinearOptimization>
 #include <unsupported/Eigen/NumericalDiff>
 
+#include "fsg_trace.hpp"
+
 namespace ip = image_processing;
 
 using namespace fsg::matrixrotationangles;
@@ -97,8 +99,8 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
 pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
         new pcl::PointCloud<pcl::PointXYZ>);
-
-    std::cout << "Creating a point cloud for " << *this << std::endl;
+    FSG_TRACE_THIS_FUNCTION();
+    FSG_LOG_MSG("Creating a point cloud for " << *this);
 
     // We start by creating a superquadric at world center, not rotated.
 
@@ -148,7 +150,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     Eigen::Matrix3f rotmat;
     angles_to_matrix(get_rot_yaw(), get_rot_pitch(), get_rot_roll(), rotmat);
 
-    std::cout << "rotmat=" << rotmat << std::endl;
+    FSG_LOG_VAR(rotmat);
 
     Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
     transform.block(0, 0, 3, 3) << rotmat.transpose();
@@ -156,7 +158,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     // center << this->get_cen_x(), this->get_cen_y(), this->get_cen_z();
     transform.block(0, 3, 3, 1) << this->get_cen_x(), this->get_cen_y(), this->get_cen_z();
 
-    std::cout << "transform=" << transform << std::endl;
+    FSG_LOG_VAR(transform);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_final(
         new pcl::PointCloud<pcl::PointXYZ>);
@@ -270,8 +272,7 @@ void Context::updateInViewer(cloud_reg_t &cr) {
 }
 
 void Context::addCloud(cloud_reg_t &reg) {
-    std::cout << "Adding cloud with key " << reg.key << ", name " << reg.name
-              << std::endl;
+    FSG_LOG_MSG("Adding cloud with key " << reg.key << ", name " << reg.name);
 
     m_viewer->addPointCloud<pcl::PointXYZRGB>(reg.cloud, reg.name);
 
@@ -284,19 +285,18 @@ void Context::handleKeyboardEvent(
     const pcl::visualization::KeyboardEvent &event) {
     if (event.keyUp()) {
         const std::string keySym = event.getKeySym();
-        std::cout << "Key pressed '" << keySym << "'" << std::endl;
+        FSG_LOG_MSG("Key pressed '" << keySym << "'");
 
         if (keySym.compare("twosuperior") == 0) {
             m_viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
         }
 
         for (auto &cr : m_clouds) {
-            std::cout << "Checking key " << cr.key << ", name " << cr.name
-                      << std::endl;
+            FSG_LOG_MSG("Checking key " << cr.key << ", name " << cr.name);
             if ((keySym.compare(cr.key) == 0)) {
-                std::cout << "keysym " << keySym << " matches cloud name "
-                          << cr.name << " => toggling (was " << cr.active << ")"
-                          << std::endl;
+                FSG_LOG_MSG("keysym " << keySym << " matches cloud name "
+                                      << cr.name << " => toggling (was "
+                                      << cr.active << ")");
 
                 cr.active = !cr.active;
                 updateInViewer(cr);
@@ -330,12 +330,12 @@ int main(int argc, char **argv) {
     pcl::io::loadPCDFile(pcd_file, *input_cloud_soi);
     //*/
 
-    std::cout << "pcd file loaded:" << pcd_file << std::endl;
+    FSG_LOG_MSG("pcd file loaded:" << pcd_file);
 
     //* Load the CMMs classifier from the archive
     std::ifstream ifs(gmm_archive);
     if (!ifs) {
-        std::cerr << "Unable to open archive : " << gmm_archive << std::endl;
+        FSG_LOG_MSG("Unable to open archive : " << gmm_archive);
         return 1;
     }
     iagmm::GMM gmm;
@@ -343,26 +343,25 @@ int main(int argc, char **argv) {
     iarch >> gmm;
     //*/
 
-    std::cout << "classifier archive loaded:" << gmm_archive << std::endl;
+    FSG_LOG_MSG("classifier archive loaded:" << gmm_archive);
 
     //* Generate relevance map on the pointcloud
     ip::SurfaceOfInterest soi(input_cloud_soi);
-    std::cout << "computing supervoxel" << std::endl;
+    FSG_LOG_MSG("computing supervoxel");
     soi.computeSupervoxel();
 
-    std::cout << soi.getSupervoxels().size() << " supervoxels extracted"
-              << std::endl;
+    FSG_LOG_MSG(soi.getSupervoxels().size() << " supervoxels extracted");
 
-    std::cout << "computed supervoxel" << std::endl;
-    std::cout << "computing meanFPFHLabHist" << std::endl;
+    FSG_LOG_MSG("computed supervoxel");
+    FSG_LOG_MSG("computing meanFPFHLabHist");
     soi.compute_feature("meanFPFHLabHist");
-    std::cout << "computed meanFPFHLabHist" << std::endl;
-    std::cout << "computing meanFPFHLabHist weights" << std::endl;
+    FSG_LOG_MSG("computed meanFPFHLabHist");
+    FSG_LOG_MSG("computing meanFPFHLabHist weights");
     soi.compute_weights<iagmm::GMM>("meanFPFHLabHist", gmm);
-    std::cout << "computed meanFPFHLabHist weights" << std::endl;
+    FSG_LOG_MSG("computed meanFPFHLabHist weights");
     //*/
 
-    std::cout << "relevance_map extracted" << std::endl;
+    FSG_LOG_MSG("relevance_map extracted");
 
     //* Generate objects hypothesis
     std::vector<std::set<uint32_t>> obj_hypotheses;
@@ -371,8 +370,7 @@ int main(int argc, char **argv) {
 
     // obj_hypotheses
 
-    std::cout << obj_hypotheses.size() << " objects hypothesis extracted"
-              << std::endl;
+    FSG_LOG_MSG(obj_hypotheses.size() << " objects hypothesis extracted");
 
     std::string windowTitle;
 
@@ -434,12 +432,12 @@ int main(int argc, char **argv) {
             float c = weights_for_this_modality[it_sv->first][lbl];
 
             if (c < 0.5) {
-                // std::cout << " skipping sv of label " << current_sv_label <<
-                // " weight " << c << std::endl;
+                // FSG_LOG_MSG( " skipping sv of label " << current_sv_label <<
+                // " weight " << c );
                 continue;
             }
-            // std::cout << " KEEPING sv of label " << current_sv_label << "
-            // weight " << c << std::endl;
+            // FSG_LOG_MSG( " KEEPING sv of label " << current_sv_label << "
+            // weight " << c );
             ++kept;
 
             // This chooses random colors amont a palette of 3^3 = 27
@@ -461,8 +459,8 @@ int main(int argc, char **argv) {
                 supervoxel_cloud_ptr->push_back(pt);
             }
         }
-        std::cout << "Thresholding kept " << kept << " supervoxels out of "
-                  << supervoxels.size() << std::endl;
+        FSG_LOG_MSG("Thresholding kept " << kept << " supervoxels out of "
+                                         << supervoxels.size());
 
         /* Populate again with cloud fitted with shape. */
 
@@ -489,18 +487,17 @@ int main(int argc, char **argv) {
             int g = float(dist(_gen) * 85);
             int b = float(dist(_gen) * 85);
 
-            std::cout << std::endl
-                      << "Begin new obj hyp, id=" << obj_index_i_s << ", "
-                                                                      "color = "
-                      << r << "," << g << "," << b << std::endl;
+            FSG_LOG_MSG("Begin new obj hyp, id=" << obj_index_i_s << ", "
+                                                                     "color = "
+                                                 << r << "," << g << "," << b);
 
             pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
                 new pcl::PointCloud<pcl::PointXYZ>);
 
             if (p_obj_hyp->size() <= 1) {
-                std::cerr << "Skipping hypothesis object id=" << obj_index_i_s
-                          << " because too few supervoxels: "
-                          << p_obj_hyp->size() << std::endl;
+                FSG_LOG_MSG("Skipping hypothesis object id="
+                            << obj_index_i_s << " because too few supervoxels: "
+                            << p_obj_hyp->size());
                 continue;
             }
 
@@ -513,17 +510,17 @@ int main(int argc, char **argv) {
                     pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
 
                     if (p_obj_hyp->find(current_sv_label) == p_obj_hyp->end()) {
-                        // std::cout << "Supervoxel " << current_sv_label << "
-                        // not part of current object, skipping." << std::endl;
+                        // FSG_LOG_MSG( "Supervoxel " << current_sv_label << "
+                        // not part of current object, skipping." );
                         continue;
                     }
                     ++kept;
 
-                    std::cout << "Supervoxel labelled " << current_sv_label
-                              << " part of current object, including, "
-                                 "will add "
-                              << current_sv->voxels_->size() << " point(s)."
-                              << std::endl;
+                    FSG_LOG_MSG("Supervoxel labelled "
+                                << current_sv_label
+                                << " part of current object, including, "
+                                   "will add "
+                                << current_sv->voxels_->size() << " point(s).");
                     for (auto v : *(current_sv->voxels_)) {
                         pt.x = v.x;
                         pt.y = v.y;
@@ -531,16 +528,18 @@ int main(int argc, char **argv) {
                         cloud_xyz->push_back(pt);
                     }
                 }
-                std::cout << "Gathered " << kept
-                          << " supervoxels into a point cloud of size "
-                          << cloud_xyz->size() << std::endl;
+                FSG_LOG_MSG("Gathered "
+                            << kept
+                            << " supervoxels into a point cloud of size "
+                            << cloud_xyz->size());
             }
 
             if (cloud_xyz->size() < 20) {
-                std::cerr
-                    << "Skipping hypothesis object id=" << obj_index_i_s
+                FSG_LOG_MSG(
+                    "Skipping hypothesis object id="
+                    << obj_index_i_s
                     << " because supervoxels combined into too few points: "
-                    << cloud_xyz->size() << std::endl;
+                    << cloud_xyz->size());
                 continue;
             }
 
@@ -593,7 +592,7 @@ int main(int argc, char **argv) {
 
             std::string obbId(obj_index_i_s + ":obb");
 
-            std::cout << "will add obb with id: " << obbId << std::endl;
+            FSG_LOG_MSG("will add obb with id: " << obbId);
 
             viewer->addCube(position, quat, max_point_OBB.x - min_point_OBB.x,
                             max_point_OBB.y - min_point_OBB.y,
@@ -638,8 +637,8 @@ int main(int argc, char **argv) {
             float yaw, pitch, roll;
             matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
 
-            std::cout << "yaw=" << yaw << ", pitch=" << pitch
-                      << ", roll=" << roll << std::endl;
+            FSG_LOG_MSG("yaw=" << yaw << ", pitch=" << pitch
+                               << ", roll=" << roll);
 
             fittingContext.set_rot_yaw(yaw);
             fittingContext.set_rot_pitch(pitch);
@@ -648,7 +647,7 @@ int main(int argc, char **argv) {
             fittingContext.set_exp_1(1);
             fittingContext.set_exp_2(1);
 
-            std::cout << "Initial estimation : " << fittingContext << std::endl;
+            FSG_LOG_MSG("Initial estimation : " << fittingContext);
 
             std::vector<int> indices(cloud_xyz->size());
             for (size_t i = 0; i < cloud_xyz->size(); ++i) {
@@ -662,10 +661,9 @@ int main(int argc, char **argv) {
                 lm(num_diff);
             int minimizationResult = lm.minimize(fittingContext.coeff);
 
-            std::cout << "Minimization result: " << (int)minimizationResult
-                      << std::endl;
+            FSG_LOG_MSG("Minimization result: " << (int)minimizationResult);
 
-            std::cout << "After minimization : " << fittingContext << std::endl;
+            FSG_LOG_MSG("After minimization : " << fittingContext);
 
             pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
                 fittingContext.toPointCloud();
@@ -688,8 +686,7 @@ int main(int argc, char **argv) {
                 }
             }
 
-            std::cout << "End new obj hyp, id=" << obj_index_i_s << "."
-                      << std::endl;
+            FSG_LOG_MSG("End new obj hyp, id=" << obj_index_i_s << ".");
         }
     }
 
