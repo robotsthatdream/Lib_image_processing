@@ -371,9 +371,9 @@ Superpixels SupervoxelSet::to_superpixels(){
             float px = pt_vx.x;
             float py = pt_vx.y;
             float pz = pt_vx.z;
-            float x = _cam_param.focal_length_x*pt_vx.x/pt_vx.z
+            float x = _cam_param.focal_length_x*px/pz
                     + _cam_param.rgb_princ_pt_x;
-            float y = _cam_param.focal_length_y*pt_vx.y/pt_vx.z
+            float y = _cam_param.focal_length_y*py/pz
                     + _cam_param.rgb_princ_pt_y;
 
             pts.push_back(cv::Point2f(x,y));

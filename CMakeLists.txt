@@ -54,6 +54,12 @@ add_definitions(${PCL_DEFINITIONS})
 
 add_compile_options("$<$<CONFIG:RELEASE>:-O3>")
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_compile_options("-W")
+  add_compile_options("-Wall")
+  add_compile_options("-Wextra")
+  add_compile_options("-pedantic")
+endif ()
 if (CMAKE_VERSION VERSION_LESS "3.1")
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options("-std=c++11")

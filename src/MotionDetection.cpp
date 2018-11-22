@@ -126,7 +126,7 @@ void MotionDetection::detect_MOG_depth(cv::Mat& depth_frame_16UC1)
 #endif /* CV_MAJOR_VERSION 2 */
 
 bool MotionDetection::detect_on_cloud(const PointCloudXYZ::Ptr sv, const std::vector<double>& sv_center, PointCloudXYZ::Ptr diff_cloud ,
-                                      int threshold, double dist_thres, double mean_thres, double octree_res){
+                                      size_t threshold, double dist_thres, double mean_thres, double octree_res){
     std::vector<int> index;
     double dist, min_dist, mean_dist = 0;
 

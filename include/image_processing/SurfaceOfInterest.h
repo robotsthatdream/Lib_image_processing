@@ -64,7 +64,7 @@ public:
         SupervoxelSet(soi),
         _weights(soi._weights),
         _labels(soi._labels),
-        _labels_no_soi(_labels_no_soi),
+        _labels_no_soi(soi._labels_no_soi),
         _gen(soi._gen){}
 
     /**

@@ -313,7 +313,7 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX) {
     Eigen::Matrix3f m;
 
     angles_to_matrix(yaw, 0, 0, m);
-    Eigen::Vector3f x1 = m * x;
+    //Eigen::Vector3f x1 = m * x;
     Eigen::Vector3f y1 = m * y;
 
     angles_to_matrix(yaw, pitch, 0, m);
