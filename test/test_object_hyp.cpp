@@ -74,6 +74,8 @@ struct SuperEllipsoidParameters {
 
         friend ostream &
         operator<<(ostream &os, const SuperEllipsoidParameters &sefc);
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr toPointCloud();
 };
 
 ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
@@ -89,6 +91,44 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
        << "exp_2=" << sefc.get_exp_2() << ", "
        << "]";
     return os;
+}
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(
+        new pcl::PointCloud<pcl::PointXYZ>);
+
+    // We start by creating a superquadric at world center, not rotated.
+
+    // Same conventions as in fsg::matrixrotationangles, which in
+    // turn follow ROS.
+
+    // - x forward
+    // - y left
+    // - z up
+    //
+    //          Z
+    //
+    //          |
+    //        x |
+    //         \|
+    //   Y -----O
+
+    pcl::PointXYZ pt;
+    const float increment = M_PI_2 / 10;
+    
+    for (float pitch = -M_PI_2 * 0.98; pitch < M_PI_2;
+         pitch += increment) {
+        pt.z = sin(pitch);
+        float cos_pitch = cos(pitch);
+        for (float yaw = -M_PI; yaw < M_PI; yaw += increment) {
+            pt.x = cos(yaw) * cos_pitch;
+            pt.y = sin(yaw) * cos_pitch;
+            
+            cloud->push_back(pt);
+        }
+    }
+
+    return cloud;
 }
 }
 
@@ -572,13 +612,11 @@ int main(int argc, char **argv) {
 
             std::cout << "After minimization : " << fittingContext << std::endl;
 
-            pcl::PointCloud<pcl::PointXYZ> proj_points;
-            // model_s->projectPoints(inliers, coeff_refined, proj_points,
-            // false);
-
+            pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points = fittingContext.toPointCloud();
+            
             pcl::PointXYZRGB pt;
 
-            for (auto v : *cloud_xyz) {
+            for (auto v : *proj_points) {
                 pt.x = v.x;
                 pt.y = v.y;
                 pt.z = v.z;
