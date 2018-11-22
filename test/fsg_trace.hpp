@@ -103,13 +103,13 @@ int FSG_LOG_INDENTATION_LEVEL =
 ///@{
 
 #define FSG_TRACE_THIS_FUNCTION()                                              \
-    Fidergo::Trace(__PRETTY_FUNCTION__, FSG_CURRENT_FILE_NAME, __LINE__);
+    Fidergo::Trace FSG_TRACE_this_function_tracer(__PRETTY_FUNCTION__, FSG_CURRENT_FILE_NAME, __LINE__);
 #define FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(label)                         \
-    Fidergo::Trace(label, FSG_CURRENT_FILE_NAME, __LINE__);
+    Fidergo::Trace FSG_TRACE_this_scope_tracer(label, FSG_CURRENT_FILE_NAME, __LINE__);
 #define FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(expression)                          \
     auto ss = std::stringstream();                                             \
     ss << expression;                                                          \
-    Fidergo::Trace(ss.str(), FSG_CURRENT_FILE_NAME, __LINE__);
+    Fidergo::Trace FSG_TRACE_this_scope_tracer(ss.str(), FSG_CURRENT_FILE_NAME, __LINE__);
 
 ///@}
 
