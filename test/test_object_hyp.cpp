@@ -12,13 +12,13 @@
 #include <pcl/sample_consensus/sac_model_sphere.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
-#include <unsupported/Eigen/NonLinearOptimization>
-#include <unsupported/Eigen/NumericalDiff>
 #include "../include/image_processing/SurfaceOfInterest.h"
 #include "test_rotation.hpp"
 #include <boost/archive/text_iarchive.hpp>
 #include <iagmm/gmm.hpp>
 #include <math.h>
+#include <unsupported/Eigen/NonLinearOptimization>
+#include <unsupported/Eigen/NumericalDiff>
 
 namespace ip = image_processing;
 
@@ -148,7 +148,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \return 0
      */
     int operator()(const Eigen::VectorXf &param, Eigen::VectorXf &fvec) const {
-        //FG_TRACE_THIS_SCOPE();
+        // FG_TRACE_THIS_SCOPE();
 
         // Extract center;
         ip::PointT cen;
@@ -393,7 +393,7 @@ int main(int argc, char **argv) {
         int kept = 0;
         for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
              it_sv++) {
-            //int current_sv_label = it_sv->first;
+            // int current_sv_label = it_sv->first;
             pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
             float c = weights_for_this_modality[it_sv->first][lbl];
 
@@ -616,8 +616,9 @@ int main(int argc, char **argv) {
 
             std::cout << "After minimization : " << fittingContext << std::endl;
 
-            pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points = fittingContext.toPointCloud();
-            
+            pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
+                fittingContext.toPointCloud();
+
             pcl::PointXYZRGB pt;
 
             for (auto v : *proj_points) {
