@@ -152,3 +152,20 @@ add_executable(test_rotation test/test_rotation.cpp)
 target_compile_definitions(test_rotation PRIVATE -DFSG_COMPILING_GTEST_EXECUTABLE=1)
 target_link_libraries(test_rotation gtest_main)
 add_test(NAME test_rotation COMMAND test_rotation)
+
+
+
+################################################################
+# Log facility
+################################################################
+# Allow to have relative source names in text logs.
+# VERY comfortable to jump from log to source code in a keypress.
+# This currently uses emacs conventions, might work in other environments.
+
+#message(STATUS "will strip ${COUNT_OF_CHARS_TO_STRIP_TO_GET_PATH_RELATIVE_TO_CMAKE_HOME_DIRECTORY}")
+foreach(SOURCE_FILE IN ITEMS test/test_object_hyp.cpp test/test_rotation.cpp)
+  set_source_files_properties(${SOURCE_FILE} PROPERTIES
+    COMPILE_DEFINITIONS "FSG_PROJECT_ROOT=\"${CMAKE_HOME_DIRECTORY}\";FSG_PROJECT_RELATIVE_PATHNAME=\"${SOURCE_FILE}\"")
+  #message(STATUS "${RELPATHNAME}")
+endforeach()
+################################################################
