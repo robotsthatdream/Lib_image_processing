@@ -635,11 +635,11 @@ int main(int argc, char **argv) {
             fittingContext.set_cen_y(mass_center(1));
             fittingContext.set_cen_z(mass_center(2));
 
-            fittingContext.set_rad_major(major_vector.norm());
+            fittingContext.set_rad_major(0.1);
 
-            fittingContext.set_rad_middle(middle_vector.norm());
+            fittingContext.set_rad_middle(0.1);
 
-            fittingContext.set_rad_minor(minor_vector.norm());
+            fittingContext.set_rad_minor(0.1);
 
             float yaw, pitch, roll;
             matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
