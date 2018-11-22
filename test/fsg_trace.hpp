@@ -142,7 +142,7 @@ int FSG_LOG_INDENTATION_LEVEL =
 
 #define FSG_INDENTATION()                                                      \
     (FSG_LONGEMPTY_STRING +                                                    \
-     (4 * (FSG_LONGEMPTY_STRING_SIZE - FSG_LOG_INDENTATION_LEVEL) - 1))
+     (FSG_LONGEMPTY_STRING_SIZE - 4 * FSG_LOG_INDENTATION_LEVEL - 1))
 
 #define FSG_OSTREAM_VAR(VARNAME) #VARNAME << " = " << (VARNAME)
 
