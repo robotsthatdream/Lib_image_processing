@@ -2,6 +2,7 @@
 #include <boost/range/adaptor/indexed.hpp>
 #include <forward_list>
 #include <iostream>
+#include <pcl/common/transforms.h>
 #include <pcl/console/parse.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
 #include <pcl/filters/extract_indices.h>
@@ -94,8 +95,10 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
 }
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
         new pcl::PointCloud<pcl::PointXYZ>);
+
+    std::cout << "Creating a point cloud for " << *this << std::endl;
 
     // We start by creating a superquadric at world center, not rotated.
 
@@ -113,22 +116,52 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     //         \|
     //   Y -----O
 
+    float exp_1 = this->get_exp_1();
+    float exp_2 = this->get_exp_1();
+
+    // FIXME rename rad_*, major will not always be Z
+    float dilatfactor_x = this->get_rad_minor();
+    float dilatfactor_y = this->get_rad_middle();
+    float dilatfactor_z = this->get_rad_major();
+
     pcl::PointXYZ pt;
     const float increment = M_PI_2 / 10;
-    
-    for (float pitch = -M_PI_2 * 0.98; pitch < M_PI_2;
-         pitch += increment) {
-        pt.z = sin(pitch);
-        float cos_pitch = cos(pitch);
+
+    // Pitch is eta in Biegelbauer et al.
+    for (float pitch = -M_PI_2; pitch < M_PI_2; pitch += increment) {
+
+        pt.z = dilatfactor_z * pow(sin(pitch), exp_1);
+        float cos_pitch_exp_1 = pow(cos(pitch), exp_1);
+
+        // Yaw is omega in Biegelbauer et al.
         for (float yaw = -M_PI; yaw < M_PI; yaw += increment) {
-            pt.x = cos(yaw) * cos_pitch;
-            pt.y = sin(yaw) * cos_pitch;
-            
-            cloud->push_back(pt);
+
+            pt.x = dilatfactor_x * pow(cos(yaw), exp_2) * cos_pitch_exp_1;
+            pt.y = dilatfactor_y * pow(sin(yaw), exp_2) * cos_pitch_exp_1;
+
+            cloud_step1->push_back(pt);
         }
     }
 
-    return cloud;
+    // Next rotate the point cloud.
+
+    Eigen::Matrix3f rotmat;
+    angles_to_matrix(get_rot_yaw(), get_rot_pitch(), get_rot_roll(), rotmat);
+
+    std::cout << "rotmat=" << rotmat << std::endl;
+
+    Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
+    transform.block(0, 0, 3, 3) << rotmat.transpose();
+
+    std::cout << "transform=" << transform << std::endl;
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_final(
+        new pcl::PointCloud<pcl::PointXYZ>);
+
+    // You can either apply transform_1 or transform_2; they are the same
+    pcl::transformPointCloud(*cloud_step1, *cloud_final, transform);
+
+    return cloud_final;
 }
 }
 
