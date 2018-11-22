@@ -589,6 +589,9 @@ int main(int argc, char **argv) {
 
             feature_extractor.getEigenVectors(major_vector, middle_vector,
                                               minor_vector);
+            FSG_LOG_VAR(major_vector);
+            FSG_LOG_VAR(middle_vector);
+            FSG_LOG_VAR(minor_vector);
 
             pcl::PointXYZ min_point_OBB;
             pcl::PointXYZ max_point_OBB;
@@ -601,6 +604,15 @@ int main(int argc, char **argv) {
             FSG_LOG_VAR(position_OBB);
             FSG_LOG_VAR(min_point_OBB);
             FSG_LOG_VAR(max_point_OBB);
+
+            FSG_LOG_VAR(rotational_matrix_OBB);
+
+            major_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0;
+            middle_vector *= (max_point_OBB.y - min_point_OBB.y) / 2.0;
+            minor_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0;
+            FSG_LOG_VAR(major_vector);
+            FSG_LOG_VAR(middle_vector);
+            FSG_LOG_VAR(minor_vector);
 
             // From
             // http://pointclouds.org/documentation/tutorials/moment_of_inertia.php
@@ -647,11 +659,11 @@ int main(int argc, char **argv) {
             fittingContext.set_cen_y(mass_center(1));
             fittingContext.set_cen_z(mass_center(2));
 
-            fittingContext.set_rad_major(0.1);
+            fittingContext.set_rad_major(major_vector.norm());
 
-            fittingContext.set_rad_middle(0.1);
+            fittingContext.set_rad_middle(middle_vector.norm());
 
-            fittingContext.set_rad_minor(0.1);
+            fittingContext.set_rad_minor(minor_vector.norm());
 
             float yaw, pitch, roll;
             matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
