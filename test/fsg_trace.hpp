@@ -183,15 +183,27 @@ class Trace {
     Trace(const std::string &ScopeName, const char *file_name, int line)
         : file_name(file_name), line(line) {
         this->scopeName = ScopeName;
-        FSG_LOG_BEGIN() << file_name << ":" << line << ":" << FSG_INDENTATION()
-                        << "{ Entering: " << scopeName << FSG_LOG_END();
+
+        FSG_LOG_BEGIN() << std::endl
+                        << file_name << "-" << line << "-" << FSG_INDENTATION()
+                        << "{" << FSG_LOG_END();
+
         ++FSG_LOG_INDENTATION_LEVEL;
+
+        FSG_LOG_BEGIN() << file_name << ":" << line << ":" << FSG_INDENTATION()
+                        << "Entered: " << scopeName << FSG_LOG_END();
     }
 
     ~Trace() {
+        FSG_LOG_BEGIN() << file_name << "-" << line << "-" << FSG_INDENTATION()
+                        << "Exited: " << scopeName << FSG_LOG_END();
+
         --FSG_LOG_INDENTATION_LEVEL;
-        FSG_LOG_BEGIN() << file_name << ":" << line << ":" << FSG_INDENTATION()
-                        << "}  Exiting: " << scopeName << FSG_LOG_END();
+
+        FSG_LOG_BEGIN() << file_name << "-" << line << "-" << FSG_INDENTATION()
+                        << "}" << std::endl
+
+                        << FSG_LOG_END();
         // FSG_LOG_MSG("} indent level " << FSG_LOG_INDENTATION_LEVEL);
     }
 };
