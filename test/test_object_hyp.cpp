@@ -181,12 +181,12 @@ struct OptimizationFunctor : pcl::Functor<float> {
             // TODO check major/middle/minor vs X,Y,Z...
 
             Eigen::Vector3f v_scaled;
-            v_scaled << v_raw(0) /
+            v_scaled << v_aligned(0) /
                             param(
                                 fsg::SuperEllipsoidParameters::idx::rad_major),
-                v_raw(1) /
+                v_aligned(1) /
                     param(fsg::SuperEllipsoidParameters::idx::rad_middle),
-                v_raw(2) / param(fsg::SuperEllipsoidParameters::idx::rad_minor);
+                v_aligned(2) / param(fsg::SuperEllipsoidParameters::idx::rad_minor);
 
             float term = pow(v_scaled(0), exp_2) + pow(v_scaled(1), exp_2);
 
