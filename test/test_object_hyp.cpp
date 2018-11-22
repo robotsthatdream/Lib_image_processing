@@ -638,13 +638,15 @@ int main(int argc, char **argv) {
 
             pcl::PointXYZ center(mass_center(0), mass_center(1),
                                  mass_center(2));
-            pcl::PointXYZ x_axis(2.0 * major_vector(0) + mass_center(0),
+            
+            // FIXME clarify/generalize major/z.
+            pcl::PointXYZ z_axis(2.0 * major_vector(0) + mass_center(0),
                                  2.0 * major_vector(1) + mass_center(1),
                                  2.0 * major_vector(2) + mass_center(2));
             pcl::PointXYZ y_axis(2.0 * middle_vector(0) + mass_center(0),
                                  2.0 * middle_vector(1) + mass_center(1),
                                  2.0 * middle_vector(2) + mass_center(2));
-            pcl::PointXYZ z_axis(2.0 * minor_vector(0) + mass_center(0),
+            pcl::PointXYZ x_axis(2.0 * minor_vector(0) + mass_center(0),
                                  2.0 * minor_vector(1) + mass_center(1),
                                  2.0 * minor_vector(2) + mass_center(2));
 
