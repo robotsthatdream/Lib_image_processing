@@ -726,6 +726,8 @@ struct features_fct{
                 features.emplace(sv.first,std::map<std::string,Eigen::VectorXd>());
             }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
             tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
                               [&](const tbb::blocked_range<size_t>& r){
 
@@ -818,6 +820,7 @@ struct features_fct{
                     features[lbls[k]]["centralFPFHLabHist"] = new_s;
                 }
             });
+#pragma GCC diagnostic pop
         });
 
         map.emplace("circleFPFHLabHist",
