@@ -621,15 +621,15 @@ int main(int argc, char **argv) {
 
             pcl::PointXYZ center(mass_center(0), mass_center(1),
                                  mass_center(2));
-            pcl::PointXYZ x_axis(major_vector(0) + mass_center(0),
-                                 major_vector(1) + mass_center(1),
-                                 major_vector(2) + mass_center(2));
-            pcl::PointXYZ y_axis(middle_vector(0) + mass_center(0),
-                                 middle_vector(1) + mass_center(1),
-                                 middle_vector(2) + mass_center(2));
-            pcl::PointXYZ z_axis(minor_vector(0) + mass_center(0),
-                                 minor_vector(1) + mass_center(1),
-                                 minor_vector(2) + mass_center(2));
+            pcl::PointXYZ x_axis(2.0 * major_vector(0) + mass_center(0),
+                                 2.0 * major_vector(1) + mass_center(1),
+                                 2.0 * major_vector(2) + mass_center(2));
+            pcl::PointXYZ y_axis(2.0 * middle_vector(0) + mass_center(0),
+                                 2.0 * middle_vector(1) + mass_center(1),
+                                 2.0 * middle_vector(2) + mass_center(2));
+            pcl::PointXYZ z_axis(2.0 * minor_vector(0) + mass_center(0),
+                                 2.0 * minor_vector(1) + mass_center(1),
+                                 2.0 * minor_vector(2) + mass_center(2));
 
             viewer->addLine(center, x_axis, 1.0f, 0.0f, 0.0f,
                             obj_index_i_s + ":major eigen vector");
