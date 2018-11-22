@@ -13,6 +13,9 @@
 #include <pcl/sample_consensus/sac_model_sphere.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
+#include <vtkOrientationMarkerWidget.h>
+#include <vtkRenderWindow.h>
+
 #include "../include/image_processing/SurfaceOfInterest.h"
 #include "test_rotation.hpp"
 #include <boost/archive/text_iarchive.hpp>
@@ -726,6 +729,10 @@ int main(int argc, char **argv) {
     viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
 
     viewer->registerKeyboardCallback(keyboardEventOccurred, (void *)&context_p);
+
+    vtkRenderWindowInteractor *interactor =
+        viewer->getRenderWindow()->GetInteractor();
+    viewer->addOrientationMarkerWidgetAxes(interactor);
 
     while (!viewer->wasStopped()) {
         viewer->spinOnce(100);
