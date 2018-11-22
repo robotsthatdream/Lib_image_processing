@@ -389,7 +389,7 @@ int main(int argc, char **argv) {
         int kept = 0;
         for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
              it_sv++) {
-            int current_sv_label = it_sv->first;
+            //int current_sv_label = it_sv->first;
             pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
             float c = weights_for_this_modality[it_sv->first][lbl];
 
