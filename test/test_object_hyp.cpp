@@ -156,7 +156,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     transform.block(0, 0, 3, 3) << rotmat.transpose();
     // Eigen::Vector3f center;
     // center << this->get_cen_x(), this->get_cen_y(), this->get_cen_z();
-    transform.block(0, 3, 3, 1) << this->get_cen_x(), this->get_cen_y(), this->get_cen_z();
+    transform.block(0, 3, 3, 1) << this->get_cen_x(), this->get_cen_y(),
+        this->get_cen_z();
 
     FSG_LOG_VAR(transform);
 
@@ -463,6 +464,7 @@ int main(int argc, char **argv) {
                 supervoxel_cloud_ptr->push_back(pt);
             }
         }
+
         FSG_LOG_MSG("Thresholding kept " << kept << " supervoxels out of "
                                          << supervoxels.size());
 
