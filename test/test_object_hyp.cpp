@@ -486,6 +486,9 @@ int main(int argc, char **argv) {
         /* each object */
         for (const auto &obj_hyp :
              obj_hypotheses | boost::adaptors::indexed(0)) {
+
+            FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("next obj_hypothesis");
+
             std::string obj_index_i_s = std::to_string(obj_hyp.index());
             std::set<uint32_t> *p_obj_hyp = &(obj_hyp.value());
 
@@ -577,6 +580,8 @@ int main(int argc, char **argv) {
             feature_extractor.getMassCenter(
                 mass_center); // FIXME should check return value
 
+            FSG_LOG_VAR(mass_center);
+
             Eigen::Vector3f major_vector, middle_vector, minor_vector;
 
             feature_extractor.getEigenVectors(major_vector, middle_vector,
@@ -589,6 +594,10 @@ int main(int argc, char **argv) {
             feature_extractor.getOBB(
                 min_point_OBB, max_point_OBB, position_OBB,
                 rotational_matrix_OBB); // FIXME should check return value
+
+            FSG_LOG_VAR(position_OBB);
+            FSG_LOG_VAR(min_point_OBB);
+            FSG_LOG_VAR(max_point_OBB);
 
             // From
             // http://pointclouds.org/documentation/tutorials/moment_of_inertia.php
