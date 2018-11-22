@@ -198,7 +198,7 @@ uint32_t SupervoxelSet::whichVoxelContain(float x, float y, float z){
     std::map<int, uint32_t> centroids_label;
     getCentroidCloud(centr,centroids_label);
     PointCloudXYZ::Ptr centroids(new PointCloudXYZ);
-    for(int i = 0; i < centr.size(); i++){
+    for(size_t i = 0; i < centr.size(); i++){
         pcl::PointXYZ pt;
         pt.x = centr.points[i].x;
         pt.y = centr.points[i].y;
@@ -273,7 +273,7 @@ void SupervoxelSet::insert(uint32_t label,
                                std::vector<uint32_t> neighborLabel){
     _supervoxels.insert(std::pair<uint32_t,pcl::Supervoxel<PointT>::Ptr >(label,supervoxel));
 
-    for(int i = 0; i < neighborLabel.size(); i++)
+    for(size_t i = 0; i < neighborLabel.size(); i++)
         _adjacency_map.insert(std::pair<uint32_t,uint32_t>(label,neighborLabel.at(i)));
 }
 
@@ -330,7 +330,7 @@ SupervoxelSet SupervoxelSet::compare(SupervoxelSet &super,double threshold,doubl
 
     std::cout << "start search for difference" << std::endl;
 
-    for(int i = 0; i < inputCentroids.size(); i++){
+    for(size_t i = 0; i < inputCentroids.size(); i++){
         if(!pcl::isFinite(inputCentroids.points[i]) || !pcl::isFinite(inputNormals.points[i]))
             continue;
 
@@ -366,7 +366,7 @@ Superpixels SupervoxelSet::to_superpixels(){
     for(auto it_sv = _supervoxels.begin(); it_sv != _supervoxels.end(); it_sv++){
         std::vector<cv::Point2f> pts;
         pcl::Supervoxel<PointT> current_sv = *(it_sv->second);
-        for(int i = 0; i < current_sv.voxels_->size(); i++){
+        for(size_t i = 0; i < current_sv.voxels_->size(); i++){
             PointT pt_vx = current_sv.voxels_->at(i);
             float px = pt_vx.x;
             float py = pt_vx.y;
@@ -411,7 +411,7 @@ void SupervoxelSet::supervoxel_to_mask(uint32_t lbl, cv::Mat &mask){
 
     PointCloudT::Ptr sv = _supervoxels.at(lbl)->voxels_;
     mask = cv::Mat::zeros(_cam_param.height,_cam_param.width,CV_8U);
-    for(int i = 0; i < sv->size(); i++){
+    for(size_t i = 0; i < sv->size(); i++){
         PointT pt = sv->at(i);
 
         int p_x = _cam_param.focal_length_x*pt.x/pt.z
@@ -475,14 +475,14 @@ void SupervoxelSet::compute_feature(const std::string& name){
     features_fct::fct_map.at(name)(_supervoxels, _adjacency_map, _features);
 }
 
-void SupervoxelSet::filter_supervoxels(int min_size){
+void SupervoxelSet::filter_supervoxels(size_t min_size){
     std::vector<uint32_t> to_erase;
     for(SupervoxelArray::iterator it = _supervoxels.begin()
         ; it != _supervoxels.end(); it++){
         if(it->second->voxels_->size() < min_size)
             to_erase.push_back(it->first);
     }
-    for(int i = 0; i < to_erase.size(); i++)
+    for(size_t i = 0; i < to_erase.size(); i++)
         remove(to_erase[i]);
 }
 

@@ -234,7 +234,7 @@ bool BabblingDataset::_load_arm_trajectories(const std::string &filename, arm_tr
 
     for(YAML::iterator it = controller_feedback.begin(); it != controller_feedback.end(); ++it){
         std::vector<double> traj;
-        for(int i = 0; i < it->second["joints_values"].size();i++)
+        for(size_t i = 0; i < it->second["joints_values"].size();i++)
             traj.push_back(it->second["joints_values"]["joint_"+std::to_string(i)].as<double>());
 //        for(YAML::iterator it_traj = it->second["joints_values"].begin();
 //            it_traj != it->second["joints_values"].end(); ++it_traj)

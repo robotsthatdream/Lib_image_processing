@@ -41,14 +41,14 @@ struct features_fct{
 
                 sample.resize(45);
                 int k = 0 , l = 0;
-                for(int i = 0; i < 30; i++){
+                for(size_t i = 0; i < 30; i++){
                     sample(i) = hf_color.get_histogram()[k](l);
                     l = (l+1)%10;
                     if(l == 0)
                         k++;
                 }
                 l = 0; k = 0;
-                for(int i = 30; i < 45; i++){
+                for(size_t i = 30; i < 45; i++){
                     sample(i) = hf_normal.get_histogram()[k](l);
                     l = (l+1)%5;
                     if(l == 0)
@@ -71,7 +71,7 @@ struct features_fct{
 
 //                Eigen::VectorXd sample(30);
 //                int k = 0 , l = 0;
-//                for(int i = 0; i < 30; i++){
+//                for(size_t i = 0; i < 30; i++){
 //                    sample(i) = hf.get_histogram()[k](l);
 //                    l = (l+1)%10;
 //                    if(l == 0)
@@ -131,7 +131,7 @@ struct features_fct{
 
                Eigen::VectorXd sample(15);
                int k = 0 , l = 0;
-               for(int i = 0; i < 15; i++){
+               for(size_t i = 0; i < 15; i++){
                    sample(i) = hf.get_histogram()[k](l);
                    l = (l+1)%5;
                    if(l == 0)
@@ -240,14 +240,14 @@ struct features_fct{
 
                Eigen::VectorXd sample(30);
                int k = 0 , l = 0;
-               for(int i = 0; i < 15; i++){
+               for(size_t i = 0; i < 15; i++){
                    sample(i) = hf_color.get_histogram()[k](l);
                    l = (l+1)%5;
                    if(l == 0)
                        k++;
                }
                k = 0; l = 0;
-               for(int i = 15; i < 30; i++){
+               for(size_t i = 15; i < 30; i++){
                    sample(i) = hf_normal.get_histogram()[k](l);
                    l = (l+1)%5;
                    if(l == 0)
@@ -316,7 +316,7 @@ struct features_fct{
 
                 Eigen::VectorXd sample(30);
                 int k = 0 , l = 0;
-                for(int i = 0; i < 30; i++){
+                for(size_t i = 0; i < 30; i++){
                     sample(i) = hf.get_histogram()[k](l);
                     l = (l+1)%10;
                     if(l == 0)
@@ -384,7 +384,7 @@ struct features_fct{
 
                 Eigen::VectorXd sample(15);
                 int k = 0 , l = 0;
-                for(int i = 0; i < 15; i++){
+                for(size_t i = 0; i < 15; i++){
                     sample(i) = hf.get_histogram()[k](l);
                     l = (l+1)%5;
                     if(l == 0)
@@ -459,9 +459,9 @@ struct features_fct{
                 }
                 hf.compute_multi_dim(data);
 
-                for(int i = 0; i < 8; i++)
+                for(size_t i = 0; i < 8; i++)
                     new_s(i) = hf.get_histogram()[0](i);
-                for(int i = 8; i < 16; i++){
+                for(size_t i = 8; i < 16; i++){
                     if(fabs(sum(i-8)) < 1e-4)
                         sum(i-8) = 0.;
                     new_s(i) = sum(i - 8);
@@ -526,7 +526,7 @@ struct features_fct{
             fpfh.compute(*fpfh_cloud);
             for(auto feat : centroids_lbl){
                 features[feat.second]["fpfh"] = Eigen::VectorXd(33);
-                for(int i = 0; i < 33; ++i){
+                for(size_t i = 0; i < 33; ++i){
                    features[feat.second]["fpfh"](i) = fpfh_cloud->points[feat.first].histogram[i]/100.;
                 }
             }
@@ -549,8 +549,8 @@ struct features_fct{
                 fpfh.compute(*fpfh_cloud);
 
                 features[sv.first]["localMeanFPFH"] = Eigen::VectorXd::Zero(33);
-                for(int i = 0; i < fpfh_cloud->size(); i++){
-                    for(int j = 0; j < 33; j++)
+                for(size_t i = 0; i < fpfh_cloud->size(); i++){
+                    for(size_t j = 0; j < 33; j++)
                         features[sv.first]["localMeanFPFH"](j) += fpfh_cloud->points[i].histogram[j]/100.;
                 }
                 features[sv.first]["localMeanFPFH"] = features[sv.first]["localMeanFPFH"]/(double)fpfh_cloud->size();
@@ -574,7 +574,7 @@ struct features_fct{
                 PointCloudT::Ptr inputCloud(new PointCloudT);
                 pcl::IndicesPtr indices(new std::vector<int>);
 
-                for(int k = r.begin(); k < r.end(); k++){
+                for(size_t k = r.begin(); k < r.end(); k++){
 ;
                     inputNormal.reset(new PointCloudN);
                     inputCloud.reset(new PointCloudT);
@@ -582,19 +582,19 @@ struct features_fct{
                     for(auto it = it_pair.first; it != it_pair.second; it++){
                         if(supervoxels.find(it->second) == supervoxels.end())
                             continue;
-                        for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+                        for(size_t i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
                             inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
                             inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
                         }
                     }
 
-                    for(int i = 0; i < supervoxels.at(lbls[k])->normals_->size(); i++){
+                    for(size_t i = 0; i < supervoxels.at(lbls[k])->normals_->size(); i++){
                         inputNormal->push_back(supervoxels.at(lbls[k])->normals_->at(i));
                         inputCloud->push_back(supervoxels.at(lbls[k])->voxels_->at(i));
                     }
 
                     indices.reset(new std::vector<int>);
-                    for(int i = 0; i < inputCloud->size(); i++)
+                    for(size_t i = 0; i < inputCloud->size(); i++)
                         indices->push_back(i);
 
                     fpfh.setInputCloud(inputCloud);
@@ -606,8 +606,8 @@ struct features_fct{
                     fpfh.compute(*fpfh_cloud);
 
                     features[lbls[k]]["neighMeanFPFH"] = Eigen::VectorXd::Zero(33);
-                    for(int i = 0; i < fpfh_cloud->size(); i++){
-                        for(int j = 0; j < 33; j++)
+                    for(size_t i = 0; i < fpfh_cloud->size(); i++){
+                        for(size_t j = 0; j < 33; j++)
                             features[lbls[k]]["neighMeanFPFH"](j) += fpfh_cloud->points[i].histogram[j]/100.;
                     }
                     features[lbls[k]]["neighMeanFPFH"] = features[lbls[k]]["neighMeanFPFH"]/(double)fpfh_cloud->size();
@@ -635,8 +635,8 @@ struct features_fct{
                 PointCloudT::Ptr inputCloud(new PointCloudT);
                 pcl::IndicesPtr indices(new std::vector<int>);
                 Eigen::VectorXd new_s(48);
-                for(int k = r.begin(); k < r.end(); k++){
-//                for(int k = 0; k < lbls.size(); k++){
+                for(size_t k = r.begin(); k < r.end(); k++){
+//                for(size_t k = 0; k < lbls.size(); k++){
                     //* Lab
                     std::vector<Eigen::VectorXd> data;
                     for(auto it = supervoxels.at(lbls[k])->voxels_->begin(); it != supervoxels.at(lbls[k])->voxels_->end(); ++it){
@@ -655,7 +655,7 @@ struct features_fct{
                     hf.compute(data);
 
                     int t = 0 , l = 0;
-                    for(int i = 0; i < 15; i++){
+                    for(size_t i = 0; i < 15; i++){
                         new_s(i) = hf.get_histogram()[t](l);
                         l = (l+1)%5;
                         if(l == 0)
@@ -670,19 +670,19 @@ struct features_fct{
                     for(auto it = it_pair.first; it != it_pair.second; it++){
                         if(supervoxels.find(it->second) == supervoxels.end())
                             continue;
-                        for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+                        for(size_t i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
                             inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
                             inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
                         }
                     }
 
-                    for(int i = 0; i < supervoxels.at(lbls[k])->normals_->size(); i++){
+                    for(size_t i = 0; i < supervoxels.at(lbls[k])->normals_->size(); i++){
                         inputNormal->push_back(supervoxels.at(lbls[k])->normals_->at(i));
                         inputCloud->push_back(supervoxels.at(lbls[k])->voxels_->at(i));
                     }
 
                     indices.reset(new std::vector<int>);
-                    for(int i = 0; i < inputCloud->size(); i++)
+                    for(size_t i = 0; i < inputCloud->size(); i++)
                         indices->push_back(i);
 
                     fpfh.setInputCloud(inputCloud);
@@ -694,16 +694,16 @@ struct features_fct{
                     fpfh.compute(*fpfh_cloud);
 
                     Eigen::VectorXd tmp = Eigen::VectorXd::Zero(33);
-                    for(int i = 0; i < fpfh_cloud->size(); i++){
-                        for(int j = 0; j < 33; j++)
+                    for(size_t i = 0; i < fpfh_cloud->size(); i++){
+                        for(size_t j = 0; j < 33; j++)
                             tmp(j) += fpfh_cloud->points[i].histogram[j]/100.;
                     }
                     tmp = tmp/(double)fpfh_cloud->size();
-                    for(int i = 0; i < 33; i++)
+                    for(size_t i = 0; i < 33; i++)
                         new_s(i+15) = tmp(i);
                     //*/
 
-                    for(int i = 0; i < 48; i++){
+                    for(size_t i = 0; i < 48; i++){
                         if(new_s(i) > 1)
                             new_s(i) = 1;
                         else if (new_s(i) < 10e-4)
@@ -736,8 +736,8 @@ struct features_fct{
                 PointCloudT::Ptr inputCloud(new PointCloudT);
                 pcl::IndicesPtr indices(new std::vector<int>);
                 Eigen::VectorXd new_s(48);
-                for(int k = r.begin(); k < r.end(); k++){
-//                for(int k = 0; k < lbls.size(); k++){
+                for(size_t k = r.begin(); k < r.end(); k++){
+//                for(size_t k = 0; k < lbls.size(); k++){
                     //* Lab
                     std::vector<Eigen::VectorXd> data;
                     for(auto it = supervoxels.at(lbls[k])->voxels_->begin(); it != supervoxels.at(lbls[k])->voxels_->end(); ++it){
@@ -756,7 +756,7 @@ struct features_fct{
                     hf.compute(data);
 
                     int t = 0 , l = 0;
-                    for(int i = 0; i < 15; i++){
+                    for(size_t i = 0; i < 15; i++){
                         new_s(i) = hf.get_histogram()[t](l);
                         l = (l+1)%5;
                         if(l == 0)
@@ -771,19 +771,19 @@ struct features_fct{
                     for(auto it = it_pair.first; it != it_pair.second; it++){
                         if(supervoxels.find(it->second) == supervoxels.end())
                             continue;
-                        for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+                        for(size_t i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
                             inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
                             inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
                         }
                     }
 
-                    for(int i = 0; i < supervoxels.at(lbls[k])->normals_->size(); i++){
+                    for(size_t i = 0; i < supervoxels.at(lbls[k])->normals_->size(); i++){
                         inputNormal->push_back(supervoxels.at(lbls[k])->normals_->at(i));
                         inputCloud->push_back(supervoxels.at(lbls[k])->voxels_->at(i));
                     }
 
                     indices.reset(new std::vector<int>);
-                    for(int i = 0; i < inputCloud->size(); i++)
+                    for(size_t i = 0; i < inputCloud->size(); i++)
                         indices->push_back(i);
 
                     fpfh.setInputCloud(inputCloud);
@@ -805,11 +805,11 @@ struct features_fct{
                     if(!tree.nearestKSearch(centroid,1,nn_indices,nn_distance))
                         return false;
 
-                    for(int i = 0; i < 33; i++)
+                    for(size_t i = 0; i < 33; i++)
                         new_s(i+15) = fpfh_cloud->points[nn_indices[0]].histogram[i]/100.;
                     //*/
 
-                    for(int i = 0; i < 48; i++){
+                    for(size_t i = 0; i < 48; i++){
                         if(new_s(i) > 1)
                             new_s(i) = 1;
                         else if (new_s(i) < 10e-4)
@@ -840,8 +840,8 @@ struct features_fct{
                 PointCloudT::Ptr inputCloud(new PointCloudT);
                 pcl::IndicesPtr indices(new std::vector<int>);
                 Eigen::VectorXd new_s(48);
-                for(int k = r.begin(); k < r.end(); k++){
-//                for(int k = 0; k < lbls.size(); k++){
+                for(size_t k = r.begin(); k < r.end(); k++){
+//                for(size_t k = 0; k < lbls.size(); k++){
                     //* Lab
                     std::vector<Eigen::VectorXd> data;
                     for(auto it = supervoxels.at(lbls[k])->voxels_->begin(); it != supervoxels.at(lbls[k])->voxels_->end(); ++it){
@@ -860,7 +860,7 @@ struct features_fct{
                     hf.compute(data);
 
                     int t = 0 , l = 0;
-                    for(int i = 0; i < 15; i++){
+                    for(size_t i = 0; i < 15; i++){
                         new_s(i) = hf.get_histogram()[t](l);
                         l = (l+1)%5;
                         if(l == 0)
@@ -886,7 +886,7 @@ struct features_fct{
                     }
 
                     indices.reset(new std::vector<int>);
-                    for(int i = 0; i < inputCloud->size(); i++)
+                    for(size_t i = 0; i < inputCloud->size(); i++)
                         indices->push_back(i);
 
                     fpfh.setInputCloud(inputCloud);
@@ -898,16 +898,16 @@ struct features_fct{
                     fpfh.compute(*fpfh_cloud);
 
                     Eigen::VectorXd tmp = Eigen::VectorXd::Zero(33);
-                    for(int i = 0; i < fpfh_cloud->size(); i++){
-                        for(int j = 0; j < 33; j++)
+                    for(size_t i = 0; i < fpfh_cloud->size(); i++){
+                        for(size_t j = 0; j < 33; j++)
                             tmp(j) += fpfh_cloud->points[i].histogram[j]/100.;
                     }
                     tmp = tmp/(double)fpfh_cloud->size();
-                    for(int i = 0; i < 33; i++)
+                    for(size_t i = 0; i < 33; i++)
                         new_s(i+15) = tmp(i);
                     //*/
 
-                    for(int i = 0; i < 48; i++){
+                    for(size_t i = 0; i < 48; i++){
                         if(new_s(i) > 1)
                             new_s(i) = 1;
                         else if (new_s(i) < 10e-4)
@@ -969,13 +969,13 @@ struct features_fct{
                 for(auto it = it_pair.first; it != it_pair.second; it++){
                     if(supervoxels.find(it->second) == supervoxels.end())
                         continue;
-                    for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+                    for(size_t i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
                         inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
                         inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
                     }
                 }
 
-                for(int i = 0; i < sv.second->normals_->size(); i++){
+                for(size_t i = 0; i < sv.second->normals_->size(); i++){
                     inputNormal->push_back(sv.second->normals_->at(i));
                     inputCloud->push_back(sv.second->voxels_->at(i));
                 }
@@ -983,7 +983,7 @@ struct features_fct{
 
 
                 indices.clear();
-                for(int i = 0; i < inputCloud->size(); i++)
+                for(size_t i = 0; i < inputCloud->size(); i++)
                     indices.push_back(i);
 
                 tree->setInputCloud(inputCloud);
@@ -1027,7 +1027,7 @@ struct features_fct{
                     if(supervoxels.find(it->second) == supervoxels.end())
                         continue;
                     indices.clear();
-                    for(int i = 0; i < sv.second->normals_->size(); i++)
+                    for(size_t i = 0; i < sv.second->normals_->size(); i++)
                         indices.push_back(i);
 
                     tree->setInputCloud(sv.second->voxels_);
@@ -1036,7 +1036,7 @@ struct features_fct{
                             cx,cy,cz,c_max,c_min);
 
                     indices.clear();
-                    for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++)
+                    for(size_t i = 0; i < supervoxels.at(it->second)->normals_->size(); i++)
                         indices.push_back(i);
 
                     tree->setInputCloud(supervoxels.at(it->second)->voxels_);
@@ -1105,7 +1105,7 @@ struct features_fct{
 
             pce.compute(output_cloud);
 
-            for(int i = 0; i < output_cloud.size(); i++){
+            for(size_t i = 0; i < output_cloud.size(); i++){
                 new_s << output_cloud[i].principal_curvature[0],
                         output_cloud[i].principal_curvature[1],
                         output_cloud[i].principal_curvature[2],
@@ -1164,7 +1164,7 @@ struct features_fct{
 
             mie.compute(output_cloud);
 
-            for(int i = 0; i < output_cloud.size(); i++){
+            for(size_t i = 0; i < output_cloud.size(); i++){
                 new_s << output_cloud[i].j1,
                         output_cloud[i].j2,
                         output_cloud[i].j3;
@@ -1255,13 +1255,13 @@ struct features_fct{
                 for(auto it = it_pair.first; it != it_pair.second; it++){
                     if(supervoxels.find(it->second) == supervoxels.end())
                         continue;
-                    for(int i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
+                    for(size_t i = 0; i < supervoxels.at(it->second)->normals_->size(); i++){
                         inputNormal->push_back(supervoxels.at(it->second)->normals_->at(i));
                         inputCloud->push_back(supervoxels.at(it->second)->voxels_->at(i));
                     }
                 }
 
-                for(int i = 0; i < sv.second->normals_->size(); i++){
+                for(size_t i = 0; i < sv.second->normals_->size(); i++){
                     inputNormal->push_back(sv.second->normals_->at(i));
                     inputCloud->push_back(sv.second->voxels_->at(i));
                 }
@@ -1272,7 +1272,7 @@ struct features_fct{
                 be.setRadiusSearch(0.02);
                 be.compute(boundaries);
 
-                for(int i = 0; i < boundaries.size(); i++){
+                for(size_t i = 0; i < boundaries.size(); i++){
                     if(boundaries[i].boundary_point != boundaries[i].boundary_point)
                         continue;
                     if(boundaries[i].boundary_point){

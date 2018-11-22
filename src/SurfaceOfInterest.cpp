@@ -53,7 +53,7 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
     _weights["keyPts"].clear();
     getCentroidCloud(centr, centroids_label);
     PointCloudXYZ::Ptr centroids(new PointCloudXYZ);
-    for(int i = 0; i < centr.size(); i++){
+    for(size_t i = 0; i < centr.size(); i++){
         pcl::PointXYZ pt;
         pt.x = centr.points[i].x;
         pt.y = centr.points[i].y;
@@ -69,7 +69,7 @@ void SurfaceOfInterest::find_soi(const PointCloudXYZ::Ptr key_pts){
     std::map<uint32_t,uint32_t> result;
 //    std::map<uint32_t,uint32_t> no_result;
 
-    for(int i = 0; i < key_pts->size(); i++){
+    for(size_t i = 0; i < key_pts->size(); i++){
         if(!pcl::isFinite(key_pts->points[i]))
             continue;
 
@@ -113,7 +113,7 @@ void SurfaceOfInterest::init_weights(const std::string& modality, int nbr_class,
 }
 
 void SurfaceOfInterest::reduce_to_soi(){
-    for(int i = 0; i < _labels_no_soi.size(); i++){
+    for(size_t i = 0; i < _labels_no_soi.size(); i++){
         remove(_labels_no_soi[i]);
     }
 }
@@ -304,7 +304,7 @@ void SurfaceOfInterest::adaptive_threshold(const std::string& modality, int lbl)
 
 pcl::PointCloud<pcl::PointXYZI> SurfaceOfInterest::cumulative_relevance_map(std::vector<pcl::PointCloud<pcl::PointXYZI>> list_weights){
     pcl::PointCloud<pcl::PointXYZI> output_cloud = list_weights[0];
-    for(int i = 0; i < list_weights[0].size(); i++){
+    for(size_t i = 0; i < list_weights[0].size(); i++){
         double avg = 0;
         for(const pcl::PointCloud<pcl::PointXYZI>& map: list_weights){
             avg += map[i].intensity;
@@ -352,7 +352,7 @@ size_t SurfaceOfInterest::get_closest_region(const std::vector<std::set<uint32_t
     if (regions.size() > 0) {
         int closest_i;
         double closest_d = std::numeric_limits<double>::max();
-        for (int i = 0; i < regions.size(); i++) {
+        for (size_t i = 0; i < regions.size(); i++) {
             Eigen::Vector4d r_center;
             pcl::compute3DCentroid<PointT>(get_cloud(regions[i]), r_center);
             double dx = r_center[0] - center[0];

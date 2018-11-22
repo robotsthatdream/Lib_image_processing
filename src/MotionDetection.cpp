@@ -202,7 +202,7 @@ void MotionDetection::save_results(const std::string& folder, int counter)
             file << currentDate << "\n";
         }
 
-        for (int i = 0; i < _results.size(); i++) {
+        for (size_t i = 0; i < _results.size(); i++) {
             std::stringstream ss;
             ss << folder << "seg_" << counter << "_" << i << ".png";
 
@@ -227,9 +227,9 @@ void MotionDetection::rect_clustering(std::vector<cv::Rect>& rect_array)
 {
     if (rect_array.size() > 1) {
         bool b = false;
-        for (int i = 0; i < rect_array.size(); i++) {
+        for (size_t i = 0; i < rect_array.size(); i++) {
             cv::Rect tmp = rect_array[i];
-            for (int j = 0; j < rect_array.size(); j++) {
+            for (size_t j = 0; j < rect_array.size(); j++) {
                 cv::Rect tmp2 = rect_array[j];
                 if (j != i && ((tmp & tmp2).area() != 0)) {
                     tmp |= tmp2;
@@ -250,7 +250,7 @@ void MotionDetection::rect_clustering(std::vector<cv::Rect>& rect_array)
 
 void MotionDetection::extractResults(std::vector<cv::Rect>& rects)
 {
-    for (int i = 0; i < rects.size(); i++) {
+    for (size_t i = 0; i < rects.size(); i++) {
         _results.push_back(cv::Mat(_frames[1], rects[i]));
     }
 }

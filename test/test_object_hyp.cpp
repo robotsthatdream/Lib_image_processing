@@ -167,7 +167,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
         const float exp_2 = param(fsg::SuperEllipsoidParameters::idx::exp_2);
         // float exp_1_over_exp_2 = exp_1/exp_2;
 
-        for (int i = 0; i < values(); ++i) {
+        for (signed int i = 0; i < values(); ++i) {
 
             // Take current point;
             pcl::PointXYZ p = cloud_.points[indices_[i]];
@@ -596,7 +596,7 @@ int main(int argc, char **argv) {
             std::cout << "Initial estimation : " << fittingContext << std::endl;
 
             std::vector<int> indices(cloud_xyz->size());
-            for (int i = 0; i < cloud_xyz->size(); ++i) {
+            for (size_t i = 0; i < cloud_xyz->size(); ++i) {
                 indices[i] = i;
             }
 
