@@ -702,9 +702,9 @@ int main(int argc, char **argv) {
             {
                 pcl::PointXYZRGB pt;
 
-                r = 255.0 - r / 2.0;
-                g = 255.0 - g / 2.0;
-                b = 255.0 - b / 2.0;
+                r = 127.0 + r / 2.0;
+                g = 127.0 + g / 2.0;
+                b = 127.0 + b / 2.0;
                 for (auto v : *proj_points) {
                     pt.x = v.x;
                     pt.y = v.y;
