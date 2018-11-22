@@ -40,6 +40,9 @@
 
 // Interface
 
+int FSG_LOG_INDENTATION_LEVEL =
+    1; /*HACK, won't work if 2 files include this file.*/
+
 /** Before any log, for example at the start your main() function,
  * this outputs a conventional string (emacs convention) that allows
  * to jump to source code in a keypress. */
@@ -66,7 +69,8 @@
 
 /** Convenience shortcut: simplest constant string log. */
 #define FSG_LOG_MSG(TEXT)                                                      \
-    FSG_LOG_BEGIN() << FSG_LOCATION() << TEXT << FSG_LOG_END()
+    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION() << TEXT             \
+                    << FSG_LOG_END()
 
 /** Log any variable (actually, any expression). */
 #define FSG_LOG_VAR(VARNAME)                                                   \
@@ -98,12 +102,14 @@
 */
 ///@{
 
-#define FSG_TRACE_THIS_FUNCTION() Fidergo::Trace(__PRETTY_FUNCTION__);
-#define FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(label) Fidergo::Trace(label);
+#define FSG_TRACE_THIS_FUNCTION()                                              \
+    Fidergo::Trace(__PRETTY_FUNCTION__, FSG_CURRENT_FILE_NAME, __LINE__);
+#define FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(label)                         \
+    Fidergo::Trace(label, FSG_CURRENT_FILE_NAME, __LINE__);
 #define FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(expression)                          \
     auto ss = std::stringstream();                                             \
     ss << expression;                                                          \
-    Fidergo::Trace(ss.str());
+    Fidergo::Trace(ss.str(), FSG_CURRENT_FILE_NAME, __LINE__);
 
 ///@}
 
@@ -124,7 +130,16 @@
 
 #define FSG_LOG_END() std::endl
 
+#define FSG_LONGEMPTY_STRING                                                   \
+    "                                                                "
+
+#define FSG_LONGEMPTY_STRING_SIZE (sizeof(FSG_LONGEMPTY_STRING))
+
 #define FSG_LOCATION() FSG_CURRENT_FILE_NAME << ":" << __LINE__ << ":"
+
+#define FSG_INDENTATION()                                                      \
+    (FSG_LONGEMPTY_STRING +                                                    \
+     (FSG_LONGEMPTY_STRING_SIZE - FSG_LOG_INDENTATION_LEVEL - 1))
 
 #define FSG_OSTREAM_VAR(VARNAME) #VARNAME << " = " << (VARNAME)
 
@@ -158,14 +173,24 @@ namespace Fidergo {
 class Trace {
   private:
     std::string scopeName;
+    const char *file_name;
+    int line;
 
   public:
-    Trace(const std::string &ScopeName) {
+    Trace(const std::string &ScopeName, const char *file_name, int line)
+        : file_name(file_name), line(line) {
         this->scopeName = ScopeName;
-        FSG_LOG_MSG("Entering: " << scopeName);
+        FSG_LOG_BEGIN() << file_name << ":" << line << ":" << FSG_INDENTATION()
+                        << "{ Entering: " << scopeName << FSG_LOG_END();
+        ++FSG_LOG_INDENTATION_LEVEL;
     }
 
-    ~Trace() { FSG_LOG_MSG("Exiting: " << scopeName); }
+    ~Trace() {
+        --FSG_LOG_INDENTATION_LEVEL;
+        FSG_LOG_BEGIN() << file_name << ":" << line << ":" << FSG_INDENTATION()
+                        << "}  Exiting: " << scopeName << FSG_LOG_END();
+        // FSG_LOG_MSG("} indent level " << FSG_LOG_INDENTATION_LEVEL);
+    }
 };
 }
 
