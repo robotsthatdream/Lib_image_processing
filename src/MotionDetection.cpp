@@ -128,7 +128,6 @@ void MotionDetection::detect_MOG_depth(cv::Mat& depth_frame_16UC1)
 bool MotionDetection::detect_on_cloud(const PointCloudXYZ::Ptr sv, const std::vector<double>& sv_center, PointCloudXYZ::Ptr diff_cloud ,
                                       size_t threshold, double dist_thres, double mean_thres, double octree_res){
     std::vector<int> index;
-    double dist, min_dist, mean_dist = 0;
 
     pcl::octree::OctreePointCloudChangeDetector<PointT> octree(octree_res);
 
