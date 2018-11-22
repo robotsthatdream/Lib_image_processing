@@ -156,7 +156,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     FSG_LOG_VAR(rotmat);
 
     Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
-    transform.block(0, 0, 3, 3) << rotmat.transpose();
+    transform.block(0, 0, 3, 3) << rotmat;
     // Eigen::Vector3f center;
     // center << this->get_cen_x(), this->get_cen_y(), this->get_cen_z();
     transform.block(0, 3, 3, 1) << this->get_cen_x(), this->get_cen_y(),
@@ -204,6 +204,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
                          param(fsg::SuperEllipsoidParameters::idx::rot_pitch),
                          param(fsg::SuperEllipsoidParameters::idx::rot_roll),
                          rotmat);
+        rotmat.transposeInPlace();
 
         const float two_over_exp_1 =
             2.0 / param(fsg::SuperEllipsoidParameters::idx::exp_1);
