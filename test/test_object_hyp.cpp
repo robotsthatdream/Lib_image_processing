@@ -608,9 +608,10 @@ int main(int argc, char **argv) {
 
             FSG_LOG_VAR(rotational_matrix_OBB);
 
-            major_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0;
+            // FIXME clarify/generalize major/z.
+            major_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0;
             middle_vector *= (max_point_OBB.y - min_point_OBB.y) / 2.0;
-            minor_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0;
+            minor_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0;
             FSG_LOG_VAR(major_vector);
             FSG_LOG_VAR(middle_vector);
             FSG_LOG_VAR(minor_vector);
