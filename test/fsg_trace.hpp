@@ -99,7 +99,11 @@
 ///@{
 
 #define FSG_TRACE_THIS_FUNCTION() Fidergo::Trace(__PRETTY_FUNCTION__);
-#define FSG_TRACE_THIS_SCOPE_WITH_LABEL(label) Fidergo::Trace(label);
+#define FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(label) Fidergo::Trace(label);
+#define FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(expression)                          \
+    auto ss = std::stringstream();                                             \
+    ss << expression;                                                          \
+    Fidergo::Trace(ss.str());
 
 ///@}
 
@@ -149,28 +153,20 @@
     "FSG_PROJECT_RELATIVE_PATHNAME not defined, will not benefit from short paths in logs."
 #endif
 
-namespace Fidergo
-{
-    
-    class Trace
-    {
-    private:
-        const char *scopeName;
-    public:
-        Trace(const char *ScopeName)
-            {
-                this->scopeName = ScopeName;
-                std::cerr << "FSG_TRACE Entering " << scopeName << std::endl;
-            }
+namespace Fidergo {
 
-        ~Trace()
-            {
-                std::cerr << "FSG_TRACE Exiting " << scopeName << std::endl;
-            }
+class Trace {
+  private:
+    std::string scopeName;
 
-        
-    };
+  public:
+    Trace(const std::string &ScopeName) {
+        this->scopeName = ScopeName;
+        FSG_LOG_MSG("Entering: " << scopeName);
+    }
+
+    ~Trace() { FSG_LOG_MSG("Exiting: " << scopeName); }
+};
 }
-
 
 #endif // FSG_TRACE_H_

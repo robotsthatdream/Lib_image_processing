@@ -353,20 +353,23 @@ int main(int argc, char **argv) {
 
     FSG_LOG_MSG(soi.getSupervoxels().size() << " supervoxels extracted");
 
-    FSG_LOG_MSG("computed supervoxel");
-    FSG_LOG_MSG("computing meanFPFHLabHist");
-    soi.compute_feature("meanFPFHLabHist");
-    FSG_LOG_MSG("computed meanFPFHLabHist");
-    FSG_LOG_MSG("computing meanFPFHLabHist weights");
-    soi.compute_weights<iagmm::GMM>("meanFPFHLabHist", gmm);
-    FSG_LOG_MSG("computed meanFPFHLabHist weights");
-    //*/
+    {
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("compute meanFPFHLabHist");
+        soi.compute_feature("meanFPFHLabHist");
+    }
 
-    FSG_LOG_MSG("relevance_map extracted");
+    {
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
+            "compute meanFPFHLabHist weights");
+        soi.compute_weights<iagmm::GMM>("meanFPFHLabHist", gmm);
+    }
 
     //* Generate objects hypothesis
     std::vector<std::set<uint32_t>> obj_hypotheses;
-    obj_hypotheses = soi.extract_regions("meanFPFHLabHist", 0.5, 1);
+    {
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("soi.extract_regions");
+        obj_hypotheses = soi.extract_regions("meanFPFHLabHist", 0.5, 1);
+    }
     //*/
 
     // obj_hypotheses
@@ -517,11 +520,12 @@ int main(int argc, char **argv) {
                     }
                     ++kept;
 
-                    FSG_LOG_MSG("Supervoxel labelled "
-                                << current_sv_label
-                                << " part of current object, including, "
-                                   "will add "
-                                << current_sv->voxels_->size() << " point(s).");
+                    FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
+                        "Supervoxel labelled "
+                        << current_sv_label
+                        << " part of current object, including, "
+                           "will add "
+                        << current_sv->voxels_->size() << " point(s).");
                     for (auto v : *(current_sv->voxels_)) {
                         pt.x = v.x;
                         pt.y = v.y;
