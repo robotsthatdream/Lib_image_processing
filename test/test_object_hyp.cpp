@@ -163,9 +163,11 @@ struct OptimizationFunctor : pcl::Functor<float> {
                          param(fsg::SuperEllipsoidParameters::idx::rot_roll),
                          rotmat);
 
-        const float exp_1 = param(fsg::SuperEllipsoidParameters::idx::exp_1);
-        const float exp_2 = param(fsg::SuperEllipsoidParameters::idx::exp_2);
-        // float exp_1_over_exp_2 = exp_1/exp_2;
+        const float two_over_exp_1 =
+            2.0 / param(fsg::SuperEllipsoidParameters::idx::exp_1);
+        const float two_over_exp_2 =
+            2.0 / param(fsg::SuperEllipsoidParameters::idx::exp_2);
+        float exp_2_over_exp_1 = two_over_exp_1 / two_over_exp_2;
 
         for (signed int i = 0; i < values(); ++i) {
 
@@ -186,12 +188,14 @@ struct OptimizationFunctor : pcl::Functor<float> {
                                 fsg::SuperEllipsoidParameters::idx::rad_major),
                 v_aligned(1) /
                     param(fsg::SuperEllipsoidParameters::idx::rad_middle),
-                v_aligned(2) / param(fsg::SuperEllipsoidParameters::idx::rad_minor);
+                v_aligned(2) /
+                    param(fsg::SuperEllipsoidParameters::idx::rad_minor);
 
-            float term = pow(v_scaled(0), exp_2) + pow(v_scaled(1), exp_2);
+            float term = pow(v_scaled(0), two_over_exp_2) +
+                         pow(v_scaled(1), two_over_exp_2);
 
             float outside_if_over_1 =
-                pow(term, exp_1 / exp_2) + pow(v_scaled(2), exp_1);
+                pow(term, exp_2_over_exp_1) + pow(v_scaled(2), two_over_exp_1);
 
             float deviation = fabs(outside_if_over_1 - 1);
 
