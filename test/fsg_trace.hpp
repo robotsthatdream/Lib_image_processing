@@ -189,35 +189,24 @@ class Trace {
         this->scopeName = ScopeName;
 
         FSG_LOG_BEGIN() << std::endl
-                        << file_name << "-" << line << "-" << FSG_INDENTATION()
-                        << "{" << FSG_LOG_END();
+                        << file_name << ":" << line << ":" << FSG_INDENTATION()
+                        << "{ // Entered: " << scopeName << FSG_LOG_END();
 
         ++FSG_LOG_INDENTATION_LEVEL;
 
-        FSG_LOG_BEGIN() << file_name << ":" << line << ":" << FSG_INDENTATION()
-                        << "Entered: " << scopeName << FSG_LOG_END();
         time_start = std::chrono::steady_clock::now();
     }
 
     ~Trace() {
         std::chrono::time_point<std::chrono::steady_clock> time_end = std::chrono::steady_clock::now();
-    
-        FSG_LOG_BEGIN() << file_name << "-" << line << "-" << FSG_INDENTATION()
-                        << "Exited:  " << scopeName << FSG_LOG_END();
 
         auto time_interval = time_end - time_start;
         auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(time_interval).count();
-
-        FSG_LOG_BEGIN() << file_name << "-" << line << "-" << FSG_INDENTATION()
-                        << "Duration/µs: " << microseconds << FSG_LOG_END();
-
+    
         --FSG_LOG_INDENTATION_LEVEL;
 
         FSG_LOG_BEGIN() << file_name << "-" << line << "-" << FSG_INDENTATION()
-                        << "}" << std::endl
-
-                        << FSG_LOG_END();
-        // FSG_LOG_MSG("} indent level " << FSG_LOG_INDENTATION_LEVEL);
+                        << "} //  Exited: " << scopeName << " -- Duration/µs: " << microseconds << std::endl << FSG_LOG_END();
     }
 };
 }
