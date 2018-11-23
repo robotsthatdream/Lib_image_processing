@@ -198,6 +198,19 @@ struct OptimizationFunctor : pcl::Functor<float> {
             (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
 
+        const float exp_1 = param(fsg::SuperEllipsoidParameters::idx::exp_1);
+        FSG_LOG_VAR(exp_1);
+        const float exp_2 = param(fsg::SuperEllipsoidParameters::idx::exp_2);
+        FSG_LOG_VAR(exp_2);
+
+        if ((exp_1 > 2.0) || (exp_2 > 2.0)) {
+            FSG_LOG_MSG("Not doing computation because too big exponent: 1:" << exp_1 << " 2:" << exp_2);
+            for (signed int i = 0; i < values(); ++i) {
+                fvec[i] = FLT_MAX;
+            }
+            return 0;
+        }
+
         // Extract center;
         ip::PointT cen;
         cen.x = param(fsg::SuperEllipsoidParameters::idx::cen_x);
@@ -215,11 +228,9 @@ struct OptimizationFunctor : pcl::Functor<float> {
         rotmat.transposeInPlace();
         FSG_LOG_VAR(rotmat);
 
-        const float two_over_exp_1 =
-            2.0 / param(fsg::SuperEllipsoidParameters::idx::exp_1);
-        const float two_over_exp_2 =
-            2.0 / param(fsg::SuperEllipsoidParameters::idx::exp_2);
-        float exp_2_over_exp_1 = two_over_exp_1 / two_over_exp_2;
+        const float two_over_exp_1 = 2.0 / exp_1;
+        const float two_over_exp_2 = 2.0 / exp_2;
+        const float exp_2_over_exp_1 = exp_2 / exp_1;
         FSG_LOG_VAR(two_over_exp_2);
         FSG_LOG_VAR(two_over_exp_1);
         FSG_LOG_VAR(exp_2_over_exp_1);
