@@ -257,7 +257,15 @@ struct cloud_reg {
     const char *const name;
     bool active; // code smell: tied to a specific viewer
 
+    friend ostream &operator<<(ostream &os, const cloud_reg &sefc);
 };
+
+ostream &operator<<(ostream &os, const cloud_reg &cr) {
+    os << "[cloud_reg " << FSG_OSTREAM_FIELD(cr, key)
+       << FSG_OSTREAM_FIELD(cr, name) << FSG_OSTREAM_FIELD(cr, active) << "]";
+    return os;
+}
+
 class Context {
     const pcl::visualization::PCLVisualizer::Ptr m_viewer;
     std::forward_list<cloud_reg> m_clouds;
@@ -277,7 +285,8 @@ void Context::updateInViewer(cloud_reg &cr) {
 }
 
 void Context::addCloud(cloud_reg &reg) {
-    FSG_LOG_MSG("Adding cloud with key " << reg.key << ", name " << reg.name);
+    //FSG_LOG_MSG("Adding cloud with key " << reg.key << ", name " << reg.name);
+    FSG_LOG_MSG("Adding cloud " << reg);
 
     m_viewer->addPointCloud<pcl::PointXYZRGB>(reg.cloud, reg.name);
 
@@ -290,21 +299,23 @@ void Context::handleKeyboardEvent(
     const pcl::visualization::KeyboardEvent &event) {
     if (event.keyUp()) {
         const std::string keySym = event.getKeySym();
-        FSG_LOG_MSG("Key pressed '" << keySym << "'");
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("Handle key pressed '" << keySym << "'");
 
         if (keySym.compare("twosuperior") == 0) {
+            FSG_LOG_MSG("Resetting camera.");
             m_viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
         }
 
         for (auto &cr : m_clouds) {
-            FSG_LOG_MSG("Checking key " << cr.key << ", name " << cr.name);
+            //FSG_LOG_MSG("Checking key " << cr.key << ", name " << cr.name);
             if ((keySym.compare(cr.key) == 0)) {
-                FSG_LOG_MSG("keysym " << keySym << " matches cloud name "
-                                      << cr.name << " => toggling (was "
-                                      << cr.active << ")");
+                // FSG_LOG_MSG("keysym " << keySym << " matches cloud name "
+                //                       << cr.name << " => toggling (was "
+                //                       << cr.active << ")");
 
                 cr.active = !cr.active;
                 updateInViewer(cr);
+                FSG_LOG_VAR(cr);
             }
         }
     }
