@@ -203,7 +203,7 @@ class Trace {
         std::chrono::time_point<std::chrono::steady_clock> time_end = std::chrono::steady_clock::now();
     
         FSG_LOG_BEGIN() << file_name << "-" << line << "-" << FSG_INDENTATION()
-                        << "Exited: " << scopeName << FSG_LOG_END();
+                        << "Exited:  " << scopeName << FSG_LOG_END();
 
         auto time_interval = time_end - time_start;
         auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(time_interval).count();
