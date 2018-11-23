@@ -640,21 +640,21 @@ int main(int argc, char **argv) {
                                  mass_center(2));
             
             // FIXME clarify/generalize major/z.
-            pcl::PointXYZ z_axis(2.0 * major_vector(0) + mass_center(0),
+            pcl::PointXYZ maj_axis(2.0 * major_vector(0) + mass_center(0),
                                  2.0 * major_vector(1) + mass_center(1),
                                  2.0 * major_vector(2) + mass_center(2));
-            pcl::PointXYZ y_axis(2.0 * middle_vector(0) + mass_center(0),
+            pcl::PointXYZ mid_axis(2.0 * middle_vector(0) + mass_center(0),
                                  2.0 * middle_vector(1) + mass_center(1),
                                  2.0 * middle_vector(2) + mass_center(2));
-            pcl::PointXYZ x_axis(2.0 * minor_vector(0) + mass_center(0),
+            pcl::PointXYZ min_axis(2.0 * minor_vector(0) + mass_center(0),
                                  2.0 * minor_vector(1) + mass_center(1),
                                  2.0 * minor_vector(2) + mass_center(2));
 
-            viewer->addLine(center, x_axis, 1.0f, 0.0f, 0.0f,
+            viewer->addLine(center, maj_axis, 1.0f, 0.0f, 0.0f,
                             obj_index_i_s + ":major eigen vector");
-            viewer->addLine(center, y_axis, 0.0f, 1.0f, 0.0f,
+            viewer->addLine(center, mid_axis, 0.0f, 1.0f, 0.0f,
                             obj_index_i_s + ":middle eigen vector");
-            viewer->addLine(center, z_axis, 0.0f, 0.0f, 1.0f,
+            viewer->addLine(center, min_axis, 0.0f, 0.0f, 1.0f,
                             obj_index_i_s + ":minor eigen vector");
 
             fsg::SuperEllipsoidParameters fittingContext;
