@@ -285,7 +285,8 @@ void Context::updateInViewer(cloud_reg &cr) {
 }
 
 void Context::addCloud(cloud_reg &reg) {
-    //FSG_LOG_MSG("Adding cloud with key " << reg.key << ", name " << reg.name);
+    // FSG_LOG_MSG("Adding cloud with key " << reg.key << ", name " <<
+    // reg.name);
     FSG_LOG_MSG("Adding cloud " << reg);
 
     m_viewer->addPointCloud<pcl::PointXYZRGB>(reg.cloud, reg.name);
@@ -299,7 +300,8 @@ void Context::handleKeyboardEvent(
     const pcl::visualization::KeyboardEvent &event) {
     if (event.keyUp()) {
         const std::string keySym = event.getKeySym();
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("Handle key pressed '" << keySym << "'");
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("Handle key pressed '" << keySym
+                                                                 << "'");
 
         if (keySym.compare("twosuperior") == 0) {
             FSG_LOG_MSG("Resetting camera.");
@@ -307,7 +309,7 @@ void Context::handleKeyboardEvent(
         }
 
         for (auto &cr : m_clouds) {
-            //FSG_LOG_MSG("Checking key " << cr.key << ", name " << cr.name);
+            // FSG_LOG_MSG("Checking key " << cr.key << ", name " << cr.name);
             if ((keySym.compare(cr.key) == 0)) {
                 // FSG_LOG_MSG("keysym " << keySym << " matches cloud name "
                 //                       << cr.name << " => toggling (was "
