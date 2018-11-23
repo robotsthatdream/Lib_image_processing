@@ -99,6 +99,13 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     return os;
 }
 
+float powf_sym(float x, float y) {
+    if (std::signbit(x) != 0)
+        return -powf(-x, y);
+    else
+        return powf(x, y);
+}
+
 pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
         new pcl::PointCloud<pcl::PointXYZ>);
@@ -135,14 +142,14 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     // Pitch is eta in Biegelbauer et al.
     for (float pitch = -M_PI_2; pitch < M_PI_2; pitch += increment) {
 
-        pt.z = dilatfactor_z * powf(sin(pitch), exp_1);
-        float cos_pitch_exp_1 = powf(cos(pitch), exp_1);
+        pt.z = dilatfactor_z * powf_sym(sin(pitch), exp_1);
+        float cos_pitch_exp_1 = powf_sym(cos(pitch), exp_1);
 
         // Yaw is omega in Biegelbauer et al.
         for (float yaw = -M_PI; yaw < M_PI; yaw += increment) {
 
-            pt.x = dilatfactor_x * powf(cos(yaw), exp_2) * cos_pitch_exp_1;
-            pt.y = dilatfactor_y * powf(sin(yaw), exp_2) * cos_pitch_exp_1;
+            pt.x = dilatfactor_x * powf_sym(cos(yaw), exp_2) * cos_pitch_exp_1;
+            pt.y = dilatfactor_y * powf_sym(sin(yaw), exp_2) * cos_pitch_exp_1;
 
             cloud_step1->push_back(pt);
         }
