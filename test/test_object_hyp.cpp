@@ -211,7 +211,8 @@ struct OptimizationFunctor : pcl::Functor<float> {
         FSG_LOG_VAR(exp_2);
 
         if ((exp_1 > 2.0) || (exp_2 > 2.0)) {
-            FSG_LOG_MSG("Not doing computation because too big exponent: 1:" << exp_1 << " 2:" << exp_2);
+            FSG_LOG_MSG("Not doing computation because too big exponent: 1:"
+                        << exp_1 << " 2:" << exp_2);
             for (signed int i = 0; i < values(); ++i) {
                 fvec[i] = FLT_MAX;
             }
