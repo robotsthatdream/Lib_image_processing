@@ -251,39 +251,39 @@ struct OptimizationFunctor : pcl::Functor<float> {
     const std::vector<int> &indices_;
 };
 
-typedef struct cloud_reg {
+struct cloud_reg {
     const char *key;
     const fsg::PointCloudTP cloud;
     const char *const name;
     bool active; // code smell: tied to a specific viewer
-} cloud_reg_t;
 
+};
 class Context {
     const pcl::visualization::PCLVisualizer::Ptr m_viewer;
-    std::forward_list<cloud_reg_t> m_clouds;
+    std::forward_list<cloud_reg> m_clouds;
 
   public:
     Context(pcl::visualization::PCLVisualizer::Ptr &viewer)
         : m_viewer(viewer), m_clouds(){};
-    void addCloud(cloud_reg_t &reg);
+    void addCloud(cloud_reg &reg);
     void handleKeyboardEvent(const pcl::visualization::KeyboardEvent &event);
-    void updateInViewer(cloud_reg_t &cr);
+    void updateInViewer(cloud_reg &cr);
 };
 
-void Context::updateInViewer(cloud_reg_t &cr) {
+void Context::updateInViewer(cloud_reg &cr) {
     m_viewer->setPointCloudRenderingProperties(
         pcl::visualization::PCL_VISUALIZER_OPACITY, cr.active ? 1.0 : 0.0,
         cr.name);
 }
 
-void Context::addCloud(cloud_reg_t &reg) {
+void Context::addCloud(cloud_reg &reg) {
     FSG_LOG_MSG("Adding cloud with key " << reg.key << ", name " << reg.name);
 
     m_viewer->addPointCloud<pcl::PointXYZRGB>(reg.cloud, reg.name);
 
     m_clouds.push_front(reg);
     updateInViewer(reg);
-    //    cloud_reg_t *newreg = &m_clouds.front();
+    //    cloud_reg *newreg = &m_clouds.front();
 }
 
 void Context::handleKeyboardEvent(
@@ -751,7 +751,7 @@ int main(int argc, char **argv) {
             }
         }
 
-        cloud_reg_t clouds[] = {
+        cloud_reg clouds[] = {
             {"1", input_cloud_ptr, "input", true},
             {"2", supervoxel_cloud_ptr, "supervoxel", true},
             {"3", object_hyps_cloud_ptr, "object_hyps", true},
