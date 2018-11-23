@@ -99,8 +99,6 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     return os;
 }
 
-#define powf_abs(x,y) powf(fabs(x),y)
-    
 pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
         new pcl::PointCloud<pcl::PointXYZ>);
@@ -137,14 +135,14 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     // Pitch is eta in Biegelbauer et al.
     for (float pitch = -M_PI_2; pitch < M_PI_2; pitch += increment) {
 
-        pt.z = dilatfactor_z * powf_abs(sin(pitch), exp_1);
-        float cos_pitch_exp_1 = powf_abs(cos(pitch), exp_1);
+        pt.z = dilatfactor_z * powf(sin(pitch), exp_1);
+        float cos_pitch_exp_1 = powf(cos(pitch), exp_1);
 
         // Yaw is omega in Biegelbauer et al.
         for (float yaw = -M_PI; yaw < M_PI; yaw += increment) {
 
-            pt.x = dilatfactor_x * powf_abs(cos(yaw), exp_2) * cos_pitch_exp_1;
-            pt.y = dilatfactor_y * powf_abs(sin(yaw), exp_2) * cos_pitch_exp_1;
+            pt.x = dilatfactor_x * powf(cos(yaw), exp_2) * cos_pitch_exp_1;
+            pt.y = dilatfactor_y * powf(sin(yaw), exp_2) * cos_pitch_exp_1;
 
             cloud_step1->push_back(pt);
         }
@@ -187,6 +185,8 @@ struct OptimizationFunctor : pcl::Functor<float> {
           indices_(indices) {
         FSG_LOG_MSG("Created functor with value count: " << values());
     }
+
+#define powf_abs(x, y) powf(fabs(x), y)
 
     /** Cost function to be minimized
      * \param[in] x the variables array
