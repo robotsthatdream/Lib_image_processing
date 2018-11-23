@@ -320,6 +320,7 @@ void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event,
 
 int main(int argc, char **argv) {
     FSG_LOG_INIT__CALL_FROM_CPP_MAIN();
+    FSG_TRACE_THIS_FUNCTION();
 
     if (argc != 4) {
         std::cerr << "Usage : \n\t- pcd file\n\t- gmm archive\n\t- label"
@@ -391,6 +392,9 @@ int main(int argc, char **argv) {
 
     boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
         new pcl::visualization::PCLVisualizer(label));
+
+    {
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("Computations");
     viewer->setBackgroundColor(0, 0, 0);
 
     fsg::PointCloudTP input_cloud_ptr(new fsg::PointCloudT());
@@ -741,6 +745,9 @@ int main(int argc, char **argv) {
             pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, cr.name);
     }
 
+
+}
+    
     // viewer->addCoordinateSystem (1.0);
     viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
 
