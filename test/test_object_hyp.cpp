@@ -99,6 +99,8 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     return os;
 }
 
+#define powf_abs(x,y) powf(fabs(x),y)
+    
 pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
         new pcl::PointCloud<pcl::PointXYZ>);
@@ -135,14 +137,14 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     // Pitch is eta in Biegelbauer et al.
     for (float pitch = -M_PI_2; pitch < M_PI_2; pitch += increment) {
 
-        pt.z = dilatfactor_z * pow(sin(pitch), exp_1);
-        float cos_pitch_exp_1 = pow(cos(pitch), exp_1);
+        pt.z = dilatfactor_z * powf_abs(sin(pitch), exp_1);
+        float cos_pitch_exp_1 = powf_abs(cos(pitch), exp_1);
 
         // Yaw is omega in Biegelbauer et al.
         for (float yaw = -M_PI; yaw < M_PI; yaw += increment) {
 
-            pt.x = dilatfactor_x * pow(cos(yaw), exp_2) * cos_pitch_exp_1;
-            pt.y = dilatfactor_y * pow(sin(yaw), exp_2) * cos_pitch_exp_1;
+            pt.x = dilatfactor_x * powf_abs(cos(yaw), exp_2) * cos_pitch_exp_1;
+            pt.y = dilatfactor_y * powf_abs(sin(yaw), exp_2) * cos_pitch_exp_1;
 
             cloud_step1->push_back(pt);
         }
@@ -248,12 +250,12 @@ struct OptimizationFunctor : pcl::Functor<float> {
                     param(fsg::SuperEllipsoidParameters::idx::rad_minor);
             FSG_LOG_VAR(v_scaled);
 
-            float term = pow(v_scaled(0), two_over_exp_2) +
-                         pow(v_scaled(1), two_over_exp_2);
+            float term = powf_abs(v_scaled(0), two_over_exp_2) +
+                         powf_abs(v_scaled(1), two_over_exp_2);
             FSG_LOG_VAR(term);
 
             float outside_if_over_1 =
-                pow(term, exp_2_over_exp_1) + pow(v_scaled(2), two_over_exp_1);
+                powf_abs(term, exp_2_over_exp_1) + powf_abs(v_scaled(2), two_over_exp_1);
             FSG_LOG_VAR(outside_if_over_1);
 
             float deviation = fabs(outside_if_over_1 - 1);
