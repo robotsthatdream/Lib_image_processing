@@ -328,46 +328,56 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    std::string pcd_file = argv[1];
     std::string gmm_archive = argv[2];
     std::string label = argv[3];
 
     //* Load pcd file into a pointcloud
     ip::PointCloudT::Ptr input_cloud_soi(new ip::PointCloudT);
-    pcl::io::loadPCDFile(pcd_file, *input_cloud_soi);
-    //*/
 
-    FSG_LOG_MSG("pcd file loaded:" << pcd_file);
-
-    //* Load the CMMs classifier from the archive
-    std::ifstream ifs(gmm_archive);
-    if (!ifs) {
-        FSG_LOG_MSG("Unable to open archive : " << gmm_archive);
-        return 1;
+    {
+        std::string pcd_file = argv[1];
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("load pcd file: " << pcd_file);
+        pcl::io::loadPCDFile(pcd_file, *input_cloud_soi);
     }
-    iagmm::GMM gmm;
-    boost::archive::text_iarchive iarch(ifs);
-    iarch >> gmm;
-    //*/
 
-    FSG_LOG_MSG("classifier archive loaded:" << gmm_archive);
-
-    //* Generate relevance map on the pointcloud
     ip::SurfaceOfInterest soi(input_cloud_soi);
-    FSG_LOG_MSG("computing supervoxel");
-    soi.computeSupervoxel();
-
-    FSG_LOG_MSG(soi.getSupervoxels().size() << " supervoxels extracted");
 
     {
-        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("compute meanFPFHLabHist");
-        soi.compute_feature("meanFPFHLabHist");
-    }
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("handle gmm");
+        iagmm::GMM gmm;
 
-    {
-        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
-            "compute meanFPFHLabHist weights");
-        soi.compute_weights<iagmm::GMM>("meanFPFHLabHist", gmm);
+        {
+            FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
+                "load classifier archive: " << gmm_archive);
+            //* Load the CMMs classifier from the archive
+            std::ifstream ifs(gmm_archive);
+            if (!ifs) {
+                FSG_LOG_MSG("Unable to open archive : " << gmm_archive);
+                return 1;
+            }
+            boost::archive::text_iarchive iarch(ifs);
+            iarch >> gmm;
+            //*/
+        }
+
+        //* Generate relevance map on the pointcloud
+        {
+            FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("compute supervoxels");
+            soi.computeSupervoxel();
+            FSG_LOG_MSG(soi.getSupervoxels().size()
+                        << " supervoxels extracted");
+        }
+
+        {
+            FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("compute meanFPFHLabHist");
+            soi.compute_feature("meanFPFHLabHist");
+        }
+
+        {
+            FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
+                "compute meanFPFHLabHist weights");
+            soi.compute_weights<iagmm::GMM>("meanFPFHLabHist", gmm);
+        }
     }
 
     //* Generate objects hypothesis
@@ -375,12 +385,11 @@ int main(int argc, char **argv) {
     {
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("soi.extract_regions");
         obj_hypotheses = soi.extract_regions("meanFPFHLabHist", 0.5, 1);
+        FSG_LOG_MSG(obj_hypotheses.size() << " objects hypothesis extracted");
     }
     //*/
 
     // obj_hypotheses
-
-    FSG_LOG_MSG(obj_hypotheses.size() << " objects hypothesis extracted");
 
     std::string windowTitle;
 
@@ -392,362 +401,371 @@ int main(int argc, char **argv) {
 
     boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
         new pcl::visualization::PCLVisualizer(label));
+    boost::shared_ptr<Context> context_p(new Context(viewer));
 
     {
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("Computations");
-    viewer->setBackgroundColor(0, 0, 0);
+        viewer->setBackgroundColor(0, 0, 0);
 
-    fsg::PointCloudTP input_cloud_ptr(new fsg::PointCloudT());
+        fsg::PointCloudTP input_cloud_ptr(new fsg::PointCloudT());
 
-    fsg::PointCloudTP supervoxel_cloud_ptr(new fsg::PointCloudT());
+        fsg::PointCloudTP supervoxel_cloud_ptr(new fsg::PointCloudT());
 
-    fsg::PointCloudTP object_hyps_cloud_ptr(new fsg::PointCloudT());
+        fsg::PointCloudTP object_hyps_cloud_ptr(new fsg::PointCloudT());
 
-    fsg::PointCloudTP superellipsoids_cloud_ptr(new fsg::PointCloudT());
-
-    {
-        std::string modality = "meanFPFHLabHist";
-        int lbl = 1;
-
-        /* Draw all points in dark blueish tint, to see overall scene. */
+        fsg::PointCloudTP superellipsoids_cloud_ptr(new fsg::PointCloudT());
 
         {
-            pcl::PointXYZRGB pt;
-            for (auto it_p = input_cloud_soi->begin();
-                 it_p != input_cloud_soi->end(); it_p++) {
-                // auto current_p = it_p->second;
-                pt.x = it_p->x;
-                pt.y = it_p->y;
-                pt.z = it_p->z;
+            std::string modality = "meanFPFHLabHist";
+            int lbl = 1;
 
-                pt.r = it_p->r;
-                pt.g = it_p->g;
-                pt.b = it_p->b; //(it_p->r + it_p->g + it_p->b) / 6;
-                input_cloud_ptr->push_back(pt);
-            }
-        }
-
-        ip::SupervoxelArray supervoxels = soi.getSupervoxels();
-        ip::SurfaceOfInterest::relevance_map_t weights_for_this_modality =
-            soi.get_weights()[modality];
-
-        /* Draw all supervoxels points in various colors. */
-
-        boost::random::mt19937 _gen;
-        boost::random::uniform_int_distribution<> dist(1, 3);
-        // _gen.seed(0); No seed, we want it deterministic.
-
-        int kept = 0;
-        for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
-             it_sv++) {
-            // int current_sv_label = it_sv->first;
-            pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
-            float c = weights_for_this_modality[it_sv->first][lbl];
-
-            if (c < 0.5) {
-                // FSG_LOG_MSG( " skipping sv of label " << current_sv_label <<
-                // " weight " << c );
-                continue;
-            }
-            // FSG_LOG_MSG( " KEEPING sv of label " << current_sv_label << "
-            // weight " << c );
-            ++kept;
-
-            // This chooses random colors amont a palette of 3^3 = 27
-            // different colors, then multiplied by biased relevance.
-            // Hope this allows to easily distinguish supervoxels by
-            // colors.
-            int r = float(dist(_gen) * 56) * (c + 0.5);
-            int g = float(dist(_gen) * 56) * (c + 0.5);
-            int b = float(dist(_gen) * 56) * (c + 0.5);
-
-            pcl::PointXYZRGB pt;
-            for (auto v : *(current_sv->voxels_)) {
-                pt.x = v.x;
-                pt.y = v.y;
-                pt.z = v.z;
-                pt.r = r;
-                pt.g = g;
-                pt.b = b;
-                supervoxel_cloud_ptr->push_back(pt);
-            }
-        }
-
-        FSG_LOG_MSG("Thresholding kept " << kept << " supervoxels out of "
-                                         << supervoxels.size());
-
-        /* Populate again with cloud fitted with shape. */
-
-        /* We have to express what supervoxels belong together.
-
-           We could copy points, or just set indices, which saves memory.
-           Actually, PCL uses indices anyway.
-
-           We don't have to filter again because extract_regions already does
-           it.
-
-        */
-
-        // Rappel : typedef std::map<uint32_t, pcl::Supervoxel<PointT>::Ptr>
-        // SupervoxelArray;
-
-        /* each object */
-        for (const auto &obj_hyp :
-             obj_hypotheses | boost::adaptors::indexed(0)) {
-
-            FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("next obj_hypothesis");
-
-            std::string obj_index_i_s = std::to_string(obj_hyp.index());
-            std::set<uint32_t> *p_obj_hyp = &(obj_hyp.value());
-
-            int r = float(dist(_gen) * 85);
-            int g = float(dist(_gen) * 85);
-            int b = float(dist(_gen) * 85);
-
-            FSG_LOG_MSG("Begin new obj hyp, id=" << obj_index_i_s << ", "
-                                                                     "color = "
-                                                 << r << "," << g << "," << b);
-
-            pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
-                new pcl::PointCloud<pcl::PointXYZ>);
-
-            if (p_obj_hyp->size() <= 1) {
-                FSG_LOG_MSG("Skipping hypothesis object id="
-                            << obj_index_i_s << " because too few supervoxels: "
-                            << p_obj_hyp->size());
-                continue;
-            }
+            /* Draw all points in dark blueish tint, to see overall scene. */
 
             {
-                int kept = 0;
-                pcl::PointXYZ pt;
-                for (auto it_sv = supervoxels.begin();
-                     it_sv != supervoxels.end(); it_sv++) {
-                    int current_sv_label = it_sv->first;
-                    pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
+                pcl::PointXYZRGB pt;
+                for (auto it_p = input_cloud_soi->begin();
+                     it_p != input_cloud_soi->end(); it_p++) {
+                    // auto current_p = it_p->second;
+                    pt.x = it_p->x;
+                    pt.y = it_p->y;
+                    pt.z = it_p->z;
 
-                    if (p_obj_hyp->find(current_sv_label) == p_obj_hyp->end()) {
-                        // FSG_LOG_MSG( "Supervoxel " << current_sv_label << "
-                        // not part of current object, skipping." );
-                        continue;
-                    }
-                    ++kept;
+                    pt.r = it_p->r;
+                    pt.g = it_p->g;
+                    pt.b = it_p->b; //(it_p->r + it_p->g + it_p->b) / 6;
+                    input_cloud_ptr->push_back(pt);
+                }
+            }
 
+            ip::SupervoxelArray supervoxels = soi.getSupervoxels();
+            ip::SurfaceOfInterest::relevance_map_t weights_for_this_modality =
+                soi.get_weights()[modality];
+
+            /* Draw all supervoxels points in various colors. */
+
+            boost::random::mt19937 _gen;
+            boost::random::uniform_int_distribution<> dist(1, 3);
+            // _gen.seed(0); No seed, we want it deterministic.
+
+            int kept = 0;
+            for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
+                 it_sv++) {
+                // int current_sv_label = it_sv->first;
+                pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
+                float c = weights_for_this_modality[it_sv->first][lbl];
+
+                if (c < 0.5) {
+                    // FSG_LOG_MSG( " skipping sv of label " << current_sv_label
+                    // <<
+                    // " weight " << c );
+                    continue;
+                }
+                // FSG_LOG_MSG( " KEEPING sv of label " << current_sv_label << "
+                // weight " << c );
+                ++kept;
+
+                // This chooses random colors amont a palette of 3^3 = 27
+                // different colors, then multiplied by biased relevance.
+                // Hope this allows to easily distinguish supervoxels by
+                // colors.
+                int r = float(dist(_gen) * 56) * (c + 0.5);
+                int g = float(dist(_gen) * 56) * (c + 0.5);
+                int b = float(dist(_gen) * 56) * (c + 0.5);
+
+                pcl::PointXYZRGB pt;
+                for (auto v : *(current_sv->voxels_)) {
+                    pt.x = v.x;
+                    pt.y = v.y;
+                    pt.z = v.z;
+                    pt.r = r;
+                    pt.g = g;
+                    pt.b = b;
+                    supervoxel_cloud_ptr->push_back(pt);
+                }
+            }
+
+            FSG_LOG_MSG("Thresholding kept " << kept << " supervoxels out of "
+                                             << supervoxels.size());
+
+            /* Populate again with cloud fitted with shape. */
+
+            /* We have to express what supervoxels belong together.
+
+               We could copy points, or just set indices, which saves memory.
+               Actually, PCL uses indices anyway.
+
+               We don't have to filter again because extract_regions already
+               does
+               it.
+
+            */
+
+            // Rappel : typedef std::map<uint32_t, pcl::Supervoxel<PointT>::Ptr>
+            // SupervoxelArray;
+
+            /* each object */
+            for (const auto &obj_hyp :
+                 obj_hypotheses | boost::adaptors::indexed(0)) {
+
+                std::string obj_index_i_s = std::to_string(obj_hyp.index());
+                FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
+                    "Considering obj hypothesis id=" << obj_index_i_s);
+
+                std::set<uint32_t> *p_obj_hyp = &(obj_hyp.value());
+
+                int r = float(dist(_gen) * 85);
+                int g = float(dist(_gen) * 85);
+                int b = float(dist(_gen) * 85);
+
+                FSG_LOG_MSG("Assigned color = " << r << "," << g << "," << b);
+
+                pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
+                    new pcl::PointCloud<pcl::PointXYZ>);
+
+                if (p_obj_hyp->size() <= 1) {
+                    FSG_LOG_MSG("Skipping hypothesis object id="
+                                << obj_index_i_s
+                                << " because too few supervoxels: "
+                                << p_obj_hyp->size());
+                    continue;
+                }
+
+                {
                     FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
-                        "Supervoxel labelled "
-                        << current_sv_label
-                        << " part of current object, including, "
-                           "will add "
-                        << current_sv->voxels_->size() << " point(s).");
-                    for (auto v : *(current_sv->voxels_)) {
+                        "Gather supervoxels into point cloud for hypothesis id="
+                        << obj_index_i_s);
+
+                    int kept = 0;
+                    pcl::PointXYZ pt;
+                    for (auto it_sv = supervoxels.begin();
+                         it_sv != supervoxels.end(); it_sv++) {
+                        int current_sv_label = it_sv->first;
+                        pcl::Supervoxel<ip::PointT>::Ptr current_sv =
+                            it_sv->second;
+
+                        if (p_obj_hyp->find(current_sv_label) ==
+                            p_obj_hyp->end()) {
+                            // FSG_LOG_MSG( "Supervoxel " << current_sv_label <<
+                            // "
+                            // not part of current object, skipping." );
+                            continue;
+                        }
+                        ++kept;
+
+                        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
+                            "Supervoxel labelled "
+                            << current_sv_label
+                            << " is part of current object hypothesis id="
+                            << obj_index_i_s << ", including, "
+                                                "will add "
+                            << current_sv->voxels_->size() << " point(s).");
+                        for (auto v : *(current_sv->voxels_)) {
+                            pt.x = v.x;
+                            pt.y = v.y;
+                            pt.z = v.z;
+                            cloud_xyz->push_back(pt);
+                        }
+                    }
+                    FSG_LOG_MSG("Gathered "
+                                << kept
+                                << " supervoxels into a point cloud of size "
+                                << cloud_xyz->size()
+                                << " for hypothesis id=" << obj_index_i_s);
+                }
+
+                if (cloud_xyz->size() < 20) {
+                    FSG_LOG_MSG(
+                        "Skipping hypothesis object id="
+                        << obj_index_i_s
+                        << " because supervoxels combined into too few points: "
+                        << cloud_xyz->size());
+                    continue;
+                }
+
+                /* Okay, we've got one point cloud for this object. */
+
+                {
+                    pcl::PointXYZRGB pt;
+
+                    for (auto v : *cloud_xyz) {
                         pt.x = v.x;
                         pt.y = v.y;
                         pt.z = v.z;
-                        cloud_xyz->push_back(pt);
+
+                        pt.r = r;
+                        pt.g = g;
+                        pt.b = b;
+                        object_hyps_cloud_ptr->push_back(pt);
                     }
                 }
-                FSG_LOG_MSG("Gathered "
-                            << kept
-                            << " supervoxels into a point cloud of size "
-                            << cloud_xyz->size());
-            }
 
-            if (cloud_xyz->size() < 20) {
-                FSG_LOG_MSG(
-                    "Skipping hypothesis object id="
-                    << obj_index_i_s
-                    << " because supervoxels combined into too few points: "
-                    << cloud_xyz->size());
-                continue;
-            }
+                pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
+                feature_extractor.setInputCloud(cloud_xyz);
+                // Minimize eccentricity computation.
+                feature_extractor.setAngleStep(360);
+                feature_extractor.compute();
 
-            /* Okay, we've got one point cloud for this object. */
+                Eigen::Vector3f mass_center;
+                feature_extractor.getMassCenter(
+                    mass_center); // FIXME should check return value
 
-            {
-                pcl::PointXYZRGB pt;
+                FSG_LOG_VAR(mass_center);
 
-                for (auto v : *cloud_xyz) {
-                    pt.x = v.x;
-                    pt.y = v.y;
-                    pt.z = v.z;
+                Eigen::Vector3f major_vector, middle_vector, minor_vector;
 
-                    pt.r = r;
-                    pt.g = g;
-                    pt.b = b;
-                    object_hyps_cloud_ptr->push_back(pt);
+                feature_extractor.getEigenVectors(major_vector, middle_vector,
+                                                  minor_vector);
+                FSG_LOG_VAR(major_vector);
+                FSG_LOG_VAR(middle_vector);
+                FSG_LOG_VAR(minor_vector);
+
+                pcl::PointXYZ min_point_OBB;
+                pcl::PointXYZ max_point_OBB;
+                pcl::PointXYZ position_OBB;
+                Eigen::Matrix3f rotational_matrix_OBB;
+                feature_extractor.getOBB(
+                    min_point_OBB, max_point_OBB, position_OBB,
+                    rotational_matrix_OBB); // FIXME should check return value
+
+                FSG_LOG_VAR(position_OBB);
+                FSG_LOG_VAR(min_point_OBB);
+                FSG_LOG_VAR(max_point_OBB);
+
+                FSG_LOG_VAR(rotational_matrix_OBB);
+
+                // FIXME clarify/generalize major/z.
+                major_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0;
+                middle_vector *= (max_point_OBB.y - min_point_OBB.y) / 2.0;
+                minor_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0;
+                FSG_LOG_VAR(major_vector);
+                FSG_LOG_VAR(middle_vector);
+                FSG_LOG_VAR(minor_vector);
+
+                // From
+                // http://pointclouds.org/documentation/tutorials/moment_of_inertia.php
+
+                Eigen::Vector3f position(position_OBB.x, position_OBB.y,
+                                         position_OBB.z);
+                Eigen::Quaternionf quat(rotational_matrix_OBB);
+
+                std::string obbId(obj_index_i_s + ":obb");
+
+                FSG_LOG_MSG("will add obb with id: " << obbId);
+
+                viewer->addCube(position, quat,
+                                max_point_OBB.x - min_point_OBB.x,
+                                max_point_OBB.y - min_point_OBB.y,
+                                max_point_OBB.z - min_point_OBB.z, obbId);
+
+                viewer->setShapeRenderingProperties(
+                    pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
+                    pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME,
+                    obbId);
+
+                pcl::PointXYZ center(mass_center(0), mass_center(1),
+                                     mass_center(2));
+
+                // FIXME clarify/generalize major/z.
+                pcl::PointXYZ maj_axis(2.0 * major_vector(0) + mass_center(0),
+                                       2.0 * major_vector(1) + mass_center(1),
+                                       2.0 * major_vector(2) + mass_center(2));
+                pcl::PointXYZ mid_axis(2.0 * middle_vector(0) + mass_center(0),
+                                       2.0 * middle_vector(1) + mass_center(1),
+                                       2.0 * middle_vector(2) + mass_center(2));
+                pcl::PointXYZ min_axis(2.0 * minor_vector(0) + mass_center(0),
+                                       2.0 * minor_vector(1) + mass_center(1),
+                                       2.0 * minor_vector(2) + mass_center(2));
+
+                viewer->addLine(center, maj_axis, 1.0f, 0.0f, 0.0f,
+                                obj_index_i_s + ":major eigen vector");
+                viewer->addLine(center, mid_axis, 0.0f, 1.0f, 0.0f,
+                                obj_index_i_s + ":middle eigen vector");
+                viewer->addLine(center, min_axis, 0.0f, 0.0f, 1.0f,
+                                obj_index_i_s + ":minor eigen vector");
+
+                fsg::SuperEllipsoidParameters fittingContext;
+
+                fittingContext.set_cen_x(mass_center(0));
+                fittingContext.set_cen_y(mass_center(1));
+                fittingContext.set_cen_z(mass_center(2));
+
+                fittingContext.set_rad_major(major_vector.norm());
+
+                fittingContext.set_rad_middle(middle_vector.norm());
+
+                fittingContext.set_rad_minor(minor_vector.norm());
+
+                float yaw, pitch, roll;
+                matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
+
+                FSG_LOG_MSG("yaw=" << yaw << ", pitch=" << pitch
+                                   << ", roll=" << roll);
+
+                fittingContext.set_rot_yaw(yaw);
+                fittingContext.set_rot_pitch(pitch);
+                fittingContext.set_rot_roll(roll);
+
+                fittingContext.set_exp_1(1);
+                fittingContext.set_exp_2(1);
+
+                FSG_LOG_MSG("Initial estimation : " << fittingContext);
+
+                std::vector<int> indices(cloud_xyz->size());
+                for (size_t i = 0; i < cloud_xyz->size(); ++i) {
+                    indices[i] = i;
                 }
-            }
 
-            pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
-            feature_extractor.setInputCloud(cloud_xyz);
-            // Minimize eccentricity computation.
-            feature_extractor.setAngleStep(360);
-            feature_extractor.compute();
+                OptimizationFunctor functor(*cloud_xyz, indices);
+                Eigen::NumericalDiff<OptimizationFunctor> num_diff(functor);
+                Eigen::LevenbergMarquardt<
+                    Eigen::NumericalDiff<OptimizationFunctor>, float>
+                    lm(num_diff);
+                int minimizationResult = lm.minimize(fittingContext.coeff);
 
-            Eigen::Vector3f mass_center;
-            feature_extractor.getMassCenter(
-                mass_center); // FIXME should check return value
+                FSG_LOG_MSG("Minimization result: " << (int)minimizationResult);
 
-            FSG_LOG_VAR(mass_center);
+                FSG_LOG_MSG("After minimization : " << fittingContext);
 
-            Eigen::Vector3f major_vector, middle_vector, minor_vector;
+                pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
+                    fittingContext.toPointCloud();
 
-            feature_extractor.getEigenVectors(major_vector, middle_vector,
-                                              minor_vector);
-            FSG_LOG_VAR(major_vector);
-            FSG_LOG_VAR(middle_vector);
-            FSG_LOG_VAR(minor_vector);
+                {
+                    pcl::PointXYZRGB pt;
 
-            pcl::PointXYZ min_point_OBB;
-            pcl::PointXYZ max_point_OBB;
-            pcl::PointXYZ position_OBB;
-            Eigen::Matrix3f rotational_matrix_OBB;
-            feature_extractor.getOBB(
-                min_point_OBB, max_point_OBB, position_OBB,
-                rotational_matrix_OBB); // FIXME should check return value
+                    r = 127.0 + r / 2.0;
+                    g = 127.0 + g / 2.0;
+                    b = 127.0 + b / 2.0;
+                    for (auto v : *proj_points) {
+                        pt.x = v.x;
+                        pt.y = v.y;
+                        pt.z = v.z;
 
-            FSG_LOG_VAR(position_OBB);
-            FSG_LOG_VAR(min_point_OBB);
-            FSG_LOG_VAR(max_point_OBB);
-
-            FSG_LOG_VAR(rotational_matrix_OBB);
-
-            // FIXME clarify/generalize major/z.
-            major_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0;
-            middle_vector *= (max_point_OBB.y - min_point_OBB.y) / 2.0;
-            minor_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0;
-            FSG_LOG_VAR(major_vector);
-            FSG_LOG_VAR(middle_vector);
-            FSG_LOG_VAR(minor_vector);
-
-            // From
-            // http://pointclouds.org/documentation/tutorials/moment_of_inertia.php
-
-            Eigen::Vector3f position(position_OBB.x, position_OBB.y,
-                                     position_OBB.z);
-            Eigen::Quaternionf quat(rotational_matrix_OBB);
-
-            std::string obbId(obj_index_i_s + ":obb");
-
-            FSG_LOG_MSG("will add obb with id: " << obbId);
-
-            viewer->addCube(position, quat, max_point_OBB.x - min_point_OBB.x,
-                            max_point_OBB.y - min_point_OBB.y,
-                            max_point_OBB.z - min_point_OBB.z, obbId);
-
-            viewer->setShapeRenderingProperties(
-                pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
-                pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME,
-                obbId);
-
-            pcl::PointXYZ center(mass_center(0), mass_center(1),
-                                 mass_center(2));
-            
-            // FIXME clarify/generalize major/z.
-            pcl::PointXYZ maj_axis(2.0 * major_vector(0) + mass_center(0),
-                                 2.0 * major_vector(1) + mass_center(1),
-                                 2.0 * major_vector(2) + mass_center(2));
-            pcl::PointXYZ mid_axis(2.0 * middle_vector(0) + mass_center(0),
-                                 2.0 * middle_vector(1) + mass_center(1),
-                                 2.0 * middle_vector(2) + mass_center(2));
-            pcl::PointXYZ min_axis(2.0 * minor_vector(0) + mass_center(0),
-                                 2.0 * minor_vector(1) + mass_center(1),
-                                 2.0 * minor_vector(2) + mass_center(2));
-
-            viewer->addLine(center, maj_axis, 1.0f, 0.0f, 0.0f,
-                            obj_index_i_s + ":major eigen vector");
-            viewer->addLine(center, mid_axis, 0.0f, 1.0f, 0.0f,
-                            obj_index_i_s + ":middle eigen vector");
-            viewer->addLine(center, min_axis, 0.0f, 0.0f, 1.0f,
-                            obj_index_i_s + ":minor eigen vector");
-
-            fsg::SuperEllipsoidParameters fittingContext;
-
-            fittingContext.set_cen_x(mass_center(0));
-            fittingContext.set_cen_y(mass_center(1));
-            fittingContext.set_cen_z(mass_center(2));
-
-            fittingContext.set_rad_major(major_vector.norm());
-
-            fittingContext.set_rad_middle(middle_vector.norm());
-
-            fittingContext.set_rad_minor(minor_vector.norm());
-
-            float yaw, pitch, roll;
-            matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
-
-            FSG_LOG_MSG("yaw=" << yaw << ", pitch=" << pitch
-                               << ", roll=" << roll);
-
-            fittingContext.set_rot_yaw(yaw);
-            fittingContext.set_rot_pitch(pitch);
-            fittingContext.set_rot_roll(roll);
-
-            fittingContext.set_exp_1(1);
-            fittingContext.set_exp_2(1);
-
-            FSG_LOG_MSG("Initial estimation : " << fittingContext);
-
-            std::vector<int> indices(cloud_xyz->size());
-            for (size_t i = 0; i < cloud_xyz->size(); ++i) {
-                indices[i] = i;
-            }
-
-            OptimizationFunctor functor(*cloud_xyz, indices);
-            Eigen::NumericalDiff<OptimizationFunctor> num_diff(functor);
-            Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>,
-                                      float>
-                lm(num_diff);
-            int minimizationResult = lm.minimize(fittingContext.coeff);
-
-            FSG_LOG_MSG("Minimization result: " << (int)minimizationResult);
-
-            FSG_LOG_MSG("After minimization : " << fittingContext);
-
-            pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
-                fittingContext.toPointCloud();
-
-            {
-                pcl::PointXYZRGB pt;
-
-                r = 127.0 + r / 2.0;
-                g = 127.0 + g / 2.0;
-                b = 127.0 + b / 2.0;
-                for (auto v : *proj_points) {
-                    pt.x = v.x;
-                    pt.y = v.y;
-                    pt.z = v.z;
-
-                    pt.r = r;
-                    pt.g = g;
-                    pt.b = b;
-                    superellipsoids_cloud_ptr->push_back(pt);
+                        pt.r = r;
+                        pt.g = g;
+                        pt.b = b;
+                        superellipsoids_cloud_ptr->push_back(pt);
+                    }
                 }
-            }
 
-            FSG_LOG_MSG("End new obj hyp, id=" << obj_index_i_s << ".");
+                FSG_LOG_MSG("End new obj hyp, id=" << obj_index_i_s << ".");
+            }
+        }
+
+        cloud_reg_t clouds[] = {
+            {"1", input_cloud_ptr, "input", true},
+            {"2", supervoxel_cloud_ptr, "supervoxel", true},
+            {"3", object_hyps_cloud_ptr, "object_hyps", true},
+            {"4", superellipsoids_cloud_ptr, "superellipsoids", true},
+            //{ "t", superellipsoid_cloud, "superellipsoid_cloud" },
+        };
+
+        for (auto &cr : clouds) {
+            context_p->addCloud(cr);
+            viewer->setPointCloudRenderingProperties(
+                pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, cr.name);
         }
     }
 
-    cloud_reg_t clouds[] = {
-        {"1", input_cloud_ptr, "input", true},
-        {"2", supervoxel_cloud_ptr, "supervoxel", true},
-        {"3", object_hyps_cloud_ptr, "object_hyps", true},
-        {"4", superellipsoids_cloud_ptr, "superellipsoids", true},
-        //{ "t", superellipsoid_cloud, "superellipsoid_cloud" },
-    };
-
-    boost::shared_ptr<Context> context_p(new Context(viewer));
-
-    for (auto &cr : clouds) {
-        context_p->addCloud(cr);
-        viewer->setPointCloudRenderingProperties(
-            pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, cr.name);
-    }
-
-
-}
-    
     // viewer->addCoordinateSystem (1.0);
     viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
 
