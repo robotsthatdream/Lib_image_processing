@@ -129,7 +129,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     //   Y -----O
 
     float exp_1 = this->get_exp_1();
-    float exp_2 = this->get_exp_1();
+    float exp_2 = this->get_exp_2();
 
     // FIXME rename rad_*, major will not always be Z
     float dilatfactor_x = this->get_rad_minor();
