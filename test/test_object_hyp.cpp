@@ -182,7 +182,9 @@ struct OptimizationFunctor : pcl::Functor<float> {
     OptimizationFunctor(const pcl::PointCloud<pcl::PointXYZ> &cloud,
                         const std::vector<int> &indices)
         : pcl::Functor<float>(indices.size()), cloud_(cloud),
-          indices_(indices) {}
+          indices_(indices) {
+        FSG_LOG_MSG("Created functor with value count: " << values());
+    }
 
     /** Cost function to be minimized
      * \param[in] x the variables array
@@ -190,7 +192,9 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \return 0
      */
     int operator()(const Eigen::VectorXf &param, Eigen::VectorXf &fvec) const {
-        // FG_TRACE_THIS_SCOPE();
+        fsg::SuperEllipsoidParameters *sep =
+            (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
 
         // Extract center;
         ip::PointT cen;
@@ -212,6 +216,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
             2.0 / param(fsg::SuperEllipsoidParameters::idx::exp_2);
         float exp_2_over_exp_1 = two_over_exp_1 / two_over_exp_2;
 
+        float sum_of_squares=0;
         for (signed int i = 0; i < values(); ++i) {
 
             // Take current point;
@@ -243,7 +248,10 @@ struct OptimizationFunctor : pcl::Functor<float> {
             float deviation = fabs(outside_if_over_1 - 1);
 
             fvec[i] = deviation;
+            sum_of_squares += deviation*deviation;
         }
+        FSG_LOG_VAR(fvec);
+        FSG_LOG_VAR(sum_of_squares);
         return (0);
     }
 
