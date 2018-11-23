@@ -238,15 +238,15 @@ struct OptimizationFunctor : pcl::Functor<float> {
         float sum_of_squares = 0;
         for (signed int i = 0; i < values(); ++i) {
             // Take current point;
-            pcl::PointXYZ p = cloud_.points[indices_[i]];
+            const pcl::PointXYZ p = cloud_.points[indices_[i]];
             FSG_LOG_VAR(p);
 
             // Compute vector from center.
-            Eigen::Vector3f v_raw(p.x - cen.x, p.y - cen.y, p.z - cen.z);
+            const Eigen::Vector3f v_raw(p.x - cen.x, p.y - cen.y, p.z - cen.z);
             FSG_LOG_VAR(v_raw);
 
             // Rotate vector
-            Eigen::Vector3f v_aligned = rotmat * v_raw;
+            const Eigen::Vector3f v_aligned = rotmat * v_raw;
             FSG_LOG_VAR(v_aligned);
 
             // TODO check major/middle/minor vs X,Y,Z...
@@ -261,15 +261,16 @@ struct OptimizationFunctor : pcl::Functor<float> {
                     param(fsg::SuperEllipsoidParameters::idx::rad_minor);
             FSG_LOG_VAR(v_scaled);
 
-            float term = powf_abs(v_scaled(0), two_over_exp_2) +
-                         powf_abs(v_scaled(1), two_over_exp_2);
+            const float term = powf_abs(v_scaled(0), two_over_exp_2) +
+                               powf_abs(v_scaled(1), two_over_exp_2);
             FSG_LOG_VAR(term);
 
-            float outside_if_over_1 = powf_abs(term, exp_2_over_exp_1) +
-                                      powf_abs(v_scaled(2), two_over_exp_1);
+            const float outside_if_over_1 =
+                powf_abs(term, exp_2_over_exp_1) +
+                powf_abs(v_scaled(2), two_over_exp_1);
             FSG_LOG_VAR(outside_if_over_1);
 
-            float deviation = fabs(outside_if_over_1 - 1);
+            const float deviation = fabs(outside_if_over_1 - 1);
             FSG_LOG_VAR(deviation);
 
             fvec[i] = deviation;
