@@ -374,6 +374,38 @@ void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event,
     context->handleKeyboardEvent(event);
 }
 
+Eigen::ComputationInfo minimizationResultToComputationInfo(Eigen::LevenbergMarquardtSpace::Status minimizationResult)
+{
+    switch(minimizationResult)
+    {
+    case Eigen::LevenbergMarquardtSpace::Status::NotStarted:
+        return Eigen::ComputationInfo::InvalidInput;
+    case Eigen::LevenbergMarquardtSpace::Status::Running:
+        return Eigen::ComputationInfo::InvalidInput;
+    case Eigen::LevenbergMarquardtSpace::Status::ImproperInputParameters:
+        return Eigen::ComputationInfo::NumericalIssue;
+    case Eigen::LevenbergMarquardtSpace::Status::RelativeReductionTooSmall:
+        return Eigen::ComputationInfo::Success;
+    case Eigen::LevenbergMarquardtSpace::Status::RelativeErrorTooSmall:
+        return Eigen::ComputationInfo::Success;
+    case Eigen::LevenbergMarquardtSpace::Status::RelativeErrorAndReductionTooSmall:
+        return Eigen::ComputationInfo::Success;
+    case Eigen::LevenbergMarquardtSpace::Status::CosinusTooSmall:
+        return Eigen::ComputationInfo::Success;
+    case Eigen::LevenbergMarquardtSpace::Status::TooManyFunctionEvaluation:
+        return Eigen::ComputationInfo::NoConvergence;
+    case Eigen::LevenbergMarquardtSpace::Status::FtolTooSmall:
+        return Eigen::ComputationInfo::Success;
+    case Eigen::LevenbergMarquardtSpace::Status::XtolTooSmall:
+        return Eigen::ComputationInfo::Success;
+    case Eigen::LevenbergMarquardtSpace::Status::GtolTooSmall:
+        return Eigen::ComputationInfo::Success;
+    case Eigen::LevenbergMarquardtSpace::Status::UserAsked:
+        return Eigen::ComputationInfo::InvalidInput;
+    }
+    return Eigen::ComputationInfo::InvalidInput; // Make compiler happy.
+}
+
 int main(int argc, char **argv) {
     FSG_LOG_INIT__CALL_FROM_CPP_MAIN();
     FSG_TRACE_THIS_FUNCTION();
@@ -776,12 +808,22 @@ int main(int argc, char **argv) {
                 Eigen::LevenbergMarquardt<
                     Eigen::NumericalDiff<OptimizationFunctor>, float>
                     lm(num_diff);
-                int minimizationResult = lm.minimize(fittingContext.coeff);
+                Eigen::LevenbergMarquardtSpace::Status minimizationResult =
+                    lm.minimize(fittingContext.coeff);
 
-                FSG_LOG_MSG("Minimization result: " << (int)minimizationResult);
+                Eigen::ComputationInfo ci = minimizationResultToComputationInfo(minimizationResult);
+
+                FSG_LOG_MSG("Minimization result: Eigen::ComputationInfo="
+                            << ci << " LevenbergMarquardtSpace="
+                            << (int)minimizationResult);
 
                 FSG_LOG_MSG("After minimization : " << fittingContext);
 
+                if (ci != Eigen::ComputationInfo::Success)
+                {
+                    FSG_LOG_MSG("Not inserting superellipsoid into scene because fitting failed, with code: " << ci);
+                }
+                
                 pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
                     fittingContext.toPointCloud();
 
