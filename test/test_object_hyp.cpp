@@ -224,7 +224,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
         FSG_LOG_VAR(two_over_exp_1);
         FSG_LOG_VAR(exp_2_over_exp_1);
 
-        float sum_of_squares=0;
+        float sum_of_squares = 0;
         for (signed int i = 0; i < values(); ++i) {
             // Take current point;
             pcl::PointXYZ p = cloud_.points[indices_[i]];
@@ -254,15 +254,15 @@ struct OptimizationFunctor : pcl::Functor<float> {
                          powf_abs(v_scaled(1), two_over_exp_2);
             FSG_LOG_VAR(term);
 
-            float outside_if_over_1 =
-                powf_abs(term, exp_2_over_exp_1) + powf_abs(v_scaled(2), two_over_exp_1);
+            float outside_if_over_1 = powf_abs(term, exp_2_over_exp_1) +
+                                      powf_abs(v_scaled(2), two_over_exp_1);
             FSG_LOG_VAR(outside_if_over_1);
 
             float deviation = fabs(outside_if_over_1 - 1);
             FSG_LOG_VAR(deviation);
 
             fvec[i] = deviation;
-            sum_of_squares += deviation*deviation;
+            sum_of_squares += deviation * deviation;
         }
         FSG_LOG_VAR(fvec);
         FSG_LOG_VAR(sum_of_squares);
