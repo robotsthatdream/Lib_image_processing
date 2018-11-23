@@ -201,6 +201,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
         cen.x = param(fsg::SuperEllipsoidParameters::idx::cen_x);
         cen.y = param(fsg::SuperEllipsoidParameters::idx::cen_y);
         cen.z = param(fsg::SuperEllipsoidParameters::idx::cen_z);
+        FSG_LOG_VAR(cen);
 
         // Compute rotation matrix
         Eigen::Matrix3f rotmat;
@@ -208,25 +209,32 @@ struct OptimizationFunctor : pcl::Functor<float> {
                          param(fsg::SuperEllipsoidParameters::idx::rot_pitch),
                          param(fsg::SuperEllipsoidParameters::idx::rot_roll),
                          rotmat);
+        FSG_LOG_VAR(rotmat);
         rotmat.transposeInPlace();
+        FSG_LOG_VAR(rotmat);
 
         const float two_over_exp_1 =
             2.0 / param(fsg::SuperEllipsoidParameters::idx::exp_1);
         const float two_over_exp_2 =
             2.0 / param(fsg::SuperEllipsoidParameters::idx::exp_2);
         float exp_2_over_exp_1 = two_over_exp_1 / two_over_exp_2;
+        FSG_LOG_VAR(two_over_exp_2);
+        FSG_LOG_VAR(two_over_exp_1);
+        FSG_LOG_VAR(exp_2_over_exp_1);
 
         float sum_of_squares=0;
         for (signed int i = 0; i < values(); ++i) {
-
             // Take current point;
             pcl::PointXYZ p = cloud_.points[indices_[i]];
+            FSG_LOG_VAR(p);
 
             // Compute vector from center.
             Eigen::Vector3f v_raw(p.x - cen.x, p.y - cen.y, p.z - cen.z);
+            FSG_LOG_VAR(v_raw);
 
             // Rotate vector
             Eigen::Vector3f v_aligned = rotmat * v_raw;
+            FSG_LOG_VAR(v_aligned);
 
             // TODO check major/middle/minor vs X,Y,Z...
 
@@ -238,14 +246,18 @@ struct OptimizationFunctor : pcl::Functor<float> {
                     param(fsg::SuperEllipsoidParameters::idx::rad_middle),
                 v_aligned(2) /
                     param(fsg::SuperEllipsoidParameters::idx::rad_minor);
+            FSG_LOG_VAR(v_scaled);
 
             float term = pow(v_scaled(0), two_over_exp_2) +
                          pow(v_scaled(1), two_over_exp_2);
+            FSG_LOG_VAR(term);
 
             float outside_if_over_1 =
                 pow(term, exp_2_over_exp_1) + pow(v_scaled(2), two_over_exp_1);
+            FSG_LOG_VAR(outside_if_over_1);
 
             float deviation = fabs(outside_if_over_1 - 1);
+            FSG_LOG_VAR(deviation);
 
             fvec[i] = deviation;
             sum_of_squares += deviation*deviation;
