@@ -261,6 +261,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
             // TODO check major/middle/minor vs X,Y,Z...
 
             Eigen::Vector3f v_scaled;
+            // FIXME radii here are not major middle minor, only x y z or 1 2 3.
             v_scaled << v_aligned(0) /
                             param(
                                 fsg::SuperEllipsoidParameters::idx::rad_major),
