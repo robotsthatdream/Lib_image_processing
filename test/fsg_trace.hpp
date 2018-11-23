@@ -75,13 +75,13 @@ int FSG_LOG_INDENTATION_LEVEL =
 
 /** Log any variable (actually, any expression). */
 #define FSG_LOG_VAR(VARNAME)                                                   \
-    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_OSTREAM_VAR(VARNAME)              \
+    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION() << FSG_OSTREAM_VAR(VARNAME)              \
                     << FSG_LOG_END()
 
 /** Convenience shortcut: for any class where operator<< is properly
  * defined, log a text and a dump of "this" object.  */
 #define FSG_LOG_THIS(TEXT)                                                     \
-    FSG_LOG_BEGIN() << FSG_LOCATION() << TEXT << ":" << this << FSG_LOG_END()
+    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION() << TEXT << ":" << this << FSG_LOG_END()
 
 ///@}
 
@@ -122,7 +122,7 @@ int FSG_LOG_INDENTATION_LEVEL =
     For example:
 
     @code
-    FSG_LOG_BEGIN() << FSG_LOCATION() << "My text"
+    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION() << "My text"
     << FSG_OSTREAM_VAR(my_variable ) << " and "
     << FSG_OSTREAM_VAR( my_other_variable ) << FSG_LOG_END();
     @endcode
