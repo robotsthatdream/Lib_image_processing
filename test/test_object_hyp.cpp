@@ -794,8 +794,8 @@ int main(int argc, char **argv) {
                 fittingContext.set_rot_pitch(pitch);
                 fittingContext.set_rot_roll(roll);
 
-                fittingContext.set_exp_1(1);
-                fittingContext.set_exp_2(1);
+                fittingContext.set_exp_1(0.5);
+                fittingContext.set_exp_2(0.5);
 
                 FSG_LOG_MSG("Initial estimation : " << fittingContext);
 
