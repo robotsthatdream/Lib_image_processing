@@ -210,14 +210,14 @@ struct OptimizationFunctor : pcl::Functor<float> {
         const float exp_2 = param(fsg::SuperEllipsoidParameters::idx::exp_2);
         // FSG_LOG_VAR(exp_2);
 
-        if ((exp_1 > 2.0) || (exp_2 > 2.0)) {
-            FSG_LOG_MSG("Not doing computation because too big exponent: 1:"
-                        << exp_1 << " 2:" << exp_2);
-            for (signed int i = 0; i < values(); ++i) {
-                fvec[i] = FLT_MAX;
-            }
-            return 0;
-        }
+        // if ((exp_1 > 2.0) || (exp_2 > 2.0)) {
+        //     FSG_LOG_MSG("Not doing computation because too big exponent: 1:"
+        //                 << exp_1 << " 2:" << exp_2);
+        //     for (signed int i = 0; i < values(); ++i) {
+        //         fvec[i] = -FLT_MAX;
+        //     }
+        //     return 0;
+        // }
 
         // Extract center;
         ip::PointT cen;
