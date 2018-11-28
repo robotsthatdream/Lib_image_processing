@@ -193,7 +193,18 @@ struct OptimizationFunctor : pcl::Functor<float> {
         FSG_LOG_MSG("Created functor with value count: " << values());
     }
 
-#define powf_abs(x, y) powf(fabs(x), y)
+//#define powf_abs(x, y) powf(fabs(x), y)
+    float powf_abs(const float x, const float y) const
+        {
+            FSG_TRACE_THIS_FUNCTION();
+            FSG_LOG_VAR(x);
+            FSG_LOG_VAR(y);
+            const float absx=fabs(x);
+            FSG_LOG_VAR(absx);
+            const float result = powf(absx, y);
+            FSG_LOG_VAR(result);
+            return result;
+        }
 
     /** Cost function to be minimized
      * \param[in] x the variables array
