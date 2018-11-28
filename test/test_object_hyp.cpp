@@ -407,11 +407,48 @@ Eigen::ComputationInfo minimizationResultToComputationInfo(Eigen::LevenbergMarqu
     return Eigen::ComputationInfo::InvalidInput; // Make compiler happy.
 }
 
+void SuperEllipsoidTest()
+{
+    //boost::random::mt19937 _gen;
+    boost::random::minstd_rand _gen;
+    boost::random::uniform_real_distribution<> random_float_01(0, 1);
+
+    fsg::SuperEllipsoidParameters superellipsoidparameters;
+
+    superellipsoidparameters.set_cen_x(random_float_01(_gen));
+    
+#define FSGX(name) superellipsoidparameters.set_##name(random_float_01(_gen));
+    ALL_SuperEllipsoidParameters_FIELDS;
+#undef FSGX
+
+    FSG_LOG_VAR(superellipsoidparameters);
+
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud = superellipsoidparameters.toPointCloud();
+
+    std::vector<int> indices(pointCloud->size());
+    for (size_t i = 0; i < pointCloud->size(); ++i) {
+        indices[i] = i;
+    }
+    
+    OptimizationFunctor functor(*pointCloud, indices);
+
+    Eigen::VectorXf deviation(pointCloud->size());
+    
+    functor(superellipsoidparameters.coeff, deviation);
+
+    FSG_LOG_VAR(deviation);
+    FSG_LOG_VAR(deviation.norm());
+    
+}
+
 int main(int argc, char **argv) {
     FSG_LOG_INIT__CALL_FROM_CPP_MAIN();
     FSG_TRACE_THIS_FUNCTION();
 
     if (argc != 4) {
+        SuperEllipsoidTest();
+        return 0;
+
         std::cerr << "Usage : \n\t- pcd file\n\t- gmm archive\n\t- label"
                   << std::endl;
         return 1;
