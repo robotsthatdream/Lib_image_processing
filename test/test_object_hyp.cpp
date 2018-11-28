@@ -70,12 +70,12 @@ struct SuperEllipsoidParameters {
 
 #define FSGX(name)                                                             \
     void set_##name(float f) { coeff(idx::name) = f; };
-    ALL_SuperEllipsoidParameters_FIELDS
+    ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
 
-#define FSGX(name)                                                             \
+#define FSGX(name)                                              \
     float get_##name() const { return coeff(idx::name); };
-        ALL_SuperEllipsoidParameters_FIELDS
+    ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
 
         friend ostream &
