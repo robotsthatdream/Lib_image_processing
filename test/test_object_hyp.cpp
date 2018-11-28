@@ -53,9 +53,9 @@ struct SuperEllipsoidParameters {
     FSGX(cen_x)                                                                \
     FSGX(cen_y)                                                                \
     FSGX(cen_z)                                                                \
-    FSGX(rad_major)                                                            \
-    FSGX(rad_middle)                                                           \
-    FSGX(rad_minor)                                                            \
+    FSGX(rad_a)                                                                \
+    FSGX(rad_b)                                                                \
+    FSGX(rad_c)                                                                \
     FSGX(rot_yaw)                                                              \
     FSGX(rot_pitch)                                                            \
     FSGX(rot_roll)                                                             \
@@ -88,8 +88,8 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     os << "[SEFC "
        << "center=(" << sefc.get_cen_x() << "," << sefc.get_cen_y() << ","
        << sefc.get_cen_z() << "), "
-       << "radii=(" << sefc.get_rad_major() << "," << sefc.get_rad_middle()
-       << "," << sefc.get_rad_minor() << "), "
+       << "radii=(" << sefc.get_rad_a() << "," << sefc.get_rad_b()
+       << "," << sefc.get_rad_c() << "), "
        << "yaw=" << sefc.get_rot_yaw() << ", "
        << "pitch=" << sefc.get_rot_pitch() << ", "
        << "roll=" << sefc.get_rot_roll() << ", "
@@ -131,10 +131,9 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     float exp_1 = this->get_exp_1();
     float exp_2 = this->get_exp_2();
 
-    // FIXME rename rad_*, major will not always be Z
-    float dilatfactor_x = this->get_rad_minor();
-    float dilatfactor_y = this->get_rad_middle();
-    float dilatfactor_z = this->get_rad_major();
+    float dilatfactor_x = this->get_rad_a();
+    float dilatfactor_y = this->get_rad_b();
+    float dilatfactor_z = this->get_rad_c();
 
     pcl::PointXYZ pt;
     const float increment = M_PI_2 / 10;
@@ -274,11 +273,11 @@ struct OptimizationFunctor : pcl::Functor<float> {
             // FIXME radii here are not major middle minor, only x y z or 1 2 3.
             v_scaled << v_aligned(0) /
                             param(
-                                fsg::SuperEllipsoidParameters::idx::rad_major),
+                                fsg::SuperEllipsoidParameters::idx::rad_a),
                 v_aligned(1) /
-                    param(fsg::SuperEllipsoidParameters::idx::rad_middle),
+                    param(fsg::SuperEllipsoidParameters::idx::rad_b),
                 v_aligned(2) /
-                    param(fsg::SuperEllipsoidParameters::idx::rad_minor);
+                    param(fsg::SuperEllipsoidParameters::idx::rad_c);
             FSG_LOG_VAR(v_scaled);
 
             const float term = powf_abs(v_scaled(0), two_over_exp_2) +
@@ -429,9 +428,9 @@ void SuperEllipsoidTest() {
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
 
-    superellipsoidparameters_prototype.set_rad_major(1.0);
-    superellipsoidparameters_prototype.set_rad_middle(1.0);
-    superellipsoidparameters_prototype.set_rad_minor(1.0);
+    superellipsoidparameters_prototype.set_rad_a(1.0);
+    superellipsoidparameters_prototype.set_rad_b(1.0);
+    superellipsoidparameters_prototype.set_rad_c(1.0);
     superellipsoidparameters_prototype.set_exp_1(1.0);
     superellipsoidparameters_prototype.set_exp_2(1.0);
 
@@ -840,11 +839,11 @@ int main(int argc, char **argv) {
                 fittingContext.set_cen_y(mass_center(1));
                 fittingContext.set_cen_z(mass_center(2));
 
-                fittingContext.set_rad_major(major_vector.norm());
+                fittingContext.set_rad_a(major_vector.norm());
 
-                fittingContext.set_rad_middle(middle_vector.norm());
+                fittingContext.set_rad_b(middle_vector.norm());
 
-                fittingContext.set_rad_minor(minor_vector.norm());
+                fittingContext.set_rad_c(minor_vector.norm());
 
                 float yaw, pitch, roll;
                 matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
