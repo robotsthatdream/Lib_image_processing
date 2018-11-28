@@ -230,7 +230,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
         // }
 
         // Extract center;
-        ip::PointT cen;
+        pcl::PointXYZ cen;
         cen.x = param(fsg::SuperEllipsoidParameters::idx::cen_x);
         cen.y = param(fsg::SuperEllipsoidParameters::idx::cen_y);
         cen.z = param(fsg::SuperEllipsoidParameters::idx::cen_z);
