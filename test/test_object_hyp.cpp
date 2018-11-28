@@ -422,37 +422,48 @@ void SuperEllipsoidTest() {
     boost::random::minstd_rand _gen;
     boost::random::uniform_real_distribution<> random_float_01(0, 1);
 
-    fsg::SuperEllipsoidParameters superellipsoidparameters;
-    
+    fsg::SuperEllipsoidParameters superellipsoidparameters_prototype;
+
 //#define FSGX(name) superellipsoidparameters.set_##name(random_float_01(_gen));
-#define FSGX(name) superellipsoidparameters.set_##name(0.00);
+#define FSGX(name) superellipsoidparameters_prototype.set_##name(0.00);
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
 
-    superellipsoidparameters.set_rad_major(1.0);
-    superellipsoidparameters.set_rad_middle(1.0);
-    superellipsoidparameters.set_rad_minor(1.0);
-    superellipsoidparameters.set_exp_1(1.0);
-    superellipsoidparameters.set_exp_2(1.0);
+    superellipsoidparameters_prototype.set_rad_major(1.0);
+    superellipsoidparameters_prototype.set_rad_middle(1.0);
+    superellipsoidparameters_prototype.set_rad_minor(1.0);
+    superellipsoidparameters_prototype.set_exp_1(1.0);
+    superellipsoidparameters_prototype.set_exp_2(1.0);
 
-    FSG_LOG_VAR(superellipsoidparameters);
+    FSG_LOG_VAR(superellipsoidparameters_prototype);
 
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
-        superellipsoidparameters.toPointCloud();
+    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+        fsg::SuperEllipsoidParameters superellipsoidparameters =
+            superellipsoidparameters_prototype;
 
-    std::vector<int> indices(pointCloud->size());
-    for (size_t i = 0; i < pointCloud->size(); ++i) {
-        indices[i] = i;
+        superellipsoidparameters.coeff(dimension_shift) = 1.5;
+
+        const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
+            superellipsoidparameters.toPointCloud();
+
+        std::vector<int> indices(pointCloud->size());
+        for (size_t i = 0; i < pointCloud->size(); ++i) {
+            indices[i] = i;
+        }
+
+        OptimizationFunctor functor(*pointCloud, indices);
+
+        Eigen::VectorXf deviation(pointCloud->size());
+
+        functor(superellipsoidparameters.coeff, deviation);
+
+        FSG_LOG_VAR(deviation);
+        FSG_LOG_VAR(deviation.norm());
+
+        if (deviation.norm() > 0.001) {
+            FSG_LOG_MSG("Test fail on dimension." << dimension_shift);
+        }
     }
-
-    OptimizationFunctor functor(*pointCloud, indices);
-
-    Eigen::VectorXf deviation(pointCloud->size());
-
-    functor(superellipsoidparameters.coeff, deviation);
-
-    FSG_LOG_VAR(deviation);
-    FSG_LOG_VAR(deviation.norm());
 }
 
 int main(int argc, char **argv) {
