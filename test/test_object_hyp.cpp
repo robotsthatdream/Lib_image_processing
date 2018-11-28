@@ -73,13 +73,13 @@ struct SuperEllipsoidParameters {
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
 
-#define FSGX(name)                                              \
+#define FSGX(name)                                                             \
     float get_##name() const { return coeff(idx::name); };
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
 
-        friend ostream &
-        operator<<(ostream &os, const SuperEllipsoidParameters &sefc);
+    friend ostream &operator<<(ostream &os,
+                               const SuperEllipsoidParameters &sefc);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr toPointCloud();
 };
@@ -193,18 +193,17 @@ struct OptimizationFunctor : pcl::Functor<float> {
         FSG_LOG_MSG("Created functor with value count: " << values());
     }
 
-//#define powf_abs(x, y) powf(fabs(x), y)
-    float powf_abs(const float x, const float y) const
-        {
-            FSG_TRACE_THIS_FUNCTION();
-            FSG_LOG_VAR(x);
-            FSG_LOG_VAR(y);
-            const float absx=fabs(x);
-            FSG_LOG_VAR(absx);
-            const float result = powf(absx, y);
-            FSG_LOG_VAR(result);
-            return result;
-        }
+    //#define powf_abs(x, y) powf(fabs(x), y)
+    float powf_abs(const float x, const float y) const {
+        FSG_TRACE_THIS_FUNCTION();
+        FSG_LOG_VAR(x);
+        FSG_LOG_VAR(y);
+        const float absx = fabs(x);
+        FSG_LOG_VAR(absx);
+        const float result = powf(absx, y);
+        FSG_LOG_VAR(result);
+        return result;
+    }
 
     /** Cost function to be minimized
      * \param[in] x the variables array
@@ -386,10 +385,9 @@ void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event,
     context->handleKeyboardEvent(event);
 }
 
-Eigen::ComputationInfo minimizationResultToComputationInfo(Eigen::LevenbergMarquardtSpace::Status minimizationResult)
-{
-    switch(minimizationResult)
-    {
+Eigen::ComputationInfo minimizationResultToComputationInfo(
+    Eigen::LevenbergMarquardtSpace::Status minimizationResult) {
+    switch (minimizationResult) {
     case Eigen::LevenbergMarquardtSpace::Status::NotStarted:
         return Eigen::ComputationInfo::InvalidInput;
     case Eigen::LevenbergMarquardtSpace::Status::Running:
@@ -400,7 +398,8 @@ Eigen::ComputationInfo minimizationResultToComputationInfo(Eigen::LevenbergMarqu
         return Eigen::ComputationInfo::Success;
     case Eigen::LevenbergMarquardtSpace::Status::RelativeErrorTooSmall:
         return Eigen::ComputationInfo::Success;
-    case Eigen::LevenbergMarquardtSpace::Status::RelativeErrorAndReductionTooSmall:
+    case Eigen::LevenbergMarquardtSpace::Status::
+        RelativeErrorAndReductionTooSmall:
         return Eigen::ComputationInfo::Success;
     case Eigen::LevenbergMarquardtSpace::Status::CosinusTooSmall:
         return Eigen::ComputationInfo::Success;
@@ -418,38 +417,37 @@ Eigen::ComputationInfo minimizationResultToComputationInfo(Eigen::LevenbergMarqu
     return Eigen::ComputationInfo::InvalidInput; // Make compiler happy.
 }
 
-void SuperEllipsoidTest()
-{
-    //boost::random::mt19937 _gen;
+void SuperEllipsoidTest() {
+    // boost::random::mt19937 _gen;
     boost::random::minstd_rand _gen;
     boost::random::uniform_real_distribution<> random_float_01(0, 1);
 
     fsg::SuperEllipsoidParameters superellipsoidparameters;
 
     superellipsoidparameters.set_cen_x(random_float_01(_gen));
-    
+
 #define FSGX(name) superellipsoidparameters.set_##name(random_float_01(_gen));
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
 
     FSG_LOG_VAR(superellipsoidparameters);
 
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud = superellipsoidparameters.toPointCloud();
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
+        superellipsoidparameters.toPointCloud();
 
     std::vector<int> indices(pointCloud->size());
     for (size_t i = 0; i < pointCloud->size(); ++i) {
         indices[i] = i;
     }
-    
+
     OptimizationFunctor functor(*pointCloud, indices);
 
     Eigen::VectorXf deviation(pointCloud->size());
-    
+
     functor(superellipsoidparameters.coeff, deviation);
 
     FSG_LOG_VAR(deviation);
     FSG_LOG_VAR(deviation.norm());
-    
 }
 
 int main(int argc, char **argv) {
@@ -860,7 +858,8 @@ int main(int argc, char **argv) {
                 Eigen::LevenbergMarquardtSpace::Status minimizationResult =
                     lm.minimize(fittingContext.coeff);
 
-                Eigen::ComputationInfo ci = minimizationResultToComputationInfo(minimizationResult);
+                Eigen::ComputationInfo ci =
+                    minimizationResultToComputationInfo(minimizationResult);
 
                 FSG_LOG_MSG("Minimization result: Eigen::ComputationInfo="
                             << ci << " LevenbergMarquardtSpace="
@@ -868,11 +867,12 @@ int main(int argc, char **argv) {
 
                 FSG_LOG_MSG("After minimization : " << fittingContext);
 
-                if (ci != Eigen::ComputationInfo::Success)
-                {
-                    FSG_LOG_MSG("Not inserting superellipsoid into scene because fitting failed, with code: " << ci);
+                if (ci != Eigen::ComputationInfo::Success) {
+                    FSG_LOG_MSG("Not inserting superellipsoid into scene "
+                                "because fitting failed, with code: "
+                                << ci);
                 }
-                
+
                 pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
                     fittingContext.toPointCloud();
 
