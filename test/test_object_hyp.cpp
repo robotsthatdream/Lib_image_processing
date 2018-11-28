@@ -423,12 +423,17 @@ void SuperEllipsoidTest() {
     boost::random::uniform_real_distribution<> random_float_01(0, 1);
 
     fsg::SuperEllipsoidParameters superellipsoidparameters;
-
-    superellipsoidparameters.set_cen_x(random_float_01(_gen));
-
-#define FSGX(name) superellipsoidparameters.set_##name(random_float_01(_gen));
+    
+//#define FSGX(name) superellipsoidparameters.set_##name(random_float_01(_gen));
+#define FSGX(name) superellipsoidparameters.set_##name(0.00);
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
+
+    superellipsoidparameters.set_rad_major(1.0);
+    superellipsoidparameters.set_rad_middle(1.0);
+    superellipsoidparameters.set_rad_minor(1.0);
+    superellipsoidparameters.set_exp_1(1.0);
+    superellipsoidparameters.set_exp_2(1.0);
 
     FSG_LOG_VAR(superellipsoidparameters);
 
