@@ -167,7 +167,9 @@ else
 fi
 export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${PCL_IT}"
 
-IAGMM_IT=${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.installtree.Release
+IAGMM_BUILD_TYPE=Debug
+
+IAGMM_IT=${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.installtree.${IAGMM_BUILD_TYPE}
 if [[ -d "${IAGMM_IT}" ]]
 then
     echo "IAGMM_Lib already in $IAGMM_IT"
@@ -180,9 +182,9 @@ else(
     cd IAGMM_Lib
     export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
     cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
-                               -DCMAKE_BUILD_TYPE=Release \
+                               -DCMAKE_BUILD_TYPE=${IAGMM_BUILD_TYPE} \
 
-    cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.Release
+    cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.${IAGMM_BUILD_TYPE}
     time cmake --build . -- install
 )
 fi
