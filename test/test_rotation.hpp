@@ -3,7 +3,6 @@
 namespace fsg {
 namespace matrixrotationangles {
 
-    
 /*
 
   ===== Definition of rotational matrix =====
@@ -169,11 +168,11 @@ namespace matrixrotationangles {
 
 */
 
-    void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
-                          float &roll);
-    
-    void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
-                          Eigen::Matrix3f &m);
+void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
+                      float &roll);
 
-}
-}
+void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
+                      Eigen::Matrix3f &m);
+
+} // namespace matrixrotationangles
+} // namespace fsg

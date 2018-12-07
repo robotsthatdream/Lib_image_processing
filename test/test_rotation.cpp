@@ -86,8 +86,8 @@ void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
     // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
     // std::endl;
 }
-}
-}
+} // namespace matrixrotationangles
+} // namespace fsg
 
 // =====================================================================
 // Test below
@@ -102,8 +102,8 @@ void expect_identical_3x3_matrices(const Eigen::Matrix3f &m1,
                                    const float epsilon = 1e-5) {
     for (int row = 0; row <= 2; row++) {
         for (int col = 0; col <= 2; col++) {
-            EXPECT_NEAR(m1(row, col), m2(row, col), epsilon) << "row=" << row
-                                                             << ", col=" << col;
+            EXPECT_NEAR(m1(row, col), m2(row, col), epsilon)
+                << "row=" << row << ", col=" << col;
         }
     }
 }
