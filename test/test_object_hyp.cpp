@@ -88,8 +88,8 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     os << "[SEFC "
        << "center=(" << sefc.get_cen_x() << "," << sefc.get_cen_y() << ","
        << sefc.get_cen_z() << "), "
-       << "radii=(" << sefc.get_rad_a() << "," << sefc.get_rad_b()
-       << "," << sefc.get_rad_c() << "), "
+       << "radii=(" << sefc.get_rad_a() << "," << sefc.get_rad_b() << ","
+       << sefc.get_rad_c() << "), "
        << "yaw=" << sefc.get_rot_yaw() << ", "
        << "pitch=" << sefc.get_rot_pitch() << ", "
        << "roll=" << sefc.get_rot_roll() << ", "
@@ -196,7 +196,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
         FSG_LOG_MSG("Created functor with value count: " << values());
     }
 
-    #define powf_abs(x, y) powf(fabs(x), y)
+#define powf_abs(x, y) powf(fabs(x), y)
     // float powf_abs(const float x, const float y) const {
     //     FSG_TRACE_THIS_FUNCTION();
     //     FSG_LOG_VAR(x);
@@ -214,7 +214,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \return 0
      */
     int operator()(const Eigen::VectorXf &param, Eigen::VectorXf &fvec) const {
-        //fsg::SuperEllipsoidParameters *sep =
+        // fsg::SuperEllipsoidParameters *sep =
         // (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
         // FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
 
@@ -276,12 +276,9 @@ struct OptimizationFunctor : pcl::Functor<float> {
             Eigen::Vector3f v_scaled;
             // FIXME radii here are not major middle minor, only x y z or 1 2 3.
             v_scaled << v_aligned(0) /
-                            param(
-                                fsg::SuperEllipsoidParameters::idx::rad_a),
-                v_aligned(1) /
-                    param(fsg::SuperEllipsoidParameters::idx::rad_b),
-                v_aligned(2) /
-                    param(fsg::SuperEllipsoidParameters::idx::rad_c);
+                            param(fsg::SuperEllipsoidParameters::idx::rad_a),
+                v_aligned(1) / param(fsg::SuperEllipsoidParameters::idx::rad_b),
+                v_aligned(2) / param(fsg::SuperEllipsoidParameters::idx::rad_c);
             // FSG_LOG_VAR(v_scaled);
 
             const float term = powf_abs(v_scaled(0), two_over_exp_2) +
