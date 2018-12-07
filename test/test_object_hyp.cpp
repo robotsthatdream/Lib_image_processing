@@ -136,7 +136,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     float dilatfactor_z = this->get_rad_c();
 
     pcl::PointXYZ pt;
-    const float increment = M_PI_2 / 10;
+    const float increment = M_PI_2 / 100;
 
     // Pitch is eta in Biegelbauer et al.
     for (float pitch = -M_PI_2; pitch < M_PI_2; pitch += increment) {
