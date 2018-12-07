@@ -150,7 +150,11 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
             pt.x = dilatfactor_x * powf_sym(cos(yaw), exp_2) * cos_pitch_exp_1;
             pt.y = dilatfactor_y * powf_sym(sin(yaw), exp_2) * cos_pitch_exp_1;
 
+            if ((pt.x * pt.x + pt.y * pt.y + pt.z * pt.z) < 10.0) {
                 cloud_step1->push_back(pt);
+            } else {
+                FSG_LOG_MSG("Ignoring too far point " << pt);
+            }
         }
     }
 
