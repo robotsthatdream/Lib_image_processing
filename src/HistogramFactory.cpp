@@ -59,39 +59,38 @@ void HistogramFactory::compute(const pcl::Supervoxel<image_processing::PointT>::
     }
 }
 
+// void HistogramFactory::compute(const cv::Mat& image){
+//     _histogram = _histogram_t(_dim,Eigen::VectorXd::Zero(_bins));
 
-void HistogramFactory::compute(const cv::Mat& image){
-    _histogram = _histogram_t(_dim,Eigen::VectorXd::Zero(_bins));
+//     int image_chan = image.channels();
+//     uchar rgb[_dim];
+//     double bin;
+//     for(int i = 0; i < image.rows; i++){
+//         uchar* image_rowPtr = reinterpret_cast<uchar*>(image.row(i).data);
+//         for(int j = 0; j < image.cols; j++){
+//             rgb[0] = image_rowPtr[j*image_chan + 2];
+//             rgb[1] = image_rowPtr[j*image_chan + 1];
+//             rgb[2] = image_rowPtr[j*image_chan + 0];
 
-    int image_chan = image.channels();
-    uchar rgb[_dim];
-    double bin;
-    for(int i = 0; i < image.rows; i++){
-        uchar* image_rowPtr = reinterpret_cast<uchar*>(image.row(i).data);
-        for(int j = 0; j < image.cols; j++){
-            rgb[0] = image_rowPtr[j*image_chan + 2];
-            rgb[1] = image_rowPtr[j*image_chan + 1];
-            rgb[2] = image_rowPtr[j*image_chan + 0];
+//             for(int i = 0; i < _dim; i++){
+//                 if(rgb[i] != rgb[i] || (fabs(rgb[i]) > 10e3))
+//                     continue;
+//                 if(fabs(rgb[i]) <= 10e-4)
+//                     rgb[i] = 0;
 
-            for(int i = 0; i < _dim; i++){
-                if(rgb[i] != rgb[i] || (fabs(rgb[i]) > 10e3))
-                    continue;
-                if(fabs(rgb[i]) <= 10e-4)
-                    rgb[i] = 0;
+//                 bin = (rgb[i] - _bounds(0,i))/(_bounds(1,i)/_bins);
+//                 if(bin >= _bins) bin -= 1;
+//                 _histogram[i](std::trunc(bin))++;
+//             }
+//         }
+//     }
+//     for(int i = 0; i < _dim; i++){
+//         for(int j = 0; j < _bins; j++){
+//             _histogram[i](j) = _histogram[i](j)/(image.rows*image.cols);
+//         }
+//     }
 
-                bin = (rgb[i] - _bounds(0,i))/(_bounds(1,i)/_bins);
-                if(bin >= _bins) bin -= 1;
-                _histogram[i](std::trunc(bin))++;
-            }
-        }
-    }
-    for(int i = 0; i < _dim; i++){
-        for(int j = 0; j < _bins; j++){
-            _histogram[i](j) = _histogram[i](j)/(image.rows*image.cols);
-        }
-    }
-
-}
+// }
 
 void HistogramFactory::compute(const std::vector<Eigen::VectorXd>& data){
     _histogram = _histogram_t(_dim,Eigen::VectorXd::Zero(_bins));
