@@ -5,17 +5,23 @@ set -eu
 ## Sanity check dependencies
 
 TOOLS="cmake:cmake
-ninja:ninja-build
 /usr/include/eigen3:libeigen3-dev
 git:git
 /usr/include/boost/version.hpp:libboost-all-dev
 /usr/include/flann/flann.h:libflann-dev
 /usr/include/vtk*:libvtk6-dev
-/usr/include/proj_api.h:libproj-dev
 /usr/include/tbb/tbb.h:libtbb-dev
 /usr/include/yaml-cpp/yaml.h:libyaml-cpp-dev
 /usr/include/qhull/qhull.h:libqhull-dev
 "
+
+# On Ubuntu 16.04, libproj-dev is an implicit dependency of vtk*.
+if
+    find /usr/lib/ -iname "libvtk*geovis*.so" | xargs ldd | grep -q libproj
+then
+    TOOLS="$TOOLS
+/usr/include/proj_api.h:libproj-dev"
+fi
 
 MISSING=""
 for TOOLNP in ${TOOLS}
@@ -57,11 +63,18 @@ IMAGE_PROCESSING_SOURCE_ROOT="$( cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}
 
 cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
 
-function select_ninja()
-{
-chmod -c a+x ninja_with_args.sh
-export MY_CMAKE_GENERATOR_OPTIONS="-G Ninja -D CMAKE_MAKE_PROGRAM:STRING=\"$PWD/ninja_with_args.sh\" "
-}
+if [[ "$IMAGE_PROCESSING_SOURCE_ROOT" =~ \  ]] ; then echo >&2 "Refusing to build because current directory path has a space and this break some build steps: '$PWD'" ; exit 1 ; fi
+
+chmod -c a+x ninja_with_args.sh make_with_automatic_parallel_jobs_adjustment.sh
+
+
+# WARNING : this will break if build dir has a space.  The easy fix I tried did not work. -- FSG
+export MY_CMAKE_GENERATOR_OPTIONS_NINJA="-G Ninja -D CMAKE_MAKE_PROGRAM:STRING=$IMAGE_PROCESSING_SOURCE_ROOT/ninja_with_args.sh "
+export MY_CMAKE_GENERATOR_OPTIONS_MAKE=" -D CMAKE_MAKE_PROGRAM:STRING=$IMAGE_PROCESSING_SOURCE_ROOT/make_with_automatic_parallel_jobs_adjustment.sh "
+# -G 'Unix Makefiles'
+
+export MY_CMAKE_GENERATOR_OPTIONS="$MY_CMAKE_GENERATOR_OPTIONS_MAKE"
+
 
 IMAGE_PROCESSING_BUILD_ROOT=${PWD}.dependencies_and_generated
 
@@ -94,12 +107,12 @@ else
     (
         if [[ ! -d opencv ]]
         then
-            git clone https://github.com/opencv/opencv/
+            git clone --branch 3.4.3 https://github.com/opencv/opencv/
         fi
 
         cd opencv
-
-        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
+        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
+        cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                    -D CMAKE_BUILD_TYPE:STRING=Release \
                                    -D BUILD_JAVA:BOOL=OFF \
                                    -D BUILD_PACKAGE:BOOL=OFF \
@@ -135,13 +148,15 @@ else
     (
         if [[ ! -d pcl ]]
         then
-            git clone https://github.com/PointCloudLibrary/pcl
+            git clone -b feature_implement_pcl__SampleConsensusModelSphere_PointT___projectPoints https://github.com/fidergo-stephane-gourichon/pcl
+            #https://github.com/PointCloudLibrary/pcl
         fi
 
         cd pcl
-        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
+        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=1000000
+        cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                    -DCMAKE_BUILD_TYPE:STRING=Release \
-                                   -DCMAKE_CXX_STANDARD=11 . \
+                                   -DCMAKE_CXX_STANDARD=11 \
                                    -DWITH_QHULL=ON \
                                    -DWITH_VTK=ON \
                                    -DBUILD_visualization=ON
@@ -159,11 +174,12 @@ then
 else(
     if [[ ! -d IAGMM_Lib ]]
     then
-        git clone https://github.com/LeniLeGoff/IAGMM_Lib
+        git clone https://github.com/robotsthatdream/IAGMM_Lib
     fi
 
     cd IAGMM_Lib
-        cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
+    export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
+    cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                -DCMAKE_BUILD_TYPE=Release \
 
     cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.Release
@@ -173,7 +189,9 @@ fi
 
 #export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${IAGMM_IT}"
 
-IMAGE_PROCESSING_IT=${IMAGE_PROCESSING_BUILD_ROOT}/image_processing.OSID_${OS_ID}.installtree.Release
+IMAGE_PROCESSING_BUILD_TYPE=Debug
+
+IMAGE_PROCESSING_IT=${IMAGE_PROCESSING_BUILD_ROOT}/image_processing.OSID_${OS_ID}.installtree.${IMAGE_PROCESSING_BUILD_TYPE}
 if [[ -d "${IMAGE_PROCESSING_IT}" ]]
 then
     echo "Image_Processing already in $IMAGE_PROCESSING_IT"
@@ -184,12 +202,13 @@ else(
 #    fi
 
     cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
-    cmake_project_bootstrap.sh . "${MY_CMAKE_GENERATOR_OPTIONS:-}" \
-                               -DCMAKE_BUILD_TYPE=Release \
+    export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
+    cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
+                               -DCMAKE_BUILD_TYPE=${IMAGE_PROCESSING_BUILD_TYPE} \
                                -DIAGMM_INSTALL_TREE:STRING="${IAGMM_IT}" \
 
 
-    cd ${IMAGE_PROCESSING_SOURCE_ROOT}.OSID_${OS_ID}.buildtree.Release
+    cd ${IMAGE_PROCESSING_SOURCE_ROOT}.OSID_${OS_ID}.buildtree.${IMAGE_PROCESSING_BUILD_TYPE}
     time cmake --build . -- install
 )
 fi
