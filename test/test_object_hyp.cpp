@@ -100,7 +100,7 @@ struct SuperEllipsoidParameters {
     friend ostream &operator<<(ostream &os,
                                const SuperEllipsoidParameters &sefc);
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr toPointCloud();
+    pcl::PointCloud<pcl::PointXYZ>::Ptr toPointCloud(int steps);
 };
 
 ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
@@ -125,7 +125,7 @@ float powf_sym(float x, float y) {
         return powf(x, y);
 }
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
+pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud(int steps) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
         new pcl::PointCloud<pcl::PointXYZ>);
     FSG_TRACE_THIS_FUNCTION();
@@ -155,7 +155,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud() {
     float dilatfactor_z = this->get_rad_c();
 
     pcl::PointXYZ pt;
-    const float increment = M_PI_2 / 100;
+    const float increment = M_PI_2 / steps;
 
     // Pitch is eta in Biegelbauer et al.
     for (float pitch = -M_PI_2; pitch < M_PI_2; pitch += increment) {
@@ -450,7 +450,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior() {
         superellipsoidparameters.coeff(dimension_shift) = 1.5;
 
         const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
-            superellipsoidparameters.toPointCloud();
+            superellipsoidparameters.toPointCloud(100);
 
         std::vector<int> indices(pointCloud->size());
         for (size_t i = 0; i < pointCloud->size(); ++i) {
@@ -622,7 +622,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     FSG_LOG_VAR(sep_groundtruth);
 
     const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
-        sep_groundtruth.toPointCloud();
+        sep_groundtruth.toPointCloud(4);
 
     fsg::SuperEllipsoidParameters sep_fit;
 
@@ -957,7 +957,7 @@ int main(int argc, char **argv) {
                 if (success) {
 
                     pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
-                        fittingContext.toPointCloud();
+                        fittingContext.toPointCloud(100);
 
                     {
                         pcl::PointXYZRGB pt;
