@@ -472,7 +472,53 @@ void SuperEllipsoidTestEachDimensionForMisbehavior() {
     }
 }
 
-void SuperEllipsoidTest() { SuperEllipsoidTestEachDimensionForMisbehavior(); }
+void SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
+    boost::random::uniform_real_distribution<> random_float_01(0, 1);
+
+    fsg::SuperEllipsoidParameters sep_groundtruth;
+#define FSGX(name) sep_groundtruth.set_##name(random_float_01(_gen));
+        ALL_SuperEllipsoidParameters_FIELDS;
+#undef FSGX
+
+    FSG_LOG_VAR(sep_groundtruth);
+
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
+        sep_groundtruth.toPointCloud();
+
+        std::vector<int> indices(pointCloud->size());
+        for (size_t i = 0; i < pointCloud->size(); ++i) {
+            indices[i] = i;
+        }
+
+        OptimizationFunctor functor(*pointCloud, indices);
+
+        Eigen::VectorXf deviation(pointCloud->size());
+
+        fsg::SuperEllipsoidParameters sep_fit = fsg::SuperEllipsoidParameters::Default();
+
+        FSG_LOG_VAR(sep_fit);
+
+        functor(sep_fit.coeff, deviation);
+
+        // FSG_LOG_VAR(deviation);
+        FSG_LOG_VAR(deviation.norm());
+
+        if (deviation.norm() > 0.001) {
+            FSG_LOG_MSG("Test fail on parameter: " << sep_groundtruth);
+        }
+}
+
+void SuperEllipsoidTest() {
+    SuperEllipsoidTestEachDimensionForMisbehavior();
+
+    boost::random::minstd_rand _gen;
+    for (int i=0; i<100; i++)
+    {
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("Fitting random");
+        FSG_LOG_VAR(i);
+        SuperEllipsoidFitARandomSQ(_gen);
+    }
+}
 
 int main(int argc, char **argv) {
     FSG_LOG_INIT__CALL_FROM_CPP_MAIN();
