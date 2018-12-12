@@ -437,6 +437,21 @@ Eigen::ComputationInfo minimizationResultToComputationInfo(
     return Eigen::ComputationInfo::InvalidInput; // Make compiler happy.
 }
 
+void FloatTest() {
+    FSG_TRACE_THIS_FUNCTION();
+    float ref = 1.0;
+    float epsilon = ref;
+    float ref_plus_epsilon = 0;
+    do {
+        epsilon = epsilon / 2.0;
+        // FSG_LOG_VAR(epsilon);
+        ref_plus_epsilon = ref + epsilon;
+        // FSG_LOG_VAR(ref_plus_epsilon);
+    } while (ref_plus_epsilon != ref);
+    FSG_LOG_MSG("First epsilon that added to "
+                << ref << " does not change a bit: " << epsilon);
+}
+
 void SuperEllipsoidTestEachDimensionForMisbehavior(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype) {
 
@@ -680,6 +695,7 @@ int main(int argc, char **argv) {
     if (argc == 2) {
         std::string test = "test";
         if (test.compare(argv[1]) == 0) {
+            FloatTest();
             SuperEllipsoidTest();
             return 0;
         }
