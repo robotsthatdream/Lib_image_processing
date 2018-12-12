@@ -650,6 +650,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
         FSG_LOG_MSG("Test fail on parameter: " << sep_groundtruth);
         return false;
     }
+    FSG_LOG_MSG("Test success on parameter: " << sep_groundtruth);
     return true;
 }
 
