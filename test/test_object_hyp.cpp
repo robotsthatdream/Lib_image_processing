@@ -47,7 +47,7 @@ struct SuperEllipsoidParameters {
 
     SuperEllipsoidParameters() : coeff(11){};
 
-    // https://en.wikipedia.org/wiki/X_Macro
+// https://en.wikipedia.org/wiki/X_Macro
 
 #define ALL_SuperEllipsoidParameters_FIELDS                                    \
     FSGX(cen_x)                                                                \
@@ -482,8 +482,7 @@ int main(int argc, char **argv) {
 
     if (argc == 2) {
         std::string test = "test";
-        if (test.compare(argv[1])==0)
-        {
+        if (test.compare(argv[1]) == 0) {
             SuperEllipsoidTest();
             return 0;
         }
@@ -493,8 +492,7 @@ int main(int argc, char **argv) {
 
         std::cerr << "Usage : \n\t- pcd file\n\t- gmm archive\n\t- label"
                   << std::endl;
-        std::cerr << "To run self-test : \n\ttest"
-                  << std::endl;
+        std::cerr << "To run self-test : \n\ttest" << std::endl;
         return 1;
     }
 
@@ -726,9 +724,8 @@ int main(int argc, char **argv) {
                             "Supervoxel labelled "
                             << current_sv_label
                             << " is part of current object hypothesis id="
-                            << obj_index_i_s
-                            << ", including, "
-                               "will add "
+                            << obj_index_i_s << ", including, "
+                                                "will add "
                             << current_sv->voxels_->size() << " point(s).");
                         for (auto v : *(current_sv->voxels_)) {
                             pt.x = v.x;
