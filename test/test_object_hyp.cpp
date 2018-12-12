@@ -617,6 +617,7 @@ bool pointCloudToFittingContext(
 }
 
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
+    FSG_TRACE_THIS_FUNCTION();
     boost::random::uniform_real_distribution<> random_float_01(0, 1);
 
     fsg::SuperEllipsoidParameters sep_groundtruth;
