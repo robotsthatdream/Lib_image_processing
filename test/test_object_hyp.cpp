@@ -470,11 +470,20 @@ int main(int argc, char **argv) {
     FSG_LOG_INIT__CALL_FROM_CPP_MAIN();
     FSG_TRACE_THIS_FUNCTION();
 
+    if (argc == 2) {
+        std::string test = "test";
+        if (test.compare(argv[1])==0)
+        {
+            SuperEllipsoidTest();
+            return 0;
+        }
+    }
+
     if (argc != 4) {
-        SuperEllipsoidTest();
-        return 0;
 
         std::cerr << "Usage : \n\t- pcd file\n\t- gmm archive\n\t- label"
+                  << std::endl;
+        std::cerr << "To run self-test : \n\ttest"
                   << std::endl;
         return 1;
     }
