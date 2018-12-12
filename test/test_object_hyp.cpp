@@ -62,6 +62,25 @@ struct SuperEllipsoidParameters {
     FSGX(exp_1)                                                                \
     FSGX(exp_2)
 
+    static SuperEllipsoidParameters Zero() {
+        SuperEllipsoidParameters zero;
+#define FSGX(name) zero.set_##name(0.00);
+        ALL_SuperEllipsoidParameters_FIELDS;
+#undef FSGX
+        return zero;
+    }
+
+    static SuperEllipsoidParameters Default() {
+        SuperEllipsoidParameters dv = Zero();
+
+        dv.set_rad_a(1.0);
+        dv.set_rad_b(1.0);
+        dv.set_rad_c(1.0);
+        dv.set_exp_1(1.0);
+        dv.set_exp_2(1.0);
+        return dv;
+    }
+
     enum idx {
 #define FSGX(name) name,
         ALL_SuperEllipsoidParameters_FIELDS
@@ -422,18 +441,8 @@ void SuperEllipsoidTest() {
     boost::random::minstd_rand _gen;
     boost::random::uniform_real_distribution<> random_float_01(0, 1);
 
-    fsg::SuperEllipsoidParameters superellipsoidparameters_prototype;
-
-//#define FSGX(name) superellipsoidparameters.set_##name(random_float_01(_gen));
-#define FSGX(name) superellipsoidparameters_prototype.set_##name(0.00);
-    ALL_SuperEllipsoidParameters_FIELDS;
-#undef FSGX
-
-    superellipsoidparameters_prototype.set_rad_a(1.0);
-    superellipsoidparameters_prototype.set_rad_b(1.0);
-    superellipsoidparameters_prototype.set_rad_c(1.0);
-    superellipsoidparameters_prototype.set_exp_1(1.0);
-    superellipsoidparameters_prototype.set_exp_2(1.0);
+    fsg::SuperEllipsoidParameters superellipsoidparameters_prototype =
+        fsg::SuperEllipsoidParameters::Default();
 
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
