@@ -590,8 +590,12 @@ bool pointCloudToFittingContext(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_
     Eigen::NumericalDiff<OptimizationFunctor> num_diff(functor);
     Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>, float>
         lm(num_diff);
-    Eigen::LevenbergMarquardtSpace::Status minimizationResult =
-        lm.minimize(fittingContext.coeff);
+    Eigen::LevenbergMarquardtSpace::Status minimizationResult;
+    {
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
+            "Eigen::LevenbergMarquardt::minimize()");
+        minimizationResult = lm.minimize(fittingContext.coeff);
+    }
 
     Eigen::ComputationInfo ci =
         minimizationResultToComputationInfo(minimizationResult);
