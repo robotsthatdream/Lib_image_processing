@@ -452,6 +452,8 @@ void FloatTest() {
                 << ref << " does not change a bit: " << epsilon);
 }
 
+static const float fit_control_epsilon = 0.01;
+
 void SuperEllipsoidTestEachDimensionForMisbehavior(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype) {
 
@@ -483,7 +485,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
         // FSG_LOG_VAR(deviation);
         FSG_LOG_VAR(deviation.norm());
 
-        if (deviation.norm() > 0.0001) {
+        if (deviation.norm() > fit_control_epsilon) {
             FSG_LOG_MSG("Test fail on dimension " << dimension_shift << ".");
         }
     }
@@ -665,7 +667,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
 
     FSG_LOG_VAR(deviation.norm());
 
-    if (deviation.norm() > 0.0001) {
+    if (deviation.norm() > fit_control_epsilon) {
         FSG_LOG_MSG("Test fail on parameter: " << sep_groundtruth);
         return false;
     }
@@ -710,6 +712,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    FSG_LOG_VAR(fit_control_epsilon);
+    
     std::string gmm_archive = argv[2];
     std::string label = argv[3];
 
