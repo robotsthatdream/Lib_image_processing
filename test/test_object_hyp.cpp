@@ -457,12 +457,14 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
 
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
-    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+    for (int dimension_shift = -1; dimension_shift < 11; dimension_shift++) {
         FSG_LOG_VAR(dimension_shift);
         fsg::SuperEllipsoidParameters superellipsoidparameters =
             superellipsoidparameters_prototype;
 
-        superellipsoidparameters.coeff(dimension_shift) = 1.5;
+        if (dimension_shift >= 0) {
+            superellipsoidparameters.coeff(dimension_shift) = 1.5;
+        }
 
         const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
             superellipsoidparameters.toPointCloud(100);
