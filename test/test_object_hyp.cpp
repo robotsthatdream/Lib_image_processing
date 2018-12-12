@@ -467,7 +467,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
         FSG_LOG_VAR(deviation.norm());
 
         if (deviation.norm() > 0.001) {
-            FSG_LOG_MSG("Test fail on dimension." << dimension_shift);
+            FSG_LOG_MSG("Test fail on dimension " << dimension_shift << ".");
         }
     }
 }
