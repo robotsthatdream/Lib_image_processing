@@ -627,6 +627,9 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
 
     FSG_LOG_VAR(sep_groundtruth);
 
+    SuperEllipsoidTestEachDimensionForMisbehavior(
+        sep_groundtruth);
+    
     const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
         sep_groundtruth.toPointCloud(4);
 
