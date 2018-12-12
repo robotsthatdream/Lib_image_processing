@@ -125,7 +125,8 @@ float powf_sym(float x, float y) {
         return powf(x, y);
 }
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr SuperEllipsoidParameters::toPointCloud(int steps) {
+pcl::PointCloud<pcl::PointXYZ>::Ptr
+SuperEllipsoidParameters::toPointCloud(int steps) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
         new pcl::PointCloud<pcl::PointXYZ>);
     FSG_TRACE_THIS_FUNCTION();
@@ -472,10 +473,11 @@ void SuperEllipsoidTestEachDimensionForMisbehavior() {
     }
 }
 
-bool pointCloudToFittingContext(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
-                                fsg::SuperEllipsoidParameters &fittingContext,
-                                pcl::visualization::PCLVisualizer *viewer,
-                                const std::string &obj_index_i_s) {
+bool pointCloudToFittingContext(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
+    fsg::SuperEllipsoidParameters &fittingContext,
+    pcl::visualization::PCLVisualizer *viewer,
+    const std::string &obj_index_i_s) {
     pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
     feature_extractor.setInputCloud(cloud_xyz);
     // Minimize eccentricity computation.
@@ -632,12 +634,12 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
 
     bool success = pointCloudToFittingContext(pointCloud, sep_fit, nullptr, "");
 
-    if (!success)
-    {
-        FSG_LOG_MSG("Fit failed, thus test fail, on parameter: " << sep_groundtruth);
+    if (!success) {
+        FSG_LOG_MSG(
+            "Fit failed, thus test fail, on parameter: " << sep_groundtruth);
         return false;
     }
-    
+
     FSG_LOG_VAR(sep_fit);
 
     Eigen::VectorXf deviation = sep_fit.coeff - sep_groundtruth.coeff;
