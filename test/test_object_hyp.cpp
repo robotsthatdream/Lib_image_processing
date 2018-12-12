@@ -466,7 +466,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
         // FSG_LOG_VAR(deviation);
         FSG_LOG_VAR(deviation.norm());
 
-        if (deviation.norm() > 0.001) {
+        if (deviation.norm() > 0.0001) {
             FSG_LOG_MSG("Test fail on dimension " << dimension_shift << ".");
         }
     }
@@ -649,7 +649,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
 
     FSG_LOG_VAR(deviation.norm());
 
-    if (deviation.norm() > 0.001) {
+    if (deviation.norm() > 0.0001) {
         FSG_LOG_MSG("Test fail on parameter: " << sep_groundtruth);
         return false;
     }
