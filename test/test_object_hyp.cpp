@@ -438,6 +438,7 @@ void SuperEllipsoidTest() {
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+        FSG_LOG_VAR(dimension_shift);
         fsg::SuperEllipsoidParameters superellipsoidparameters =
             superellipsoidparameters_prototype;
 
@@ -457,7 +458,7 @@ void SuperEllipsoidTest() {
 
         functor(superellipsoidparameters.coeff, deviation);
 
-        FSG_LOG_VAR(deviation);
+        // FSG_LOG_VAR(deviation);
         FSG_LOG_VAR(deviation.norm());
 
         if (deviation.norm() > 0.001) {
