@@ -460,7 +460,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
     for (int dimension_shift = -1; dimension_shift < 11; dimension_shift++) {
-        FSG_LOG_VAR(dimension_shift);
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("dimension shift " << dimension_shift);
         fsg::SuperEllipsoidParameters superellipsoidparameters =
             superellipsoidparameters_prototype;
 
@@ -668,10 +668,10 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     FSG_LOG_VAR(deviation.norm());
 
     if (deviation.norm() > fit_control_epsilon) {
-        FSG_LOG_MSG("Test fail on parameter: " << sep_groundtruth);
+        FSG_LOG_MSG("Test fail fitting parameter: " << sep_groundtruth);
         return false;
     }
-    FSG_LOG_MSG("Test success on parameter: " << sep_groundtruth);
+    FSG_LOG_MSG("Test success fitting parameter: " << sep_groundtruth);
     return true;
 }
 
