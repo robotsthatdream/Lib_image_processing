@@ -145,6 +145,7 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 if (CMAKE_VERSION VERSION_LESS 2.8.11)
   include_directories("${gtest_SOURCE_DIR}/include")
 endif()
+# CMake in Ubuntu 18.10 fails without this line: include_directories("${gtest_SOURCE_DIR}/include")
 
 # Now simply link against gtest or gtest_main as needed. Eg
 add_executable(test_rotation test/test_rotation.cpp)
