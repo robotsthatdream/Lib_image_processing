@@ -520,6 +520,145 @@ void SuperEllipsoidTest() {
     }
 }
 
+bool pointCloudToFittingContext(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
+                                fsg::SuperEllipsoidParameters &fittingContext,
+                                pcl::visualization::PCLVisualizer *viewer,
+                                const std::string &obj_index_i_s) {
+    pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
+    feature_extractor.setInputCloud(cloud_xyz);
+    // Minimize eccentricity computation.
+    feature_extractor.setAngleStep(360);
+    feature_extractor.compute();
+
+    Eigen::Vector3f mass_center;
+    feature_extractor.getMassCenter(
+        mass_center); // FIXME should check return value
+
+    FSG_LOG_VAR(mass_center);
+
+    Eigen::Vector3f major_vector, middle_vector, minor_vector;
+
+    feature_extractor.getEigenVectors(major_vector, middle_vector,
+                                      minor_vector);
+    FSG_LOG_VAR(major_vector);
+    FSG_LOG_VAR(middle_vector);
+    FSG_LOG_VAR(minor_vector);
+
+    pcl::PointXYZ min_point_OBB;
+    pcl::PointXYZ max_point_OBB;
+    pcl::PointXYZ position_OBB;
+    Eigen::Matrix3f rotational_matrix_OBB;
+    feature_extractor.getOBB(
+        min_point_OBB, max_point_OBB, position_OBB,
+        rotational_matrix_OBB); // FIXME should check return value
+
+    FSG_LOG_VAR(position_OBB);
+    FSG_LOG_VAR(min_point_OBB);
+    FSG_LOG_VAR(max_point_OBB);
+
+    FSG_LOG_VAR(rotational_matrix_OBB);
+
+    // FIXME clarify/generalize major/z.
+    major_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0;
+    middle_vector *= (max_point_OBB.y - min_point_OBB.y) / 2.0;
+    minor_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0;
+    FSG_LOG_VAR(major_vector);
+    FSG_LOG_VAR(middle_vector);
+    FSG_LOG_VAR(minor_vector);
+
+    // From
+    // http://pointclouds.org/documentation/tutorials/moment_of_inertia.php
+
+    Eigen::Vector3f position(position_OBB.x, position_OBB.y, position_OBB.z);
+    Eigen::Quaternionf quat(rotational_matrix_OBB);
+
+    pcl::PointXYZ center(mass_center(0), mass_center(1), mass_center(2));
+
+    // FIXME clarify/generalize major/z.
+    pcl::PointXYZ maj_axis(2.0 * major_vector(0) + mass_center(0),
+                           2.0 * major_vector(1) + mass_center(1),
+                           2.0 * major_vector(2) + mass_center(2));
+    pcl::PointXYZ mid_axis(2.0 * middle_vector(0) + mass_center(0),
+                           2.0 * middle_vector(1) + mass_center(1),
+                           2.0 * middle_vector(2) + mass_center(2));
+    pcl::PointXYZ min_axis(2.0 * minor_vector(0) + mass_center(0),
+                           2.0 * minor_vector(1) + mass_center(1),
+                           2.0 * minor_vector(2) + mass_center(2));
+
+    if (viewer != NULL) {
+        std::string obbId(obj_index_i_s + ":obb");
+        FSG_LOG_MSG("will add obb with id: " << obbId);
+
+        viewer->addCube(position, quat, max_point_OBB.x - min_point_OBB.x,
+                        max_point_OBB.y - min_point_OBB.y,
+                        max_point_OBB.z - min_point_OBB.z, obbId);
+
+        viewer->setShapeRenderingProperties(
+            pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
+            pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, obbId);
+
+        viewer->addLine(center, maj_axis, 1.0f, 0.0f, 0.0f,
+                        obj_index_i_s + ":major eigen vector");
+        viewer->addLine(center, mid_axis, 0.0f, 1.0f, 0.0f,
+                        obj_index_i_s + ":middle eigen vector");
+        viewer->addLine(center, min_axis, 0.0f, 0.0f, 1.0f,
+                        obj_index_i_s + ":minor eigen vector");
+    }
+
+    fittingContext.set_cen_x(mass_center(0));
+    fittingContext.set_cen_y(mass_center(1));
+    fittingContext.set_cen_z(mass_center(2));
+
+    fittingContext.set_rad_a(major_vector.norm());
+
+    fittingContext.set_rad_b(middle_vector.norm());
+
+    fittingContext.set_rad_c(minor_vector.norm());
+
+    float yaw, pitch, roll;
+    matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
+
+    FSG_LOG_MSG("yaw=" << yaw << ", pitch=" << pitch << ", roll=" << roll);
+
+    fittingContext.set_rot_yaw(yaw);
+    fittingContext.set_rot_pitch(pitch);
+    fittingContext.set_rot_roll(roll);
+
+    fittingContext.set_exp_1(0.5);
+    fittingContext.set_exp_2(0.5);
+
+    FSG_LOG_MSG("Initial estimation : " << fittingContext);
+
+    std::vector<int> indices(cloud_xyz->size());
+    for (size_t i = 0; i < cloud_xyz->size(); ++i) {
+        indices[i] = i;
+    }
+
+    OptimizationFunctor functor(*cloud_xyz, indices);
+    Eigen::NumericalDiff<OptimizationFunctor> num_diff(functor);
+    Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>, float>
+        lm(num_diff);
+    Eigen::LevenbergMarquardtSpace::Status minimizationResult =
+        lm.minimize(fittingContext.coeff);
+
+    Eigen::ComputationInfo ci =
+        minimizationResultToComputationInfo(minimizationResult);
+
+    FSG_LOG_MSG("Minimization result: Eigen::ComputationInfo="
+                << ci
+                << " LevenbergMarquardtSpace=" << (int)minimizationResult);
+
+    FSG_LOG_MSG("After minimization : " << fittingContext);
+
+    if (ci != Eigen::ComputationInfo::Success) {
+        FSG_LOG_MSG("Not inserting superellipsoid into scene "
+                    "because fitting failed, with code: "
+                    << ci);
+        return false;
+    }
+    return true;
+}
+
 int main(int argc, char **argv) {
     FSG_LOG_INIT__CALL_FROM_CPP_MAIN();
     FSG_TRACE_THIS_FUNCTION();
@@ -811,163 +950,32 @@ int main(int argc, char **argv) {
                     }
                 }
 
-                pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
-                feature_extractor.setInputCloud(cloud_xyz);
-                // Minimize eccentricity computation.
-                feature_extractor.setAngleStep(360);
-                feature_extractor.compute();
-
-                Eigen::Vector3f mass_center;
-                feature_extractor.getMassCenter(
-                    mass_center); // FIXME should check return value
-
-                FSG_LOG_VAR(mass_center);
-
-                Eigen::Vector3f major_vector, middle_vector, minor_vector;
-
-                feature_extractor.getEigenVectors(major_vector, middle_vector,
-                                                  minor_vector);
-                FSG_LOG_VAR(major_vector);
-                FSG_LOG_VAR(middle_vector);
-                FSG_LOG_VAR(minor_vector);
-
-                pcl::PointXYZ min_point_OBB;
-                pcl::PointXYZ max_point_OBB;
-                pcl::PointXYZ position_OBB;
-                Eigen::Matrix3f rotational_matrix_OBB;
-                feature_extractor.getOBB(
-                    min_point_OBB, max_point_OBB, position_OBB,
-                    rotational_matrix_OBB); // FIXME should check return value
-
-                FSG_LOG_VAR(position_OBB);
-                FSG_LOG_VAR(min_point_OBB);
-                FSG_LOG_VAR(max_point_OBB);
-
-                FSG_LOG_VAR(rotational_matrix_OBB);
-
-                // FIXME clarify/generalize major/z.
-                major_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0;
-                middle_vector *= (max_point_OBB.y - min_point_OBB.y) / 2.0;
-                minor_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0;
-                FSG_LOG_VAR(major_vector);
-                FSG_LOG_VAR(middle_vector);
-                FSG_LOG_VAR(minor_vector);
-
-                // From
-                // http://pointclouds.org/documentation/tutorials/moment_of_inertia.php
-
-                Eigen::Vector3f position(position_OBB.x, position_OBB.y,
-                                         position_OBB.z);
-                Eigen::Quaternionf quat(rotational_matrix_OBB);
-
-                std::string obbId(obj_index_i_s + ":obb");
-
-                FSG_LOG_MSG("will add obb with id: " << obbId);
-
-                viewer->addCube(position, quat,
-                                max_point_OBB.x - min_point_OBB.x,
-                                max_point_OBB.y - min_point_OBB.y,
-                                max_point_OBB.z - min_point_OBB.z, obbId);
-
-                viewer->setShapeRenderingProperties(
-                    pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
-                    pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME,
-                    obbId);
-
-                pcl::PointXYZ center(mass_center(0), mass_center(1),
-                                     mass_center(2));
-
-                // FIXME clarify/generalize major/z.
-                pcl::PointXYZ maj_axis(2.0 * major_vector(0) + mass_center(0),
-                                       2.0 * major_vector(1) + mass_center(1),
-                                       2.0 * major_vector(2) + mass_center(2));
-                pcl::PointXYZ mid_axis(2.0 * middle_vector(0) + mass_center(0),
-                                       2.0 * middle_vector(1) + mass_center(1),
-                                       2.0 * middle_vector(2) + mass_center(2));
-                pcl::PointXYZ min_axis(2.0 * minor_vector(0) + mass_center(0),
-                                       2.0 * minor_vector(1) + mass_center(1),
-                                       2.0 * minor_vector(2) + mass_center(2));
-
-                viewer->addLine(center, maj_axis, 1.0f, 0.0f, 0.0f,
-                                obj_index_i_s + ":major eigen vector");
-                viewer->addLine(center, mid_axis, 0.0f, 1.0f, 0.0f,
-                                obj_index_i_s + ":middle eigen vector");
-                viewer->addLine(center, min_axis, 0.0f, 0.0f, 1.0f,
-                                obj_index_i_s + ":minor eigen vector");
-
                 fsg::SuperEllipsoidParameters fittingContext;
 
-                fittingContext.set_cen_x(mass_center(0));
-                fittingContext.set_cen_y(mass_center(1));
-                fittingContext.set_cen_z(mass_center(2));
+                bool success = pointCloudToFittingContext(
+                    cloud_xyz, fittingContext, &(*viewer), obj_index_i_s);
 
-                fittingContext.set_rad_a(major_vector.norm());
+                if (success) {
 
-                fittingContext.set_rad_b(middle_vector.norm());
+                    pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
+                        fittingContext.toPointCloud();
 
-                fittingContext.set_rad_c(minor_vector.norm());
+                    {
+                        pcl::PointXYZRGB pt;
 
-                float yaw, pitch, roll;
-                matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
+                        r = 127.0 + r / 2.0;
+                        g = 127.0 + g / 2.0;
+                        b = 127.0 + b / 2.0;
+                        for (auto v : *proj_points) {
+                            pt.x = v.x;
+                            pt.y = v.y;
+                            pt.z = v.z;
 
-                FSG_LOG_MSG("yaw=" << yaw << ", pitch=" << pitch
-                                   << ", roll=" << roll);
-
-                fittingContext.set_rot_yaw(yaw);
-                fittingContext.set_rot_pitch(pitch);
-                fittingContext.set_rot_roll(roll);
-
-                fittingContext.set_exp_1(0.5);
-                fittingContext.set_exp_2(0.5);
-
-                FSG_LOG_MSG("Initial estimation : " << fittingContext);
-
-                std::vector<int> indices(cloud_xyz->size());
-                for (size_t i = 0; i < cloud_xyz->size(); ++i) {
-                    indices[i] = i;
-                }
-
-                OptimizationFunctor functor(*cloud_xyz, indices);
-                Eigen::NumericalDiff<OptimizationFunctor> num_diff(functor);
-                Eigen::LevenbergMarquardt<
-                    Eigen::NumericalDiff<OptimizationFunctor>, float>
-                    lm(num_diff);
-                Eigen::LevenbergMarquardtSpace::Status minimizationResult =
-                    lm.minimize(fittingContext.coeff);
-
-                Eigen::ComputationInfo ci =
-                    minimizationResultToComputationInfo(minimizationResult);
-
-                FSG_LOG_MSG("Minimization result: Eigen::ComputationInfo="
-                            << ci << " LevenbergMarquardtSpace="
-                            << (int)minimizationResult);
-
-                FSG_LOG_MSG("After minimization : " << fittingContext);
-
-                if (ci != Eigen::ComputationInfo::Success) {
-                    FSG_LOG_MSG("Not inserting superellipsoid into scene "
-                                "because fitting failed, with code: "
-                                << ci);
-                }
-
-                pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
-                    fittingContext.toPointCloud();
-
-                {
-                    pcl::PointXYZRGB pt;
-
-                    r = 127.0 + r / 2.0;
-                    g = 127.0 + g / 2.0;
-                    b = 127.0 + b / 2.0;
-                    for (auto v : *proj_points) {
-                        pt.x = v.x;
-                        pt.y = v.y;
-                        pt.z = v.z;
-
-                        pt.r = r;
-                        pt.g = g;
-                        pt.b = b;
-                        superellipsoids_cloud_ptr->push_back(pt);
+                            pt.r = r;
+                            pt.g = g;
+                            pt.b = b;
+                            superellipsoids_cloud_ptr->push_back(pt);
+                        }
                     }
                 }
 
