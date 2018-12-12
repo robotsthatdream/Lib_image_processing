@@ -437,9 +437,8 @@ Eigen::ComputationInfo minimizationResultToComputationInfo(
     return Eigen::ComputationInfo::InvalidInput; // Make compiler happy.
 }
 
-void SuperEllipsoidTestEachDimensionForMisbehavior() {
-    fsg::SuperEllipsoidParameters superellipsoidparameters_prototype =
-        fsg::SuperEllipsoidParameters::Default();
+void SuperEllipsoidTestEachDimensionForMisbehavior(
+    fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype) {
 
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
@@ -655,7 +654,12 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
 }
 
 void SuperEllipsoidTest() {
-    SuperEllipsoidTestEachDimensionForMisbehavior();
+    {
+        fsg::SuperEllipsoidParameters superellipsoidparameters_prototype =
+            fsg::SuperEllipsoidParameters::Default();
+        SuperEllipsoidTestEachDimensionForMisbehavior(
+            superellipsoidparameters_prototype);
+    }
 
     boost::random::minstd_rand _gen;
     for (int i = 0; i < 100; i++) {
