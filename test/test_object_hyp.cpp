@@ -460,7 +460,8 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
     for (int dimension_shift = -1; dimension_shift < 11; dimension_shift++) {
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("dimension shift " << dimension_shift);
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("dimension shift "
+                                          << dimension_shift);
         fsg::SuperEllipsoidParameters superellipsoidparameters =
             superellipsoidparameters_prototype;
 
@@ -638,7 +639,8 @@ bool pointCloudToFittingContext(
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     FSG_TRACE_THIS_FUNCTION();
     boost::random::uniform_real_distribution<> random_float_m5p5(-5, 5);
-    boost::random::uniform_real_distribution<> random_float_cent_hundred(0.01, 100);
+    boost::random::uniform_real_distribution<> random_float_cent_hundred(0.01,
+                                                                         100);
     boost::random::uniform_real_distribution<> random_float_mpippi(-M_PI, M_PI);
     boost::random::uniform_real_distribution<> random_float_cent_two(0.01, 2);
 
@@ -654,7 +656,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     sep_groundtruth.set_rot_roll(random_float_mpippi(_gen));
     sep_groundtruth.set_exp_1(random_float_cent_two(_gen));
     sep_groundtruth.set_exp_2(random_float_cent_two(_gen));
-    
+
     FSG_LOG_VAR(sep_groundtruth);
 
     SuperEllipsoidTestEachDimensionForMisbehavior(sep_groundtruth);
@@ -723,7 +725,7 @@ int main(int argc, char **argv) {
     }
 
     FSG_LOG_VAR(fit_control_epsilon);
-    
+
     std::string gmm_archive = argv[2];
     std::string label = argv[3];
 
