@@ -685,8 +685,7 @@ void SuperEllipsoidTest() {
 
     boost::random::minstd_rand _gen;
     for (int i = 0; i < 100; i++) {
-        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("Fitting random");
-        FSG_LOG_VAR(i);
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("Fitting random " << i);
         SuperEllipsoidFitARandomSQ(_gen);
     }
 }
