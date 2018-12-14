@@ -492,6 +492,48 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
     }
 }
 
+void SuperEllipsoidTestComputeGradient(
+    fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype, pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud) {
+
+    FSG_LOG_VAR(superellipsoidparameters_prototype);
+
+    std::vector<int> indices(pointCloud->size());
+    for (size_t i = 0; i < pointCloud->size(); ++i) {
+        indices[i] = i;
+    }
+
+    OptimizationFunctor functor(*pointCloud, indices);
+
+    Eigen::VectorXf deviation(pointCloud->size());
+
+    functor(superellipsoidparameters_prototype.coeff, deviation);
+
+    float center_value = deviation.norm();
+
+    FSG_LOG_VAR(center_value);
+
+    float epsilon = 0.05;
+
+    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("dimension shift "
+                                          << dimension_shift);
+        fsg::SuperEllipsoidParameters superellipsoidparameters =
+            superellipsoidparameters_prototype;
+
+        superellipsoidparameters.coeff(dimension_shift) =
+            superellipsoidparameters_prototype.coeff(dimension_shift) - epsilon;
+        functor(superellipsoidparameters.coeff, deviation);
+        float minus = deviation.norm();
+
+        superellipsoidparameters.coeff(dimension_shift) =
+            superellipsoidparameters_prototype.coeff(dimension_shift) + epsilon;
+        functor(superellipsoidparameters.coeff, deviation);
+        float plus = deviation.norm();
+
+        FSG_LOG_MSG("dimension " << dimension_shift << " values "  << minus << "" << center_value << "" << plus);
+    }
+}
+
 bool pointCloudToFittingContext(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext,
