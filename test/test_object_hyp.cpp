@@ -470,7 +470,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
         }
 
         const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
-            superellipsoidparameters.toPointCloud(100);
+            superellipsoidparameters.toPointCloud(10);
 
         std::vector<int> indices(pointCloud->size());
         for (size_t i = 0; i < pointCloud->size(); ++i) {
