@@ -637,13 +637,24 @@ bool pointCloudToFittingContext(
 
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     FSG_TRACE_THIS_FUNCTION();
-    boost::random::uniform_real_distribution<> random_float_01(0, 1);
+    boost::random::uniform_real_distribution<> random_float_m5p5(-5, 5);
+    boost::random::uniform_real_distribution<> random_float_cent_hundred(0.01, 100);
+    boost::random::uniform_real_distribution<> random_float_mpippi(-M_PI, M_PI);
+    boost::random::uniform_real_distribution<> random_float_cent_two(0.01, 2);
 
     fsg::SuperEllipsoidParameters sep_groundtruth;
-#define FSGX(name) sep_groundtruth.set_##name(random_float_01(_gen));
-    ALL_SuperEllipsoidParameters_FIELDS;
-#undef FSGX
-
+    sep_groundtruth.set_cen_x(random_float_m5p5(_gen));
+    sep_groundtruth.set_cen_y(random_float_m5p5(_gen));
+    sep_groundtruth.set_cen_z(random_float_m5p5(_gen));
+    sep_groundtruth.set_rad_a(random_float_cent_hundred(_gen));
+    sep_groundtruth.set_rad_b(random_float_cent_hundred(_gen));
+    sep_groundtruth.set_rad_c(random_float_cent_hundred(_gen));
+    sep_groundtruth.set_rot_yaw(random_float_mpippi(_gen));
+    sep_groundtruth.set_rot_pitch(random_float_mpippi(_gen));
+    sep_groundtruth.set_rot_roll(random_float_mpippi(_gen));
+    sep_groundtruth.set_exp_1(random_float_cent_two(_gen));
+    sep_groundtruth.set_exp_2(random_float_cent_two(_gen));
+    
     FSG_LOG_VAR(sep_groundtruth);
 
     SuperEllipsoidTestEachDimensionForMisbehavior(sep_groundtruth);
