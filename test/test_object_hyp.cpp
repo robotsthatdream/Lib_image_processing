@@ -314,7 +314,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
                 powf_abs(v_scaled(2), two_over_exp_1);
             // FSG_LOG_VAR(outside_if_over_1);
 
-            const float deviation = fabs(outside_if_over_1 - 1);
+            const float deviation = (outside_if_over_1 - 1);
             // FSG_LOG_VAR(deviation);
 
             fvec[i] = deviation;
