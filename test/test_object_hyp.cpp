@@ -652,7 +652,9 @@ bool pointCloudToFittingContext(
     fittingContext.set_exp_1(0.5);
     fittingContext.set_exp_2(0.5);
 
-    FSG_LOG_MSG("Initial estimation : " << fittingContext);
+    fsg::SuperEllipsoidParameters initialEstimation = fittingContext;
+    
+    FSG_LOG_MSG("Initial estimation : " << initialEstimation);
 
     std::vector<int> indices(cloud_xyz->size());
     for (size_t i = 0; i < cloud_xyz->size(); ++i) {
@@ -677,6 +679,7 @@ bool pointCloudToFittingContext(
                 << ci
                 << " LevenbergMarquardtSpace=" << (int)minimizationResult);
 
+    FSG_LOG_MSG("Initial estimation : " << initialEstimation);
     FSG_LOG_MSG("After minimization : " << fittingContext);
 
     if (ci != Eigen::ComputationInfo::Success) {
