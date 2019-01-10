@@ -74,8 +74,8 @@ struct SuperEllipsoidParameters {
         SuperEllipsoidParameters dv = Zero();
 
         dv.set_rad_a(1.0);
-        dv.set_rad_b(1.0);
-        dv.set_rad_c(1.0);
+        dv.set_rad_b(2.0);
+        dv.set_rad_c(3.0);
         dv.set_exp_1(1.0);
         dv.set_exp_2(1.0);
         return dv;
