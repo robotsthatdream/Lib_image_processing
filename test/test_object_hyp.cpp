@@ -229,7 +229,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
 //     return result;
 // }
 
-#define FUNCTOR_COMPUTE_VALUE 0
+#define FUNCTOR_LOG_INSIDE 0
 
     /** Cost function to be minimized
      * \param[in] x the variables array
@@ -237,9 +237,11 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \return 0
      */
     int operator()(const Eigen::VectorXf &param, Eigen::VectorXf &fvec) const {
+#if FUNCTOR_LOG_INSIDE == 1
         fsg::SuperEllipsoidParameters *sep =
             (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
+#endif
 
         const float exp_1 = param(fsg::SuperEllipsoidParameters::idx::exp_1);
         // FSG_LOG_VAR(exp_1);
@@ -279,7 +281,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
 // FSG_LOG_VAR(two_over_exp_1);
 // FSG_LOG_VAR(exp_2_over_exp_1);
 
-#if FUNCTOR_COMPUTE_VALUE == 1
+#if FUNCTOR_LOG_INSIDE == 1
         float sum_of_squares = 0;
 #endif
 
@@ -319,12 +321,12 @@ struct OptimizationFunctor : pcl::Functor<float> {
             // FSG_LOG_VAR(deviation);
 
             fvec[i] = deviation;
-#if FUNCTOR_COMPUTE_VALUE == 1
+#if FUNCTOR_LOG_INSIDE == 1
             sum_of_squares += deviation * deviation;
 #endif
         }
 // FSG_LOG_VAR(fvec);
-#if FUNCTOR_COMPUTE_VALUE == 1
+#if FUNCTOR_LOG_INSIDE == 1
         FSG_LOG_VAR(sum_of_squares);
 #endif
         return (0);
