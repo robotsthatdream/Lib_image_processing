@@ -229,7 +229,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
 //     return result;
 // }
 
-#define FUNCTOR_COMPUTE_VALUE 1
+#define FUNCTOR_COMPUTE_VALUE 0
 
     /** Cost function to be minimized
      * \param[in] x the variables array
@@ -279,7 +279,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
 // FSG_LOG_VAR(two_over_exp_1);
 // FSG_LOG_VAR(exp_2_over_exp_1);
 
-#ifdef FUNCTOR_COMPUTE_VALUE
+#if FUNCTOR_COMPUTE_VALUE == 1
         float sum_of_squares = 0;
 #endif
 
@@ -319,12 +319,12 @@ struct OptimizationFunctor : pcl::Functor<float> {
             // FSG_LOG_VAR(deviation);
 
             fvec[i] = deviation;
-#ifdef FUNCTOR_COMPUTE_VALUE
+#if FUNCTOR_COMPUTE_VALUE == 1
             sum_of_squares += deviation * deviation;
 #endif
         }
 // FSG_LOG_VAR(fvec);
-#ifdef FUNCTOR_COMPUTE_VALUE
+#if FUNCTOR_COMPUTE_VALUE == 1
         FSG_LOG_VAR(sum_of_squares);
 #endif
         return (0);
