@@ -236,9 +236,9 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \return 0
      */
     int operator()(const Eigen::VectorXf &param, Eigen::VectorXf &fvec) const {
-        // fsg::SuperEllipsoidParameters *sep =
-        // (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
-        // FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
+        fsg::SuperEllipsoidParameters *sep =
+            (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
 
         const float exp_1 = param(fsg::SuperEllipsoidParameters::idx::exp_1);
         // FSG_LOG_VAR(exp_1);
@@ -464,6 +464,7 @@ static const float fit_control_epsilon = 0.01;
 
 void SuperEllipsoidTestEachDimensionForMisbehavior(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype) {
+    FSG_TRACE_THIS_FUNCTION();
 
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
