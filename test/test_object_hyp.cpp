@@ -543,6 +543,48 @@ void SuperEllipsoidTestComputeGradient(
     }
 }
 
+bool pointCloudToFittingContextWithInitialEstimate(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
+    fsg::SuperEllipsoidParameters &fittingContext) {
+    fsg::SuperEllipsoidParameters initialEstimate = fittingContext;
+
+    FSG_LOG_MSG("Initial estimate : " << initialEstimate);
+
+    std::vector<int> indices(cloud_xyz->size());
+    for (size_t i = 0; i < cloud_xyz->size(); ++i) {
+        indices[i] = i;
+    }
+
+    OptimizationFunctor functor(*cloud_xyz, indices);
+    Eigen::NumericalDiff<OptimizationFunctor> num_diff(functor);
+    Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>, float>
+        lm(num_diff);
+    Eigen::LevenbergMarquardtSpace::Status minimizationResult;
+    {
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
+            "Eigen::LevenbergMarquardt::minimize()");
+        minimizationResult = lm.minimize(fittingContext.coeff);
+    }
+
+    Eigen::ComputationInfo ci =
+        minimizationResultToComputationInfo(minimizationResult);
+
+    FSG_LOG_MSG("Minimization result: Eigen::ComputationInfo="
+                << ci
+                << " LevenbergMarquardtSpace=" << (int)minimizationResult);
+
+    FSG_LOG_MSG("Initial estimation : " << initialEstimate);
+    FSG_LOG_MSG("After minimization : " << fittingContext);
+
+    if (ci != Eigen::ComputationInfo::Success) {
+        FSG_LOG_MSG("Not inserting superellipsoid into scene "
+                    "because fitting failed, with code: "
+                    << ci);
+        return false;
+    }
+    return true;
+}
+
 bool pointCloudToFittingContext(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext,
@@ -652,43 +694,7 @@ bool pointCloudToFittingContext(
     fittingContext.set_exp_1(0.5);
     fittingContext.set_exp_2(0.5);
 
-    fsg::SuperEllipsoidParameters initialEstimation = fittingContext;
-    
-    FSG_LOG_MSG("Initial estimation : " << initialEstimation);
-
-    std::vector<int> indices(cloud_xyz->size());
-    for (size_t i = 0; i < cloud_xyz->size(); ++i) {
-        indices[i] = i;
-    }
-
-    OptimizationFunctor functor(*cloud_xyz, indices);
-    Eigen::NumericalDiff<OptimizationFunctor> num_diff(functor);
-    Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>, float>
-        lm(num_diff);
-    Eigen::LevenbergMarquardtSpace::Status minimizationResult;
-    {
-        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
-            "Eigen::LevenbergMarquardt::minimize()");
-        minimizationResult = lm.minimize(fittingContext.coeff);
-    }
-
-    Eigen::ComputationInfo ci =
-        minimizationResultToComputationInfo(minimizationResult);
-
-    FSG_LOG_MSG("Minimization result: Eigen::ComputationInfo="
-                << ci
-                << " LevenbergMarquardtSpace=" << (int)minimizationResult);
-
-    FSG_LOG_MSG("Initial estimation : " << initialEstimation);
-    FSG_LOG_MSG("After minimization : " << fittingContext);
-
-    if (ci != Eigen::ComputationInfo::Success) {
-        FSG_LOG_MSG("Not inserting superellipsoid into scene "
-                    "because fitting failed, with code: "
-                    << ci);
-        return false;
-    }
-    return true;
+    return pointCloudToFittingContextWithInitialEstimate(cloud_xyz, fittingContext);
 }
 
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
