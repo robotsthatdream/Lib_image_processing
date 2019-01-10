@@ -711,6 +711,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
 
     SuperEllipsoidTestEachDimensionForMisbehavior(sep_groundtruth);
 
+    FSG_LOG_VAR(sep_groundtruth);
+    
     const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
         sep_groundtruth.toPointCloud(4);
 
@@ -724,6 +726,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
         return false;
     }
 
+    FSG_LOG_VAR(sep_groundtruth);
     FSG_LOG_VAR(sep_fit);
 
     Eigen::VectorXf deviation = sep_fit.coeff - sep_groundtruth.coeff;
