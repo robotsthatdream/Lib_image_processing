@@ -783,10 +783,11 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
 
         if (!success) {
             FSG_LOG_MSG(
-                "Fit failed, thus gradient test FAIL, on dimension " << dimension_shift);
+                "Fit after gradient epsilon failed, thus gradient test FAIL, on dimension " << dimension_shift);
             continue;
         }
 
+        FSG_LOG_MSG("Fit after gradient epsilon converges, on dimension " << dimension_shift);
         FSG_LOG_VAR(superellipsoidparameters_fit);
         FSG_LOG_VAR(superellipsoidparameters_center);
 
