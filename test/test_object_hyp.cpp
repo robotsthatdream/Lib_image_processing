@@ -130,7 +130,7 @@ SuperEllipsoidParameters::toPointCloud(int steps) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
         new pcl::PointCloud<pcl::PointXYZ>);
     FSG_TRACE_THIS_FUNCTION();
-    FSG_LOG_MSG("Creating a point cloud for " << *this);
+    FSG_LOG_MSG("Creating a point cloud with " << steps << " steps for " << *this);
 
     // We start by creating a superquadric at world center, not rotated.
 
