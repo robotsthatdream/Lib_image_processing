@@ -502,77 +502,6 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
     }
 }
 
-/** 
-    Given a parameter set and a point cloud which exactly matches,
-    verify that disturbing in any dimension yields a sane gradient
-    that converges back to the original parameter set.
-*/
-void SuperEllipsoidTestEachDimensionForGradientSanity(
-    fsg::SuperEllipsoidParameters &superellipsoidparameters_center,
-    pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud) {
-    FSG_TRACE_THIS_FUNCTION();
-
-    FSG_LOG_VAR(superellipsoidparameters_center);
-
-    std::vector<int> indices(pointCloud->size());
-    for (size_t i = 0; i < pointCloud->size(); ++i) {
-        indices[i] = i;
-    }
-
-    OptimizationFunctor functor(*pointCloud, indices);
-
-    Eigen::VectorXf deviation(pointCloud->size());
-
-    Eigen::VectorXf values(5);
-    const float epsilon = 0.01;
-
-    functor(superellipsoidparameters_center.coeff, deviation);
-    float centervalue = deviation.norm();
-    FSG_LOG_VAR(centervalue);
-    values[2]=centervalue;
-            
-    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
-        for (int step = -2 ; step <= 2; step++) {
-            if (step == 0) {
-                continue;
-            }
-            float stepEpsilon = step * epsilon;
-
-            fsg::SuperEllipsoidParameters superellipsoidparameters =
-                superellipsoidparameters_center;
-
-                superellipsoidparameters.coeff(dimension_shift) +=
-                    epsilon * step;
-
-                FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
-                    "dimension shift " << dimension_shift << " stepEpsilon "
-                                       << stepEpsilon);
-                FSG_LOG_VAR(superellipsoidparameters);
-                
-            functor(superellipsoidparameters.coeff, deviation);
-
-            // FSG_LOG_VAR(deviation);
-            float value = deviation.norm();
-            FSG_LOG_VAR(value);
-
-            values[step+2] = value;
-        }
-
-        FSG_LOG_VAR(values);
-        FSG_LOG_MSG("values=[" << values[0] << ", " << values[1] << ",  " << values[2] << "  , " << values[3] << ", " << values[4] << "]" );
-
-        if (values[0] < values[1])
-        {
-            FSG_LOG_MSG("FAIL: bad gradient lower side on dimension " << dimension_shift << " values " << values << " params " << superellipsoidparameters_center);
-        }
-
-        if (values[2] > values[3])
-        {
-            FSG_LOG_MSG("FAIL: bad gradient higher side on dimension " << dimension_shift << " values " << values << " params " << superellipsoidparameters_center);
-        }
-    }
-}
-
 void SuperEllipsoidTestComputeGradient(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype,
     pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud) {
@@ -770,6 +699,104 @@ bool pointCloudToFittingContext(
 
     return pointCloudToFittingContextWithInitialEstimate(cloud_xyz,
                                                          fittingContext);
+}
+
+/**
+    Given a parameter set and a point cloud which exactly matches,
+    verify that disturbing in any dimension yields a sane gradient
+    that converges back to the original parameter set.
+*/
+void SuperEllipsoidTestEachDimensionForGradientSanity(
+    fsg::SuperEllipsoidParameters &superellipsoidparameters_center,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud) {
+    FSG_TRACE_THIS_FUNCTION();
+
+    FSG_LOG_VAR(superellipsoidparameters_center);
+
+    std::vector<int> indices(pointCloud->size());
+    for (size_t i = 0; i < pointCloud->size(); ++i) {
+        indices[i] = i;
+    }
+
+    OptimizationFunctor functor(*pointCloud, indices);
+
+    Eigen::VectorXf deviation(pointCloud->size());
+
+    Eigen::VectorXf values(5);
+    const float epsilon = 0.01;
+
+    functor(superellipsoidparameters_center.coeff, deviation);
+    float centervalue = deviation.norm();
+    FSG_LOG_VAR(centervalue);
+    values[2]=centervalue;
+
+    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+        for (int step = -2 ; step <= 2; step++) {
+            if (step == 0) {
+                continue;
+            }
+            float stepEpsilon = step * epsilon;
+
+            fsg::SuperEllipsoidParameters superellipsoidparameters =
+                superellipsoidparameters_center;
+
+                superellipsoidparameters.coeff(dimension_shift) +=
+                    epsilon * step;
+
+                FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
+                    "dimension shift " << dimension_shift << " stepEpsilon "
+                                       << stepEpsilon);
+                FSG_LOG_VAR(superellipsoidparameters);
+
+            functor(superellipsoidparameters.coeff, deviation);
+
+            // FSG_LOG_VAR(deviation);
+            float value = deviation.norm();
+            FSG_LOG_VAR(value);
+
+            values[step+2] = value;
+        }
+
+        FSG_LOG_VAR(values);
+        FSG_LOG_MSG("values=[" << values[0] << ", " << values[1] << ",  " << values[2] << "  , " << values[3] << ", " << values[4] << "]" );
+
+        if (values[0] < values[1])
+        {
+            FSG_LOG_MSG("FAIL: bad gradient lower side on dimension " << dimension_shift << " values " << values << " params " << superellipsoidparameters_center);
+        }
+
+        if (values[2] > values[3])
+        {
+            FSG_LOG_MSG("FAIL: bad gradient higher side on dimension " << dimension_shift << " values " << values << " params " << superellipsoidparameters_center);
+        }
+
+        fsg::SuperEllipsoidParameters superellipsoidparameters_fit =
+            superellipsoidparameters_center;
+
+        superellipsoidparameters_fit.coeff(dimension_shift) +=
+            epsilon;
+
+        bool success = pointCloudToFittingContextWithInitialEstimate(pointCloud,
+                                                                     superellipsoidparameters_fit);
+
+        if (!success) {
+            FSG_LOG_MSG(
+                "Fit failed, thus gradient test FAIL, on dimension " << dimension_shift);
+            continue;
+        }
+
+        FSG_LOG_VAR(superellipsoidparameters_fit);
+        FSG_LOG_VAR(superellipsoidparameters_center);
+
+        Eigen::VectorXf deviation = superellipsoidparameters_fit.coeff - superellipsoidparameters_center.coeff;
+
+        FSG_LOG_VAR(deviation.norm());
+
+        if (deviation.norm() > fit_control_epsilon) {
+            FSG_LOG_MSG("Test FAIL fitting parameter at epsilon deviation on dimension " << dimension_shift);
+        }
+
+    }
 }
 
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
