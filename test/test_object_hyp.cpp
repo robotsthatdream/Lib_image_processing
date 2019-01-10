@@ -130,7 +130,8 @@ SuperEllipsoidParameters::toPointCloud(int steps) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
         new pcl::PointCloud<pcl::PointXYZ>);
     FSG_TRACE_THIS_FUNCTION();
-    FSG_LOG_MSG("Creating a point cloud with " << steps << " steps for " << *this);
+    FSG_LOG_MSG("Creating a point cloud with " << steps << " steps for "
+                                               << *this);
 
     // We start by creating a superquadric at world center, not rotated.
 
@@ -217,16 +218,16 @@ struct OptimizationFunctor : pcl::Functor<float> {
     }
 
 #define powf_abs(x, y) powf(fabs(x), y)
-    // float powf_abs(const float x, const float y) const {
-    //     FSG_TRACE_THIS_FUNCTION();
-    //     FSG_LOG_VAR(x);
-    //     FSG_LOG_VAR(y);
-    //     const float absx = fabs(x);
-    //     FSG_LOG_VAR(absx);
-    //     const float result = powf(absx, y);
-    //     FSG_LOG_VAR(result);
-    //     return result;
-    // }
+// float powf_abs(const float x, const float y) const {
+//     FSG_TRACE_THIS_FUNCTION();
+//     FSG_LOG_VAR(x);
+//     FSG_LOG_VAR(y);
+//     const float absx = fabs(x);
+//     FSG_LOG_VAR(absx);
+//     const float result = powf(absx, y);
+//     FSG_LOG_VAR(result);
+//     return result;
+// }
 
 #define FUNCTOR_COMPUTE_VALUE 1
 
@@ -274,9 +275,9 @@ struct OptimizationFunctor : pcl::Functor<float> {
         const float two_over_exp_1 = 2.0 / exp_1;
         const float two_over_exp_2 = 2.0 / exp_2;
         const float exp_2_over_exp_1 = exp_2 / exp_1;
-        // FSG_LOG_VAR(two_over_exp_2);
-        // FSG_LOG_VAR(two_over_exp_1);
-        // FSG_LOG_VAR(exp_2_over_exp_1);
+// FSG_LOG_VAR(two_over_exp_2);
+// FSG_LOG_VAR(two_over_exp_1);
+// FSG_LOG_VAR(exp_2_over_exp_1);
 
 #ifdef FUNCTOR_COMPUTE_VALUE
         float sum_of_squares = 0;
@@ -322,7 +323,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
             sum_of_squares += deviation * deviation;
 #endif
         }
-        // FSG_LOG_VAR(fvec);
+// FSG_LOG_VAR(fvec);
 #ifdef FUNCTOR_COMPUTE_VALUE
         FSG_LOG_VAR(sum_of_squares);
 #endif
@@ -502,7 +503,8 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
 }
 
 void SuperEllipsoidTestComputeGradient(
-    fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype, pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud) {
+    fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud) {
 
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
@@ -539,7 +541,8 @@ void SuperEllipsoidTestComputeGradient(
         functor(superellipsoidparameters.coeff, deviation);
         float plus = deviation.norm();
 
-        FSG_LOG_MSG("dimension " << dimension_shift << " values "  << minus << "" << center_value << "" << plus);
+        FSG_LOG_MSG("dimension " << dimension_shift << " values " << minus << ""
+                                 << center_value << "" << plus);
     }
 }
 
@@ -694,7 +697,8 @@ bool pointCloudToFittingContext(
     fittingContext.set_exp_1(0.5);
     fittingContext.set_exp_2(0.5);
 
-    return pointCloudToFittingContextWithInitialEstimate(cloud_xyz, fittingContext);
+    return pointCloudToFittingContextWithInitialEstimate(cloud_xyz,
+                                                         fittingContext);
 }
 
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
@@ -722,7 +726,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     SuperEllipsoidTestEachDimensionForMisbehavior(sep_groundtruth);
 
     FSG_LOG_VAR(sep_groundtruth);
-    
+
     const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
         sep_groundtruth.toPointCloud(4);
 
