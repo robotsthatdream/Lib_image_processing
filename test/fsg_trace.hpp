@@ -49,7 +49,7 @@ int FSG_LOG_INDENTATION_LEVEL =
  * to jump to source code in a keypress. */
 #ifdef FSG_PROJECT_ROOT
 #define FSG_LOG_INIT__CALL_FROM_CPP_MAIN()                                     \
-    std::cerr << "make: Entering directory '" << FSG_PROJECT_ROOT << "'"       \
+    std::cerr << "Entering directory '" << FSG_PROJECT_ROOT << "'"       \
               << std::endl
 #else
 #define FSG_LOG_INIT__CALL_FROM_CPP_MAIN()                                     \
