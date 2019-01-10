@@ -539,6 +539,7 @@ bool pointCloudToFittingContext(
     fsg::SuperEllipsoidParameters &fittingContext,
     pcl::visualization::PCLVisualizer *viewer,
     const std::string &obj_index_i_s) {
+    FSG_TRACE_THIS_FUNCTION();
     pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
     feature_extractor.setInputCloud(cloud_xyz);
     // Minimize eccentricity computation.
