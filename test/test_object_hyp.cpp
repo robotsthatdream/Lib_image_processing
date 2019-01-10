@@ -725,7 +725,7 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
     Eigen::VectorXf deviation(pointCloud->size());
 
     Eigen::VectorXf values(5);
-    const float epsilon = 0.01;
+    const float epsilon = 0.001;
 
     functor(superellipsoidparameters_center.coeff, deviation);
     float centervalue = deviation.norm();
