@@ -525,7 +525,7 @@ void SuperEllipsoidTestComputeGradient(
 
     FSG_LOG_VAR(center_value);
 
-    float epsilon = 0.05;
+    const float epsilon = 0.05;
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("dimension shift "
