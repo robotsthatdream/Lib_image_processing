@@ -505,7 +505,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
 /** 
     Given a parameter set and a point cloud which exactly matches,
     verify that disturbing in any dimension yields a sane gradient
-    that converges back to .
+    that converges back to the original parameter set.
 */
 void SuperEllipsoidTestEachDimensionForGradientSanity(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_center,
