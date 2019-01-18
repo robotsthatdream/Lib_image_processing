@@ -17,6 +17,12 @@
 #include <vtkRenderWindow.h>
 
 #include "../include/image_processing/SurfaceOfInterest.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#include "cmaes.h"
+#pragma GCC diagnostic pop
+
 #include "test_rotation.hpp"
 #include <boost/archive/text_iarchive.hpp>
 #include <iagmm/gmm.hpp>
@@ -114,8 +120,13 @@ struct SuperEllipsoidParameters {
                                const SuperEllipsoidParameters &sefc);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr toPointCloud(int steps);
+
+public:
+    static Eigen::VectorXf OptimizationStepSize;
+
 };
 
+    
 ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     os << "[SEFC "
        << "center=(" << sefc.get_cen_x() << "," << sefc.get_cen_y() << ","
@@ -138,6 +149,15 @@ float powf_sym(float x, float y) {
         return powf(x, y);
 }
 
+    // /** Provide access to coeff data as C-style array.  Number of
+    //     values is provided in SuperEllipsoidParameters::fieldcount.
+    //  */
+    // float *SuperEllipsoidParameters::coeffData()
+    // {
+    //     return (this->coeff.data());
+    // }
+    
+    
 pcl::PointCloud<pcl::PointXYZ>::Ptr
 SuperEllipsoidParameters::toPointCloud(int steps) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
@@ -557,7 +577,7 @@ void SuperEllipsoidTestComputeGradient(
     }
 }
 
-bool pointCloudToFittingContextWithInitialEstimate(
+bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext) {
     fsg::SuperEllipsoidParameters initialEstimate = fittingContext;
@@ -591,12 +611,79 @@ bool pointCloudToFittingContextWithInitialEstimate(
     FSG_LOG_MSG("After minimization : " << fittingContext);
 
     if (ci != Eigen::ComputationInfo::Success) {
-        FSG_LOG_MSG("Not inserting superellipsoid into scene "
-                    "because fitting failed, with code: "
-                    << ci);
+        FSG_LOG_MSG("Levenberg-Marquardt fitting failed, with code: " << ci);
         return false;
     }
     return true;
+}
+
+
+
+
+bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
+    fsg::SuperEllipsoidParameters &fittingContext) {
+    fsg::SuperEllipsoidParameters initialEstimate = fittingContext;
+
+    FSG_LOG_MSG("Initial estimate : " << initialEstimate);
+
+    std::vector<int> indices(cloud_xyz->size());
+    for (size_t i = 0; i < cloud_xyz->size(); ++i) {
+        indices[i] = i;
+    }
+
+    std::vector<double> x0(fsg::SuperEllipsoidParameters::fieldCount, 0);
+
+    // copy to
+
+    OptimizationFunctor functor(*cloud_xyz, indices);
+
+    libcmaes::FitFunc cmaes_fit_func = [](const double *x, const int N) {
+        double val = 0.0;
+        for (int i = 0; i < N; i++)
+            val += x[i] * x[i];
+        return val;
+    };
+
+    
+    Eigen::VectorXf OptimizationStepSize(fsg::SuperEllipsoidParameters::fieldCount);
+OptimizationStepSize <<
+#define FSGX(name) 0.01,
+        ALL_SuperEllipsoidParameters_FIELDS
+#undef FSGX
+    0.01;
+
+libcmaes::CMAParameters<> cmaparams(fittingContext.coeff, fsg::SuperEllipsoidParameters::OptimizationStepSize);
+
+    libcmaes::CMASolutions cmasols =
+        libcmaes::cmaes<>(cmaes_fit_func, cmaparams);
+
+    FSG_LOG_MSG("best solution: " << cmasols);
+    FSG_LOG_MSG("optimization took " << cmasols.elapsed_time() / 1000.0
+                                     << " seconds\n");
+
+    int cma_status = cmasols.run_status();
+
+    FSG_LOG_VAR(cma_status); // the optimization status, failed if < 0
+    FSG_LOG_VAR(cmasols.status_msg());
+
+    fittingContext.coeff = cmasols;
+
+    FSG_LOG_MSG("Initial estimation : " << initialEstimate);
+    FSG_LOG_MSG("After minimization : " << fittingContext);
+
+    if (cma_status < 0) {
+        FSG_LOG_MSG("CMAES fitting failed, with code: " << cma_status);
+        return false;
+    }
+    return true;
+}
+
+bool pointCloudToFittingContextWithInitialEstimate(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
+    fsg::SuperEllipsoidParameters &fittingContext) {
+    return pointCloudToFittingContextWithInitialEstimate_LibCmaes(
+        cloud_xyz, fittingContext);
 }
 
 bool pointCloudToFittingContext(

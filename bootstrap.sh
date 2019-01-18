@@ -189,7 +189,30 @@ else(
 )
 fi
 
-#export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${IAGMM_IT}"
+CMAES_BUILD_TYPE=Debug
+
+CMAES_IT=${IMAGE_PROCESSING_BUILD_ROOT}/libcmaes.OSID_${OS_ID}.installtree.${CMAES_BUILD_TYPE}
+if [[ -d "${CMAES_IT}" ]]
+then
+    echo "libcmaes already in $CMAES_IT"
+else(
+    if [[ ! -d libcmaes ]]
+    then
+        #git clone https://github.com/beniz/libcmaes
+        git clone https://github.com/robotsthatdream/libcmaes
+    fi
+
+    cd libcmaes
+    export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=1000000
+    cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
+                               -DCMAKE_BUILD_TYPE=${CMAES_BUILD_TYPE} \
+
+    cd ${IMAGE_PROCESSING_BUILD_ROOT}/libcmaes.OSID_${OS_ID}.buildtree.${CMAES_BUILD_TYPE}
+    time cmake --build . -- install
+)
+fi
+
+export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${CMAES_IT}"
 
 IMAGE_PROCESSING_BUILD_TYPE=Debug
 
@@ -208,7 +231,9 @@ else(
     cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                -DCMAKE_BUILD_TYPE=${IMAGE_PROCESSING_BUILD_TYPE} \
                                -DIAGMM_INSTALL_TREE:STRING="${IAGMM_IT}" \
+                               -DCMAES_INSTALL_TREE:STRING="${CMAES_IT}" \
 
+                               # *_INSTALL_TREE should be cleaned up.
 
     cd ${IMAGE_PROCESSING_SOURCE_ROOT}.OSID_${OS_ID}.buildtree.${IMAGE_PROCESSING_BUILD_TYPE}
     time cmake --build . -- install

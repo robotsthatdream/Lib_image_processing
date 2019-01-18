@@ -48,7 +48,9 @@ set_property(TARGET iagmm PROPERTY IMPORTED_LOCATION "${IAGMM_INSTALL_TREE}/lib/
 # # find_library(IAGMM_LIBRARY iagmm)
 # find_package(iagmm)
 
-include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS} "${IAGMM_INSTALL_TREE}/include" )
+include(CMake/FindLibCmaes.cmake)
+
+include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS} "${IAGMM_INSTALL_TREE}/include" "${LIBCMAES_INCLUDE_DIR}")
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 
@@ -60,7 +62,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   add_compile_options("-Wextra")
   add_compile_options("-Wno-vla")
   add_compile_options("-Wno-reorder")
-  add_compile_options("-Werror")
+#  add_compile_options("-Werror")
   add_compile_options("-Wno-unused-parameter")
 endif ()
 
@@ -107,9 +109,12 @@ install(TARGETS ${PROJECT_NAME}
 #add_executable(color_hist_supervoxel test/color_hist_supervoxel.cpp)
 #target_link_libraries(color_hist_supervoxel  image_processing ${OpenCV_LIBRARIES})
 
-add_executable(test_object_hyp test/test_object_hyp.cpp test/test_rotation.cpp)
-target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb)
+message(STATUS "LIBCMAES_LIBRARIES=${LIBCMAES_LIBRARIES}")
+message(STATUS "LIBCMAES_LIBRARIES=${LIBCMAES_LIBRARIES}")
 
+add_executable(test_object_hyp test/test_object_hyp.cpp test/test_rotation.cpp)
+target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb ${LIBCMAES_LIBRARIES})
+#target_include_directories(test_object_hyp ${LIBCMAES_INCLUDE_DIR})
 
 
 
@@ -169,3 +174,17 @@ foreach(SOURCE_FILE IN ITEMS test/test_object_hyp.cpp test/test_rotation.cpp)
   #message(STATUS "${RELPATHNAME}")
 endforeach()
 ################################################################
+
+# get_cmake_property(_variableNames VARIABLES)
+# list (SORT _variableNames)
+# foreach (_variableName ${_variableNames})
+#     message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()
+
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+  endif()
+  
