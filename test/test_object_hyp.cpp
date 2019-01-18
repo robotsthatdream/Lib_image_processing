@@ -43,10 +43,6 @@ typedef fsg::PointCloudT::Ptr PointCloudTP;
     Total 11 parameters
 */
 struct SuperEllipsoidParameters {
-    Eigen::VectorXf coeff;
-
-    SuperEllipsoidParameters() : coeff(11){};
-
 // https://en.wikipedia.org/wiki/X_Macro
 
 #define ALL_SuperEllipsoidParameters_FIELDS                                    \
@@ -97,6 +93,23 @@ struct SuperEllipsoidParameters {
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
 
+    static constexpr int fieldCount = 0
+#define FSGX(name) +1
+        ALL_SuperEllipsoidParameters_FIELDS
+#undef FSGX
+        ;
+
+
+    // https://stackoverflow.com/questions/11490988/c-compile-time-error-expected-identifier-before-numeric-constant
+    Eigen::VectorXf coeff = Eigen::VectorXf(fieldCount);
+
+    //float *coeffData()
+    
+    SuperEllipsoidParameters() : coeff(fieldCount){};
+
+
+
+    
     friend ostream &operator<<(ostream &os,
                                const SuperEllipsoidParameters &sefc);
 
