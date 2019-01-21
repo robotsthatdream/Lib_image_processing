@@ -116,12 +116,9 @@ struct SuperEllipsoidParameters {
                                const SuperEllipsoidParameters &sefc);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr toPointCloud(int steps);
-
-  public:
-    static Eigen::VectorXd OptimizationStepSize;
-    static Eigen::VectorXd LowerBounds;
-    static Eigen::VectorXd UpperBounds;
 };
+
+    constexpr int SuperEllipsoidParameters::fieldCount;
 
 ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     os << "[SEFC "
@@ -586,13 +583,15 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>, float>
         lm(num_diff);
     Eigen::LevenbergMarquardtSpace::Status minimizationResult;
+    
     {
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
             "Eigen::LevenbergMarquardt::minimize()");
         Eigen::VectorXd coeff_d = fittingContext.coeff;
         Eigen::VectorXf coeff_f = coeff_d.cast<float>();
-
-        minimizationResult = lm.minimize(coeff_f);
+        Eigen::VectorXf foo;
+        
+        minimizationResult = (Eigen::LevenbergMarquardtSpace::Status)0; // lm.minimize(coeff_f);
     }
 
     Eigen::ComputationInfo ci =
@@ -639,17 +638,21 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     Eigen::VectorXd OptimizationStepSize(
         fsg::SuperEllipsoidParameters::fieldCount);
-    OptimizationStepSize <<
-#define FSGX(name) 3.2,
-        ALL_SuperEllipsoidParameters_FIELDS
-#undef FSGX
-        0.01;
+    OptimizationStepSize << 0.1, 0.1, 0.1,  0.1, 0.1, 0.1, 3,1.5,1.5, 0.5,0.5;
+
+    Eigen::VectorXd LowerBounds(
+        fsg::SuperEllipsoidParameters::fieldCount);
+    LowerBounds << -3,-3,-3, 0,0,0, -M_PI, -M_PI_2, -M_PI_2, 0, 0;
+
+    Eigen::VectorXd UpperBounds(
+        fsg::SuperEllipsoidParameters::fieldCount);
+    UpperBounds << 3,3,3, 1,1,1, M_PI, M_PI_2, M_PI_2, 1, 1;
 
     libcmaes::CMAParameters<> cmaparams(
         fittingContext.coeff,
-        fsg::SuperEllipsoidParameters::OptimizationStepSize, -1,
-        fsg::SuperEllipsoidParameters::LowerBounds,
-        fsg::SuperEllipsoidParameters::UpperBounds, 0);
+        OptimizationStepSize, -1,
+        LowerBounds,
+        UpperBounds, 0);
     // CMAParameters(const dVec &x0,
     //               const dVec &sigma,
     //               const int &lambda,
