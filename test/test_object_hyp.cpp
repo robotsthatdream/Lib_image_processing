@@ -105,28 +105,24 @@ struct SuperEllipsoidParameters {
 #undef FSGX
         ;
 
-
     // https://stackoverflow.com/questions/11490988/c-compile-time-error-expected-identifier-before-numeric-constant
-    Eigen::VectorXf coeff = Eigen::VectorXf(fieldCount);
+    Eigen::VectorXd coeff = Eigen::VectorXd(fieldCount);
 
-    //float *coeffData()
-    
+    double *coeffData();
+
     SuperEllipsoidParameters() : coeff(fieldCount){};
 
-
-
-    
     friend ostream &operator<<(ostream &os,
                                const SuperEllipsoidParameters &sefc);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr toPointCloud(int steps);
 
-public:
-    static Eigen::VectorXf OptimizationStepSize;
-
+  public:
+    static Eigen::VectorXd OptimizationStepSize;
+    static Eigen::VectorXd LowerBounds;
+    static Eigen::VectorXd UpperBounds;
 };
 
-    
 ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     os << "[SEFC "
        << "center=(" << sefc.get_cen_x() << "," << sefc.get_cen_y() << ","
@@ -149,15 +145,11 @@ float powf_sym(float x, float y) {
         return powf(x, y);
 }
 
-    // /** Provide access to coeff data as C-style array.  Number of
-    //     values is provided in SuperEllipsoidParameters::fieldcount.
-    //  */
-    // float *SuperEllipsoidParameters::coeffData()
-    // {
-    //     return (this->coeff.data());
-    // }
-    
-    
+/** Provide access to coeff data as C-style array.  Number of
+    values is provided in SuperEllipsoidParameters::fieldcount.
+ */
+double *SuperEllipsoidParameters::coeffData() { return (this->coeff.data()); }
+
 pcl::PointCloud<pcl::PointXYZ>::Ptr
 SuperEllipsoidParameters::toPointCloud(int steps) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
@@ -269,7 +261,7 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \param[out] fvec the resultant functions evaluations
      * \return 0
      */
-    int operator()(const Eigen::VectorXf &param, Eigen::VectorXf &fvec) const {
+    int operator()(const Eigen::VectorXd &param, Eigen::VectorXf &fvec) const {
 #if FUNCTOR_LOG_INSIDE == 1
         fsg::SuperEllipsoidParameters *sep =
             (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
@@ -597,7 +589,10 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     {
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
             "Eigen::LevenbergMarquardt::minimize()");
-        minimizationResult = lm.minimize(fittingContext.coeff);
+        Eigen::VectorXd coeff_d = fittingContext.coeff;
+        Eigen::VectorXf coeff_f = coeff_d.cast<float>();
+
+        minimizationResult = lm.minimize(coeff_f);
     }
 
     Eigen::ComputationInfo ci =
@@ -616,9 +611,6 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     }
     return true;
 }
-
-
-
 
 bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
@@ -645,15 +637,25 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
         return val;
     };
 
-    
-    Eigen::VectorXf OptimizationStepSize(fsg::SuperEllipsoidParameters::fieldCount);
-OptimizationStepSize <<
-#define FSGX(name) 0.01,
+    Eigen::VectorXd OptimizationStepSize(
+        fsg::SuperEllipsoidParameters::fieldCount);
+    OptimizationStepSize <<
+#define FSGX(name) 3.2,
         ALL_SuperEllipsoidParameters_FIELDS
 #undef FSGX
-    0.01;
+        0.01;
 
-libcmaes::CMAParameters<> cmaparams(fittingContext.coeff, fsg::SuperEllipsoidParameters::OptimizationStepSize);
+    libcmaes::CMAParameters<> cmaparams(
+        fittingContext.coeff,
+        fsg::SuperEllipsoidParameters::OptimizationStepSize, -1,
+        fsg::SuperEllipsoidParameters::LowerBounds,
+        fsg::SuperEllipsoidParameters::UpperBounds, 0);
+    // CMAParameters(const dVec &x0,
+    //               const dVec &sigma,
+    //               const int &lambda,
+    //               const dVec &lbounds,
+    //               const dVec &ubounds,
+    //               const uint64_t &seed);
 
     libcmaes::CMASolutions cmasols =
         libcmaes::cmaes<>(cmaes_fit_func, cmaparams);
@@ -667,7 +669,20 @@ libcmaes::CMAParameters<> cmaparams(fittingContext.coeff, fsg::SuperEllipsoidPar
     FSG_LOG_VAR(cma_status); // the optimization status, failed if < 0
     FSG_LOG_VAR(cmasols.status_msg());
 
-    fittingContext.coeff = cmasols;
+    // https://github.com/beniz/libcmaes/wiki/Optimizing-a-function#user-content-solution-error-covariance-matrix-and-expected-distance-to-the-minimum-edm
+    libcmaes::Candidate bcand = cmasols.best_candidate();
+    //double fmin = bcand.get_fvalue(); // min objective function value the
+                                      // optimizer converged to
+    Eigen::VectorXd bestparameters = bcand.get_x_dvec(); // vector of objective
+                                                         // function parameters
+                                                         // at minimum.
+    //double edm = cmasols.edm(); // expected distance to the minimum.
+
+    // https://github.com/beniz/libcmaes/wiki/Defining-and-using-bounds-on-parameters#user-content-retrieving-the-best-solution
+    // Eigen::VectorXd bestparameters =
+    // gp.pheno(cmasols.get_best_seen_candidate().get_x_dvec());
+
+    fittingContext.coeff = bestparameters;
 
     FSG_LOG_MSG("Initial estimation : " << initialEstimate);
     FSG_LOG_MSG("After minimization : " << fittingContext);
@@ -891,7 +906,7 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
         FSG_LOG_VAR(superellipsoidparameters_fit);
         FSG_LOG_VAR(superellipsoidparameters_center);
 
-        Eigen::VectorXf deviation = superellipsoidparameters_fit.coeff -
+        Eigen::VectorXd deviation = superellipsoidparameters_fit.coeff -
                                     superellipsoidparameters_center.coeff;
 
         FSG_LOG_VAR(deviation.norm());
@@ -949,7 +964,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     FSG_LOG_VAR(sep_groundtruth);
     FSG_LOG_VAR(sep_fit);
 
-    Eigen::VectorXf deviation = sep_fit.coeff - sep_groundtruth.coeff;
+    Eigen::VectorXd deviation = sep_fit.coeff - sep_groundtruth.coeff;
 
     FSG_LOG_VAR(deviation.norm());
 
