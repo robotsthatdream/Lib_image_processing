@@ -125,6 +125,7 @@ else
             libs/filesystem \
             libs/function \
             libs/fusion \
+            libs/headers \
             libs/integer \
             libs/intrusive \
             libs/io \
@@ -149,9 +150,9 @@ else
             libs/type_traits \
             libs/typeof \
             libs/utility \
-            tools/build \
             tools/boost_install \
             tools/boostdep \
+            tools/build \
             
 
         export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
