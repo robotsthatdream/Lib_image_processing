@@ -106,7 +106,7 @@ else
     (
         if [[ ! -d boost ]]
         then
-            git clone --depth=1 https://github.com/boostorg/boost
+            git clone --depth=1 --branch=boost-1.69.0 https://github.com/boostorg/boost
         fi
 
 
