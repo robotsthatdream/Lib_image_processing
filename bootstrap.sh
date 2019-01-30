@@ -113,8 +113,10 @@ else
         cd boost
         git submodule update --init -- assert libs/range libs/serialization libs/filesystem libs/algorithm libs/random libs/math
 
+        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
+
         ./bootstrap.sh --prefix=${BOOST_IT}
-        ./b2 --prefix=${BOOST_IT} --build-dir=${IMAGE_PROCESSING_BUILD_ROOT}/boost.OSID_${OS_ID}.buildtree.Release --layout=tagged
+        ${IMAGE_PROCESSING_BUILD_ROOT}/any_command_add_j_automatic_parallel_jobs_count.sh ./b2 --prefix=${BOOST_IT} --build-dir=${IMAGE_PROCESSING_BUILD_ROOT}/boost.OSID_${OS_ID}.buildtree.Release --layout=tagged
     )
 fi
 export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${BOOST_IT}:${IMAGE_PROCESSING_BUILD_ROOT}/boost/tools/boost_install"
