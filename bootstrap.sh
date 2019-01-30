@@ -7,11 +7,9 @@ set -eu
 TOOLS="cmake:cmake
 /usr/include/eigen3:libeigen3-dev
 git:git
-/usr/include/boost/version.hpp:libboost-all-dev
 /usr/include/flann/flann.h:libflann-dev
 /usr/include/vtk*:libvtk6-dev
 /usr/include/tbb/tbb.h:libtbb-dev
-/usr/include/yaml-cpp/yaml.h:libyaml-cpp-dev
 /usr/include/qhull/qhull.h:libqhull-dev
 "
 
