@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -xv
+#set -xv
 
 PROCESSOR_COUNT=$( grep '^processor' /proc/cpuinfo  | wc -l )
 
