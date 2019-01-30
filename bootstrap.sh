@@ -115,7 +115,7 @@ else
 
         export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
 
-        ./bootstrap.sh --prefix=${BOOST_IT}
+        if [[ -x ./b2 ]] ; then echo "b2 already there, not running bootstrap.sh" ; else ./bootstrap.sh --prefix=${BOOST_IT} ; fi
         ${IMAGE_PROCESSING_SOURCE_ROOT}/any_command_add_j_automatic_parallel_jobs_count.sh ./b2 --prefix=${BOOST_IT} --build-dir=${IMAGE_PROCESSING_BUILD_ROOT}/boost.OSID_${OS_ID}.buildtree.Release --layout=tagged
     )
 fi
