@@ -24,7 +24,12 @@ endif(WITH_CVNONFREE)
 
 #Libraries
 #set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.54 COMPONENTS filesystem system thread iostreams chrono REQUIRED)
+#find_package(Boost 1.54 COMPONENTS filesystem system thread iostreams chrono REQUIRED)
+find_package(boost_filesystem REQUIRED)
+find_package(boost_system REQUIRED)
+find_package(boost_headers REQUIRED)
+#assert range serialization filesystem algorithm random math
+
 # OpenCV: at least 2.4? Anyway, formally requiring OpenCV 2.4 rejects 3.2 in practice.
 find_package(OpenCV REQUIRED COMPONENTS ${OpenCVRequiredComponents})
 find_package(PCL 1.7 REQUIRED)
