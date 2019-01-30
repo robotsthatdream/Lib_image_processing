@@ -99,7 +99,7 @@ compute_OS_ID
 
 
 BOOST_IT=${IMAGE_PROCESSING_BUILD_ROOT}/boost.OSID_${OS_ID}.installtree.Release
-if [[ -d "${BOOST_IT}" ]]
+if [[ -d "x${BOOST_IT}" ]]
 then
     echo "Boost already in $BOOST_IT"
 else
@@ -157,10 +157,11 @@ else
         export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
 
         if [[ -x ./b2 ]] ; then echo "b2 already there, not running bootstrap.sh" ; else ./bootstrap.sh --prefix=${BOOST_IT} ; fi
-        ${IMAGE_PROCESSING_SOURCE_ROOT}/any_command_add_j_automatic_parallel_jobs_count.sh ./b2 --prefix=${BOOST_IT} --build-dir=${IMAGE_PROCESSING_BUILD_ROOT}/boost.OSID_${OS_ID}.buildtree.Release --layout=tagged
+        ${IMAGE_PROCESSING_SOURCE_ROOT}/any_command_add_j_automatic_parallel_jobs_count.sh ./b2 --prefix=${BOOST_IT} --build-dir=${IMAGE_PROCESSING_BUILD_ROOT}/boost.OSID_${OS_ID}.buildtree.Release --layout=tagged install
     )
 fi
 export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${BOOST_IT}:${IMAGE_PROCESSING_BUILD_ROOT}/boost/tools/boost_install"
+
 
 OPENCV_IT=${IMAGE_PROCESSING_BUILD_ROOT}/opencv.OSID_${OS_ID}.installtree.Release
 if [[ -d "${OPENCV_IT}" ]]
