@@ -111,7 +111,7 @@ else
 
 
         cd boost
-        git submodule update --init -- assert range serialization filesystem algorithm random math # Check out all the modules
+        git submodule update --init -- assert libs/range libs/serialization libs/filesystem libs/algorithm libs/random libs/math
 
         ./bootstrap.sh --prefix=${BOOST_IT}
         ./b2 --prefix=${BOOST_IT} --build-dir=${IMAGE_PROCESSING_BUILD_ROOT}/boost.OSID_${OS_ID}.buildtree.Release --layout=tagged
