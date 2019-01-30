@@ -99,6 +99,28 @@ function compute_OS_ID()
 
 compute_OS_ID
 
+
+BOOST_IT=${IMAGE_PROCESSING_BUILD_ROOT}/boost.OSID_${OS_ID}.installtree.Release
+if [[ -d "${BOOST_IT}" ]]
+then
+    echo "Boost already in $BOOST_IT"
+else
+    (
+        if [[ ! -d boost ]]
+        then
+            git clone --depth=1 https://github.com/boostorg/boost
+        fi
+
+
+        cd boost
+        git submodule update --init # Check out all the modules
+
+        ./bootstrap.sh --prefix=${BOOST_IT}
+        ./b2 --prefix=${BOOST_IT} --build-dir=${IMAGE_PROCESSING_BUILD_ROOT}/boost.OSID_${OS_ID}.buildtree.Release --layout=tagged
+    )
+fi
+export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${BOOST_IT}:${IMAGE_PROCESSING_BUILD_ROOT}/boost/tools/boost_install"
+
 OPENCV_IT=${IMAGE_PROCESSING_BUILD_ROOT}/opencv.OSID_${OS_ID}.installtree.Release
 if [[ -d "${OPENCV_IT}" ]]
 then
