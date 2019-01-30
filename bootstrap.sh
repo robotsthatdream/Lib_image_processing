@@ -111,7 +111,7 @@ else
 
 
         cd boost
-        git submodule update --init -- assert libs/range libs/serialization libs/filesystem libs/algorithm libs/random libs/math
+        git submodule update --init -- tools/build libs/assert libs/range libs/serialization libs/filesystem libs/algorithm libs/random libs/math
 
         export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
 
