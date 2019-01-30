@@ -188,7 +188,7 @@ else
         ${IMAGE_PROCESSING_SOURCE_ROOT}/any_command_add_j_automatic_parallel_jobs_count.sh ./b2 --prefix=${BOOST_IT} --build-dir=${IMAGE_PROCESSING_BUILD_ROOT}/boost.OSID_${OS_ID}.buildtree.Release --layout=tagged install
     )
 fi
-export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${BOOST_IT}:${IMAGE_PROCESSING_BUILD_ROOT}/boost/tools/boost_install"
+export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${BOOST_IT}"
 
 
 OPENCV_IT=${IMAGE_PROCESSING_BUILD_ROOT}/opencv.OSID_${OS_ID}.installtree.Release
