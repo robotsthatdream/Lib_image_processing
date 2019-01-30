@@ -29,5 +29,5 @@ MY_EXTRA_ARGS="-j$MAX_PARALLEL_JOBS_REQUESTED"
     echo "Args: $@"
 } | tee -a compilation_memory_use.log >&2
 
-exec /usr/bin/time --format='%M' --append --output=compilation_memory_use.log "$MY_EXTRA_ARGS" "$@"
+exec /usr/bin/time --format='%M' --append --output=compilation_memory_use.log "$@" "$MY_EXTRA_ARGS"
 #-k ${BUILD_MAX_PARALLEL_PROCESSES:-${PROCESSOR_COUNT}} "$@"
