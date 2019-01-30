@@ -106,12 +106,53 @@ else
     (
         if [[ ! -d boost ]]
         then
-            git clone --depth=1 --branch=boost-1.69.0 https://github.com/boostorg/boost
+            git clone --depth=1 --single-branch --branch=feature/cmake-config https://github.com/boostorg/boost
         fi
 
-
         cd boost
-        git submodule update --init -- tools/build libs/config libs/system libs/assert libs/range libs/serialization libs/filesystem libs/algorithm libs/random libs/math
+        git submodule update --init -- \
+            libs/algorithm \
+            libs/array \
+            libs/assert \
+            libs/atomic \
+            libs/bind \
+            libs/concept_check \
+            libs/config \
+            libs/container \
+            libs/container_hash \
+            libs/core \
+            libs/detail \
+            libs/filesystem \
+            libs/function \
+            libs/fusion \
+            libs/integer \
+            libs/intrusive \
+            libs/io \
+            libs/iterator \
+            libs/lexical_cast \
+            libs/math \
+            libs/move \
+            libs/mpl \
+            libs/numeric \
+            libs/optional \
+            libs/predef \
+            libs/preprocessor \
+            libs/random \
+            libs/range \
+            libs/serialization \
+            libs/smart_ptr \
+            libs/spirit \
+            libs/static_assert \
+            libs/system \
+            libs/throw_exception \
+            libs/type_index \
+            libs/type_traits \
+            libs/typeof \
+            libs/utility \
+            tools/build \
+            tools/boost_install \
+            tools/boostdep \
+            
 
         export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
 
