@@ -60,7 +60,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   add_compile_options("-Wextra")
   add_compile_options("-Wno-vla")
   add_compile_options("-Wno-reorder")
-  add_compile_options("-Werror")
+#  add_compile_options("-Werror") This is nice in theory, but there are some warnings that can't be avoided, including breaking changes.
   add_compile_options("-Wno-unused-parameter")
 endif ()
 
