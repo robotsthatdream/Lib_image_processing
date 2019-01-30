@@ -112,44 +112,71 @@ else
         cd boost
         git submodule update --init -- \
             libs/algorithm \
+            libs/any \
             libs/array \
             libs/assert \
             libs/atomic \
             libs/bind \
+            libs/chrono \
             libs/concept_check \
             libs/config \
             libs/container \
             libs/container_hash \
+            libs/conversion \
             libs/core \
+            libs/date_time \
             libs/detail \
+            libs/dynamic_bitset \
+            libs/exception \
             libs/filesystem \
+            libs/foreach \
             libs/function \
+            libs/functional \
             libs/fusion \
+            libs/graph \
             libs/headers \
             libs/integer \
+            libs/interprocess \
             libs/intrusive \
             libs/io \
+            libs/iostreams \
             libs/iterator \
             libs/lexical_cast \
             libs/math \
             libs/move \
             libs/mpl \
+            libs/multi_array \
+            libs/multi_index \
             libs/numeric \
             libs/optional \
+            libs/parameter \
             libs/predef \
             libs/preprocessor \
+            libs/property_map \
+            libs/property_tree \
+            libs/proto \
+            libs/ptr_container \
             libs/random \
             libs/range \
+            libs/ratio \
+            libs/regex \
             libs/serialization \
+            libs/signals2 \
             libs/smart_ptr \
             libs/spirit \
             libs/static_assert \
             libs/system \
+            libs/thread \
             libs/throw_exception \
+            libs/tokenizer \
+            libs/tti \
+            libs/tuple \
             libs/type_index \
             libs/type_traits \
             libs/typeof \
-            libs/utility \
+            libs/unordered \
+            libs/xpressive \
+            libs/variant \
             tools/boost_install \
             tools/boostdep \
             tools/build \
