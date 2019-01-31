@@ -1,5 +1,4 @@
 #include <boost/assert.hpp>
-#include <boost/range/adaptor/indexed.hpp>
 #include <forward_list>
 #include <iostream>
 #include <pcl/common/transforms.h>
@@ -1088,14 +1087,14 @@ int main(int argc, char **argv) {
             // SupervoxelArray;
 
             /* each object */
-            for (const auto &obj_hyp :
-                 obj_hypotheses | boost::adaptors::indexed(0)) {
+            for (int obj_index_i; obj_index_i < obj_hypotheses.size();
+                 obj_index_i++)
+            {
+                std::string obj_index_i_s = std::to_string(obj_index_i);
+                std::set<uint32_t> *p_obj_hyp = &(obj_hypotheses[obj_index_i]);
 
-                std::string obj_index_i_s = std::to_string(obj_hyp.index());
                 FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
                     "Considering obj hypothesis id=" << obj_index_i_s);
-
-                std::set<uint32_t> *p_obj_hyp = &(obj_hyp.value());
 
                 int r = float(dist(_gen) * 85);
                 int g = float(dist(_gen) * 85);
