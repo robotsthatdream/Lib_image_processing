@@ -98,7 +98,7 @@ public:
     template <typename classifier_t>
     bool generate(const std::string &modality, classifier_t& classifier, workspace_t& workspace, float init_val = 1.){
         if(!computeSupervoxel(workspace))
-        return false;
+            return false;
 
         init_weights(modality,classifier.get_nbr_class(),init_val);
         compute_weights(modality, classifier);
@@ -135,7 +135,7 @@ public:
      * @param interest true if the explored supervoxel is interesting false otherwise
      */
     template <typename classifier_t>
-    void compute_weights(const std::string& modality, classifier_t &classifier){
+    void compute_weights(const std::string& modality, const classifier_t &classifier){
 
 
         if(_features.begin()->second.find(modality) == _features.begin()->second.end()){
@@ -164,26 +164,69 @@ public:
 
     }
 
+
+    /**
+     * @brief variant of compute weights with composition of classifiers
+     * @param modality
+     * @param classifier
+     * @param comp_classifier
+     */
+    template <typename classifier_t>
+    void compute_weights(const std::string& modality, const classifier_t &classifier,
+                         const classifier_t &comp_classifier){
+
+
+        if(_features.begin()->second.find(modality) == _features.begin()->second.end()){
+            std::cerr << "SurfaceOfInterest Error: unknow modality : " << modality << std::endl;
+            return;
+        }
+
+        if(_weights.find(modality) != _weights.end())
+            _weights[modality].clear();
+        else
+            _weights[modality] = relevance_map_t();
+
+        std::vector<uint32_t> lbls;
+        for(const auto& sv : _supervoxels){
+            lbls.push_back(sv.first);
+            _weights[modality].emplace(sv.first,std::vector<double>(classifier.get_nbr_class(),0.5));
+        }
+
+
+        tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
+                          [&](const tbb::blocked_range<size_t>& r){
+            for(size_t i = r.begin(); i != r.end(); ++i){
+                std::vector<double> comp_est = comp_classifier.compute_estimation(
+                            _features[lbls[i]][modality]);
+                std::vector<double> estimations = classifier.compute_estimation(
+                            _features[lbls[i]][modality]);
+                for(int k = 0; k < estimations.size(); k++)
+                    estimations[k] = comp_est[k]*estimations[k];
+                _weights[modality][lbls[i]] = estimations;
+            }
+        });
+    }
+
     template<typename classifier_t>
     void compute_weights(classifier_t classifier){
 
-            if(_weights.find("merge") != _weights.end())
-                _weights["merge"].clear();
-            else
-                _weights["merge"] = relevance_map_t();
+        if(_weights.find("merge") != _weights.end())
+            _weights["merge"].clear();
+        else
+            _weights["merge"] = relevance_map_t();
 
-            std::vector<uint32_t> lbls;
-            for(const auto& sv : _supervoxels){
-                lbls.push_back(sv.first);
-                _weights["merge"].emplace(sv.first,std::vector<double>(classifier.get_nbr_class(),0));
+        std::vector<uint32_t> lbls;
+        for(const auto& sv : _supervoxels){
+            lbls.push_back(sv.first);
+            _weights["merge"].emplace(sv.first,std::vector<double>(classifier.get_nbr_class(),0));
+        }
+        tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
+                          [&](const tbb::blocked_range<size_t>& r){
+            for(size_t i = r.begin(); i != r.end(); ++i){
+                _weights["merge"][lbls[i]] = classifier.compute_estimation(
+                            _features[lbls[i]]);
             }
-            tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
-                              [&](const tbb::blocked_range<size_t>& r){
-                for(size_t i = r.begin(); i != r.end(); ++i){
-                    _weights["merge"][lbls[i]] = classifier.compute_estimation(
-                                _features[lbls[i]]);
-                }
-            });
+        });
 
     }
 
@@ -204,10 +247,10 @@ public:
 
             for(const auto& sv : _supervoxels){
                 _weights[classi.first].emplace(sv.first,
-                                           classi.second.compute_estimation(_features[sv.first][classi.first]));
+                                               classi.second.compute_estimation(_features[sv.first][classi.first]));
             }
         }
-  	}
+    }
 
     /**
      * @brief choose randomly one soi
