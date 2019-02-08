@@ -99,6 +99,18 @@ function compute_OS_ID()
 
 compute_OS_ID
 
+if pkg-config --exists opencv
+then
+    echo "Global OpenCV found, using it."
+    BUILD_SPECIFIC_OPENCV=${FORCE_BUILDING_SPECIFIC_OPENCV:-false}
+else
+    echo "No global OpenCV found, will compile one."
+    BUILD_SPECIFIC_OPENCV=true
+fi
+
+if [[ "${BUILD_SPECIFIC_OPENCV:-false}" = "true" ]]
+then
+
 OPENCV_IT=${IMAGE_PROCESSING_BUILD_ROOT}/opencv.OSID_${OS_ID}.installtree.Release
 if [[ -d "${OPENCV_IT}" ]]
 then
@@ -139,6 +151,8 @@ else
     )
 fi
 export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${OPENCV_IT}"
+
+fi
 
 PCL_IT=${IMAGE_PROCESSING_BUILD_ROOT}/pcl.OSID_${OS_ID}.installtree.Release
 if [[ -d "${PCL_IT}" ]]
