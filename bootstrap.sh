@@ -111,46 +111,46 @@ fi
 if [[ "${BUILD_SPECIFIC_OPENCV:-false}" = "true" ]]
 then
 
-OPENCV_IT=${IMAGE_PROCESSING_BUILD_ROOT}/opencv.OSID_${OS_ID}.installtree.Release
-if [[ -d "${OPENCV_IT}" ]]
-then
-    echo "OpenCV already in $OPENCV_IT"
-else
-    (
-        if [[ ! -d opencv ]]
-        then
-            git clone --branch 3.4.3 https://github.com/opencv/opencv/
-        fi
+    OPENCV_IT=${IMAGE_PROCESSING_BUILD_ROOT}/opencv.OSID_${OS_ID}.installtree.Release
+    if [[ -d "${OPENCV_IT}" ]]
+    then
+        echo "OpenCV already in $OPENCV_IT"
+    else
+        (
+            if [[ ! -d opencv ]]
+            then
+                git clone --branch 3.4.3 https://github.com/opencv/opencv/
+            fi
 
-        cd opencv
-        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
-        cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
-                                   -D CMAKE_BUILD_TYPE:STRING=Release \
-                                   -D BUILD_JAVA:BOOL=OFF \
-                                   -D BUILD_PACKAGE:BOOL=OFF \
-                                   -D BUILD_PERF_TESTS:BOOL=OFF \
-                                   -D BUILD_PROTOBUF:BOOL=OFF \
-                                   -D BUILD_opencv_apps:BOOL=OFF \
-                                   -D BUILD_opencv_calib3d:BOOL=OFF \
-                                   -D BUILD_opencv_dnn:BOOL=OFF \
-                                   -D BUILD_opencv_java:BOOL=OFF \
-                                   -D BUILD_opencv_java_bindings_generator:BOOL=OFF \
-                                   -D BUILD_opencv_ml:BOOL=OFF \
-                                   -D BUILD_opencv_python2:BOOL=OFF \
-                                   -D BUILD_opencv_python_bindings_generator:BOOL=OFF \
-                                   -D CMAKE_SKIP_INSTALL_RPATH:BOOL=OFF \
-                                   -D CMAKE_SKIP_RPATH:BOOL=OFF \
-                                   -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
-                                   -D ENABLE_CXX11:BOOL=ON \
-                                   -D ENABLE_FAST_MATH:BOOL=ON \
-                                   -D WITH_1394:BOOL=OFF \
-                                   -D WITH_PROTOBUF:BOOL=OFF
-#        FIXME protobuf
-        cd ${IMAGE_PROCESSING_BUILD_ROOT}/opencv.OSID_${OS_ID}.buildtree.Release
-        time cmake --build . -- install
-    )
-fi
-export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${OPENCV_IT}"
+            cd opencv
+            export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
+            cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
+                                       -D CMAKE_BUILD_TYPE:STRING=Release \
+                                       -D BUILD_JAVA:BOOL=OFF \
+                                       -D BUILD_PACKAGE:BOOL=OFF \
+                                       -D BUILD_PERF_TESTS:BOOL=OFF \
+                                       -D BUILD_PROTOBUF:BOOL=OFF \
+                                       -D BUILD_opencv_apps:BOOL=OFF \
+                                       -D BUILD_opencv_calib3d:BOOL=OFF \
+                                       -D BUILD_opencv_dnn:BOOL=OFF \
+                                       -D BUILD_opencv_java:BOOL=OFF \
+                                       -D BUILD_opencv_java_bindings_generator:BOOL=OFF \
+                                       -D BUILD_opencv_ml:BOOL=OFF \
+                                       -D BUILD_opencv_python2:BOOL=OFF \
+                                       -D BUILD_opencv_python_bindings_generator:BOOL=OFF \
+                                       -D CMAKE_SKIP_INSTALL_RPATH:BOOL=OFF \
+                                       -D CMAKE_SKIP_RPATH:BOOL=OFF \
+                                       -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
+                                       -D ENABLE_CXX11:BOOL=ON \
+                                       -D ENABLE_FAST_MATH:BOOL=ON \
+                                       -D WITH_1394:BOOL=OFF \
+                                       -D WITH_PROTOBUF:BOOL=OFF
+            #        FIXME protobuf
+            cd ${IMAGE_PROCESSING_BUILD_ROOT}/opencv.OSID_${OS_ID}.buildtree.Release
+            time cmake --build . -- install
+        )
+    fi
+    export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${OPENCV_IT}"
 
 fi
 
