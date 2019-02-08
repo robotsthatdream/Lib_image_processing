@@ -465,13 +465,12 @@ pcl::PointXYZ SupervoxelSet::globalPosition(){
 }
 
 void SupervoxelSet::init_features(){
+    _features.clear();
     for(const auto& sv : _supervoxels)
         _features.emplace(sv.first,std::map<std::string,Eigen::VectorXd>());
 }
 
 void SupervoxelSet::compute_feature(const std::string& name){
-    _features.clear();
-    init_features();
     features_fct::fct_map.at(name)(_supervoxels, _adjacency_map, _features);
 }
 

@@ -157,6 +157,7 @@ public:
         tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
                           [&](const tbb::blocked_range<size_t>& r){
             for(size_t i = r.begin(); i != r.end(); ++i){
+                //        for(size_t i = 0; i != lbls.size(); ++i){
                 _weights[modality][lbls[i]] = classifier.compute_estimation(
                             _features[lbls[i]][modality]);
             }
@@ -196,6 +197,8 @@ public:
         tbb::parallel_for(tbb::blocked_range<size_t>(0,lbls.size()),
                           [&](const tbb::blocked_range<size_t>& r){
             for(size_t i = r.begin(); i != r.end(); ++i){
+                //        for(size_t i = 0; i != lbls.size(); ++i){
+
                 std::vector<double> comp_est = comp_classifier.compute_estimation(
                             _features[lbls[i]][modality]);
                 std::vector<double> estimations = classifier.compute_estimation(
