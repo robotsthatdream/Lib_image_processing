@@ -198,7 +198,7 @@ else(
     cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                -DCMAKE_BUILD_TYPE=${IAGMM_BUILD_TYPE} \
 
-    cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.${IAGMM_BUILD_TYPE}
+                               cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.${IAGMM_BUILD_TYPE}
     time cmake --build . -- install
 )
 fi
@@ -212,10 +212,10 @@ if [[ -d "${IMAGE_PROCESSING_IT}" ]]
 then
     echo "Image_Processing already in $IMAGE_PROCESSING_IT"
 else(
-#    if [[ ! -d image_processing ]]
-#    then
-#        git clone https://github.com/robotsthatdream/Lib_image_processing image_processing
-#    fi
+    #    if [[ ! -d image_processing ]]
+    #    then
+    #        git clone https://github.com/robotsthatdream/Lib_image_processing image_processing
+    #    fi
 
     cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
     export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
@@ -224,7 +224,7 @@ else(
                                -DIAGMM_INSTALL_TREE:STRING="${IAGMM_IT}" \
 
 
-    cd ${IMAGE_PROCESSING_SOURCE_ROOT}.OSID_${OS_ID}.buildtree.${IMAGE_PROCESSING_BUILD_TYPE}
+                               cd ${IMAGE_PROCESSING_SOURCE_ROOT}.OSID_${OS_ID}.buildtree.${IMAGE_PROCESSING_BUILD_TYPE}
     time cmake --build . -- install
 )
 fi
