@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
         std::cerr << "Unable to open archive : " << gmm_archive << std::endl;
         return 1;
     }
-    cmm::GMM gmm;
+    cmm::CollabMM gmm;
     boost::archive::text_iarchive iarch(ifs);
     iarch >> gmm;
     //*/
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     soi.compute_feature("meanFPFHLabHist");
     std::cout << "computed meanFPFHLabHist" << std::endl;
     std::cout << "computing meanFPFHLabHist weights" << std::endl;
-    soi.compute_weights<cmm::GMM>("meanFPFHLabHist", gmm);
+    soi.compute_weights<cmm::CollabMM>("meanFPFHLabHist", gmm);
     std::cout << "computed meanFPFHLabHist weights" << std::endl;
     //*/
 
