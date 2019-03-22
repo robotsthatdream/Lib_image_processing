@@ -32,23 +32,23 @@ find_package(VTK REQUIRED)
 
 include(CMake/FindTBB.cmake)
 
-SET(IAGMM_INSTALL_TREE FALSE CACHE STRING "Path to IAGMM.")
+SET(CMM_INSTALL_TREE FALSE CACHE STRING "Path to CMM.")
 
-if(NOT IAGMM_INSTALL_TREE)
-  message(SEND_ERROR "Please tell me where to find a compiled IAGMM.  For example: 
-      cmake -DIAGMM_INSTALL_TREE=/path/to/iagmm.installtree/ .
+if(NOT CMM_INSTALL_TREE)
+  message(SEND_ERROR "Please tell me where to find a compiled CMM.  For example:
+      cmake -DCMM_INSTALL_TREE=/path/to/cmm.installtree/ .
 Then you can run again.")
-endif(NOT IAGMM_INSTALL_TREE)
+endif(NOT CMM_INSTALL_TREE)
 
-add_library(iagmm SHARED IMPORTED)
-set_property(TARGET iagmm PROPERTY IMPORTED_LOCATION "${IAGMM_INSTALL_TREE}/lib/libiagmm.so" )
-# The /lib/libiagmm.so above could be further cleaned up.
+add_library(cmm SHARED IMPORTED)
+set_property(TARGET cmm PROPERTY IMPORTED_LOCATION "${CMM_INSTALL_TREE}/lib/libcmm.so" )
+# The /lib/libcmm.so above could be further cleaned up.
 
 
-# # find_library(IAGMM_LIBRARY iagmm)
-# find_package(iagmm)
+# # find_library(CMM_LIBRARY cmm)
+# find_package(cmm)
 
-include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS} "${IAGMM_INSTALL_TREE}/include" )
+include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS} "${CMM_INSTALL_TREE}/include" )
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 
@@ -89,4 +89,4 @@ install(TARGETS ${PROJECT_NAME}
 #target_link_libraries(color_hist_supervoxel  image_processing ${OpenCV_LIBRARIES})
 
 add_executable(test_object_hyp test/test_object_hyp.cpp)
-target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb)
+target_link_libraries(test_object_hyp  image_processing cmm ${CMM_Lib_LIBRARIES} tbb)

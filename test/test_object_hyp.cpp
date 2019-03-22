@@ -11,7 +11,7 @@
 
 #include "../include/image_processing/SurfaceOfInterest.h"
 #include <boost/archive/text_iarchive.hpp>
-#include <iagmm/gmm.hpp>
+#include <cmm/gmm.hpp>
 
 namespace ip = image_processing;
 
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
         std::cerr << "Unable to open archive : " << gmm_archive << std::endl;
         return 1;
     }
-    iagmm::GMM gmm;
+    cmm::GMM gmm;
     boost::archive::text_iarchive iarch(ifs);
     iarch >> gmm;
     //*/
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     soi.compute_feature("meanFPFHLabHist");
     std::cout << "computed meanFPFHLabHist" << std::endl;
     std::cout << "computing meanFPFHLabHist weights" << std::endl;
-    soi.compute_weights<iagmm::GMM>("meanFPFHLabHist", gmm);
+    soi.compute_weights<cmm::GMM>("meanFPFHLabHist", gmm);
     std::cout << "computed meanFPFHLabHist weights" << std::endl;
     //*/
 
