@@ -89,4 +89,4 @@ install(TARGETS ${PROJECT_NAME}
 #target_link_libraries(color_hist_supervoxel  image_processing ${OpenCV_LIBRARIES})
 
 add_executable(test_object_hyp test/test_object_hyp.cpp)
-target_link_libraries(test_object_hyp  image_processing cmm ${CMM_Lib_LIBRARIES} tbb)
+target_link_libraries(test_object_hyp  image_processing cmm tbb)
