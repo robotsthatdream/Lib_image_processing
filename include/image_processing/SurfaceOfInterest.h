@@ -211,6 +211,10 @@ public:
     }
 
     template<typename classifier_t>
+    /**
+     * @brief compute weights for multi-classifier system
+     * @param multiclassifier system
+     */
     void compute_weights(classifier_t classifier){
 
         if(_weights.find("merge") != _weights.end())
@@ -234,6 +238,10 @@ public:
     }
 
     template <typename classifier_t>
+    /**
+     * @brief compute weights for a list of classifier each specific to one kind of feature
+     * @param classifier associated with a feature.
+     */
     void compute_weights(std::map<std::string,classifier_t>& classifiers){
         for(auto& classi: classifiers)
         {
@@ -289,12 +297,28 @@ public:
      */
     std::map<std::string,relevance_map_t> get_weights(){return _weights;}
 
-    
-
-
+    /**
+     * @brief neighbor bluring propagate weights of each supervoxels to its neighbor. Experimental function.
+     * @param modality
+     * @param constant of incrementation or decrementation to modify the weights of the neighbprs
+     * @param label of the considered class
+     */
     void neighbor_bluring(const std::string& modality, double cst, int lbl);
+
+    /**
+     * @brief produce a binary map based on an adpative threshold thanks to neighborhood. Experimental function.
+     * @param feature considered
+     * @param label of the considered class
+     */
     void adaptive_threshold(const std::string& modality, int lbl);
+
+    /**
+     * @brief compute a average relevance map based on several relevance maps
+     * @param list of relevance maps
+     * @return
+     */
     pcl::PointCloud<pcl::PointXYZI> cumulative_relevance_map(std::vector<pcl::PointCloud<pcl::PointXYZI>> list_weights);
+
     /**
      * @brief compute regions of salient supervoxels for the given modality and threshold
      * @param modality
