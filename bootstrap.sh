@@ -167,27 +167,27 @@ else
 fi
 export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${PCL_IT}"
 
-IAGMM_IT=${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.installtree.Release
-if [[ -d "${IAGMM_IT}" ]]
+CMM_IT=${IMAGE_PROCESSING_BUILD_ROOT}/CMM_Lib.OSID_${OS_ID}.installtree.Release
+if [[ -d "${CMM_IT}" ]]
 then
-    echo "IAGMM_Lib already in $IAGMM_IT"
+    echo "CMM_Lib already in $CMM_IT"
 else(
-    if [[ ! -d IAGMM_Lib ]]
+    if [[ ! -d CMM_Lib ]]
     then
-        git clone https://github.com/robotsthatdream/IAGMM_Lib
+        git clone https://github.com/robotsthatdream/CMM_Lib
     fi
 
-    cd IAGMM_Lib
+    cd CMM_Lib
     export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
     cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                -DCMAKE_BUILD_TYPE=Release \
 
-    cd ${IMAGE_PROCESSING_BUILD_ROOT}/IAGMM_Lib.OSID_${OS_ID}.buildtree.Release
+    cd ${IMAGE_PROCESSING_BUILD_ROOT}/CMM_Lib.OSID_${OS_ID}.buildtree.Release
     time cmake --build . -- install
 )
 fi
 
-#export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${IAGMM_IT}"
+#export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${CMM_IT}"
 
 IMAGE_PROCESSING_BUILD_TYPE=Debug
 
@@ -205,7 +205,7 @@ else(
     export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
     cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                -DCMAKE_BUILD_TYPE=${IMAGE_PROCESSING_BUILD_TYPE} \
-                               -DIAGMM_INSTALL_TREE:STRING="${IAGMM_IT}" \
+                               -DCMM_INSTALL_TREE:STRING="${CMM_IT}" \
 
 
     cd ${IMAGE_PROCESSING_SOURCE_ROOT}.OSID_${OS_ID}.buildtree.${IMAGE_PROCESSING_BUILD_TYPE}

@@ -22,6 +22,7 @@
 
 namespace image_processing {
 
+
 typedef struct workspace_t{
 
     struct sphere_t{
@@ -78,12 +79,25 @@ public :
     typedef const std::shared_ptr<SupervoxelSet> ConstPtr;
     typedef std::map<uint32_t,std::map<std::string,Eigen::VectorXd>> features_t;
 
+    /**
+     * @brief default constructor
+     */
     SupervoxelSet(){
         init<supervoxel>();
     }
+
+    /**
+     * @brief basic constructor from an inputcloud
+     * @param input cloud
+     */
     SupervoxelSet(const PointCloudT::Ptr& cloud) : _inputCloud(cloud){
         init<supervoxel>();
     }
+
+    /**
+     * @brief copy constructor
+     * @param super
+     */
     SupervoxelSet(const SupervoxelSet& super) :
         _inputCloud(super._inputCloud),
         _supervoxels(super._supervoxels),
@@ -92,6 +106,9 @@ public :
         _cam_param(super._cam_param){}
 
     template <typename Param>
+    /**
+     * @brief initialize the exctractor of supervoxels a set the parameters
+     */
     void init(){
         _extractor.reset(new pcl::SupervoxelClustering<PointT>(Param::voxel_resolution,Param::seed_resolution));
         _extractor->setColorImportance(Param::color_importance);

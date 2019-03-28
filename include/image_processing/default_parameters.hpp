@@ -5,6 +5,10 @@ namespace image_processing {
 
 namespace parameters{
 
+    /**
+     * @brief parameters for supervoxels segmentation and intrisic parameter of the camera.
+     * This parameters are default ones. Replace by desired values
+     */
     struct supervoxel{
         static constexpr bool use_transform = false;
         static constexpr float voxel_resolution = 0.005f;
