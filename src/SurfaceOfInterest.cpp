@@ -112,9 +112,11 @@ void SurfaceOfInterest::init_weights(const std::string& modality, int nbr_class,
     }
 }
 
-void SurfaceOfInterest::reduce_to_soi(){
-    for(int i = 0; i < _labels_no_soi.size(); i++){
-        remove(_labels_no_soi[i]);
+void SurfaceOfInterest::reduce_to_soi(const std::string& modality, double threshold, int cat){
+
+    for(const auto& w : _weights[modality]){
+        if(w.second[cat] < threshold)
+            remove(w.first);
     }
 }
 
@@ -125,14 +127,14 @@ bool SurfaceOfInterest::choice_of_soi(const std::string& modality, pcl::Supervox
     float val = 0.f;
     float total_w = 0.f;
     for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++)
-        total_w += it->second[lbl];
+        total_w += it->second[1];
 
     if(total_w == 0)
         return false;
 
 
     for(auto it = _weights[modality].begin(); it != _weights[modality].end(); it++){
-        val+=it->second[lbl]/(total_w/**_weights[modality].size()*/);
+        val+=it->second[1]/(total_w/**_weights[modality].size()*/);
         soi_dist.emplace(val,it->first);
     }
     //*/

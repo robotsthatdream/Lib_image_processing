@@ -34,11 +34,15 @@ inline std::ostream& operator<<(std::ostream& os, const SvFeature& feature){
     return os;
 }
 
+/**
+ * @brief class to build a relevance map : which is a segmentation between different categories.
+ */
 class SurfaceOfInterest : public SupervoxelSet
 {
 public:
 
     typedef std::map<uint32_t,std::vector<double>> relevance_map_t;
+    /**< map of probabilities associate to each supervoxel (key sv label). Value : vector of probabilities. The size is equal to the number of class */
 
     /**
      * @brief default constructor
@@ -122,9 +126,12 @@ public:
     bool generate(const PointCloudT::Ptr background, workspace_t& workspace);
 
     /**
-     * @brief reduce the set of supervoxels to set of soi
+     * @brief reduce the set of supervoxels to set of surface of interest. Only supervoxels with weight above certain threshold
+     * @param modality
+     * @param threshold
+     * @param cat
      */
-    void reduce_to_soi();
+    void reduce_to_soi(const std::string &modality, double threshold = 0.5,int cat = 1);
 
     void init_weights(const std::string& modality,int nbr_class, float value = 1.);
 
