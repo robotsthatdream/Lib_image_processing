@@ -483,6 +483,12 @@ void FloatTest() {
 
 static const float fit_control_epsilon = 0.01;
 
+/**
+   This method generates a number of varied parameter sets (trying
+   first vanilla parameters then changing each dimensions in turn),
+   turns them into point clouds, and checks that the generated point
+   cloud fits precisely the parameter.
+ */
 void SuperEllipsoidTestEachDimensionForMisbehavior(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype) {
     FSG_TRACE_THIS_FUNCTION();
