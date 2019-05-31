@@ -853,6 +853,8 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
     values[2] = centervalue;
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+
+        /* First check that gradient itself is good. */
         for (int step = -2; step <= 2; step++) {
             if (step == 0) {
                 continue;
@@ -883,18 +885,44 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
                                << values[2] << "  , " << values[3] << ", "
                                << values[4] << "]");
 
-        if (values[0] < values[1]) {
-            FSG_LOG_MSG("FAIL: bad gradient lower side on dimension "
+        {
+            int failures=0;
+            if (values[0] < values[1]) {
+                FSG_LOG_MSG("FAIL: bad gradient lower side on dimension "
+                            << dimension_shift << " values " << values << " params "
+                            << superellipsoidparameters_center);
+                failures++;
+            }
+
+            if (values[3] > values[4]) {
+                FSG_LOG_MSG("FAIL: bad gradient higher side on dimension "
+                            << dimension_shift << " values " << values << " params "
+                            << superellipsoidparameters_center);
+                failures++;
+            }
+
+            if (values[2] > values[1]) {
+                FSG_LOG_MSG("FAIL: bad gradient center higher than left on dimension "
+                            << dimension_shift << " values " << values << " params "
+                            << superellipsoidparameters_center);
+                failures++;
+            }
+
+            if (values[2] > values[3]) {
+                FSG_LOG_MSG("FAIL: bad gradient center higher than right on dimension "
+                            << dimension_shift << " values " << values << " params "
+                            << superellipsoidparameters_center);
+                failures++;
+            }
+        }
+
+        if (failures==0)
+        {
+            FSG_LOG_MSG("Good gradient on dimension "
                         << dimension_shift << " values " << values << " params "
                         << superellipsoidparameters_center);
         }
-
-        if (values[2] > values[3]) {
-            FSG_LOG_MSG("FAIL: bad gradient higher side on dimension "
-                        << dimension_shift << " values " << values << " params "
-                        << superellipsoidparameters_center);
-        }
-
+        
         fsg::SuperEllipsoidParameters superellipsoidparameters_fit =
             superellipsoidparameters_center;
 
