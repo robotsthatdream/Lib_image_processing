@@ -1021,10 +1021,13 @@ void SuperEllipsoidTest() {
             superellipsoidparameters_prototype);
     }
 
-    boost::random::minstd_rand _gen;
-    for (int i = 0; i < 100; i++) {
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("Fitting random " << i);
-        SuperEllipsoidFitARandomSQ(_gen);
+    {
+        boost::random::minstd_rand _gen;
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("100 times SuperEllipsoidFitARandomSQ");
+        for (int i = 0; i < 100; i++) {
+            FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("Fitting random " << i);
+            SuperEllipsoidFitARandomSQ(_gen);
+        }
     }
 }
 
