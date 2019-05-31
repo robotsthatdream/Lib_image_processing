@@ -684,7 +684,7 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     UpperBounds << 3,3,3, 1,1,1, M_PI, M_PI_2, M_PI_2, 1, 1;
 
     FSG_LOG_VAR(UpperBounds);
-    
+
     libcmaes::CMAParameters<> cmaparams(
         fittingContext.coeff,
         OptimizationStepSize, -1,
