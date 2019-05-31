@@ -637,11 +637,34 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     OptimizationFunctor functor(*cloud_xyz, indices);
 
-    libcmaes::FitFunc cmaes_fit_func = [](const double *x, const int N) {
-        double val = 0.0;
+
+    libcmaes::FitFunc cmaes_fit_func = [&functor, &cloud_xyz](const double *x, const int N) {
+        fsg::SuperEllipsoidParameters cmaes_eval_params;
+
+        //FSG_LOG_VAR(N);
+
+        if (N != fsg::SuperEllipsoidParameters::fieldCount)
+        {
+            FSG_LOG_MSG("Mismatch field/vector count: " << fsg::SuperEllipsoidParameters::fieldCount << " vs. " << N);
+            exit(1);
+        }
+
         for (int i = 0; i < N; i++)
-            val += x[i] * x[i];
-        return val;
+        {
+            cmaes_eval_params.coeff(i) = x[i];
+        }
+
+        //FSG_LOG_VAR(cmaes_eval_params);
+
+        Eigen::VectorXf deviation(cloud_xyz->size());
+
+        functor(cmaes_eval_params.coeff, deviation);
+
+        double deviation_sum_of_squares = deviation.norm();
+
+        //FSG_LOG_VAR(deviation_sum_of_squares);
+
+        return deviation_sum_of_squares;
     };
 
     Eigen::VectorXd OptimizationStepSize(
