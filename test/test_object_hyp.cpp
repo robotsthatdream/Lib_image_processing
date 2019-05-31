@@ -914,15 +914,15 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
                             << superellipsoidparameters_center);
                 failures++;
             }
+
+            if (failures==0)
+            {
+                FSG_LOG_MSG("Good gradient on dimension "
+                            << dimension_shift << " values " << values << " params "
+                            << superellipsoidparameters_center);
+            }
         }
 
-        if (failures==0)
-        {
-            FSG_LOG_MSG("Good gradient on dimension "
-                        << dimension_shift << " values " << values << " params "
-                        << superellipsoidparameters_center);
-        }
-        
         fsg::SuperEllipsoidParameters superellipsoidparameters_fit =
             superellipsoidparameters_center;
 
