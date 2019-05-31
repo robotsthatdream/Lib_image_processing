@@ -589,14 +589,14 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>, float>
         lm(num_diff);
     Eigen::LevenbergMarquardtSpace::Status minimizationResult;
-    
+
     {
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
             "Eigen::LevenbergMarquardt::minimize()");
         Eigen::VectorXd coeff_d = fittingContext.coeff;
         Eigen::VectorXf coeff_f = coeff_d.cast<float>();
         Eigen::VectorXf foo;
-        
+
         minimizationResult = (Eigen::LevenbergMarquardtSpace::Status)0; // lm.minimize(coeff_f);
     }
 
