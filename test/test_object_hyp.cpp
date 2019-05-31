@@ -575,6 +575,7 @@ void SuperEllipsoidTestComputeGradient(
 bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext) {
+    FSG_TRACE_THIS_FUNCTION();
     fsg::SuperEllipsoidParameters initialEstimate = fittingContext;
 
     FSG_LOG_MSG("Initial estimate : " << initialEstimate);
@@ -620,6 +621,7 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
 bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext) {
+    FSG_TRACE_THIS_FUNCTION();
     fsg::SuperEllipsoidParameters initialEstimate = fittingContext;
 
     FSG_LOG_MSG("Initial estimate : " << initialEstimate);
