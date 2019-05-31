@@ -923,11 +923,19 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
             }
         }
 
+        /** Assuming that the gradient is good, we provide to the
+         * optimizer the actual point cloud and an estimate which is
+         * perfect for all dimensions except the one we just tested
+         * the gradient on.  Unless the optimizer is *really* broken,
+         * it should easily find the parameters.
+         */
+
         fsg::SuperEllipsoidParameters superellipsoidparameters_fit =
             superellipsoidparameters_center;
 
         superellipsoidparameters_fit.coeff(dimension_shift) += epsilon;
 
+        /* execute the optimization */
         bool success = pointCloudToFittingContextWithInitialEstimate(
             pointCloud, superellipsoidparameters_fit);
 
