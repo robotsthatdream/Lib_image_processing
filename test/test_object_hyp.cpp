@@ -727,6 +727,14 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     FSG_LOG_MSG("Initial estimation : " << initialEstimate);
     FSG_LOG_MSG("After minimization : " << fittingContext);
 
+    {
+        /* Check  */
+        Eigen::VectorXf deviation(cloud_xyz->size());
+        functor(fittingContext.coeff, deviation);
+        // FSG_LOG_VAR(deviation);
+        FSG_LOG_VAR(deviation.norm());
+    }
+
     if (cma_status < 0) {
         FSG_LOG_MSG("CMAES fitting failed, with code: " << cma_status);
         return false;
