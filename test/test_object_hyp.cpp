@@ -147,6 +147,12 @@ float powf_sym(float x, float y) {
  */
 double *SuperEllipsoidParameters::coeffData() { return (this->coeff.data()); }
 
+/** This method implements the forward transformation from a
+    12-dimension model to a point cloud.
+
+    Compare with the inverse transformation implemented in `struct
+    OptimizationFunctor`.
+ */
 pcl::PointCloud<pcl::PointXYZ>::Ptr
 SuperEllipsoidParameters::toPointCloud(int steps) {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
@@ -227,6 +233,12 @@ SuperEllipsoidParameters::toPointCloud(int steps) {
 }
 } // namespace fsg
 
+/** This method implements the inverse transformation, which computes
+    from a point cloud its fitting to a candidate 12-dimension.
+
+    Compare with the forward transformation implemented in
+    `SuperEllipsoidParameters::toPointCloud`.
+ */
 struct OptimizationFunctor : pcl::Functor<float> {
     /** Functor constructor
      * \param[in] source cloud
