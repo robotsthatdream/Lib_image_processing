@@ -697,6 +697,8 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     //               const dVec &ubounds,
     //               const uint64_t &seed);
 
+    cmaparams.set_mt_feval(true); // activates the parallel evaluation
+
     libcmaes::CMASolutions cmasols =
         libcmaes::cmaes<>(cmaes_fit_func, cmaparams);
 
