@@ -1403,6 +1403,10 @@ int main(int argc, char **argv) {
                         }
                     }
                 }
+                else
+                {
+                    FSG_LOG_MSG("Fitting fail on id=" << obj_index_i_s << ".");
+                }
 
                 FSG_LOG_MSG("End new obj hyp, id=" << obj_index_i_s << ".");
             }
