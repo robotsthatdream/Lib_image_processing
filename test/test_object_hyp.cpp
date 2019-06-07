@@ -681,19 +681,19 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     Eigen::VectorXd OptimizationStepSize(
         fsg::SuperEllipsoidParameters::fieldCount);
-    OptimizationStepSize << 0.1, 0.1, 0.1,  0.1, 0.1, 0.1, 3,1.5,1.5, 0.5,0.5;
+    OptimizationStepSize << 0.1, 0.1, 0.1,  0.1, 0.1, 0.1, 3,1.5,1.5, 1,1;
 
     //FSG_LOG_VAR(OptimizationStepSize);
 
     Eigen::VectorXd LowerBounds(
         fsg::SuperEllipsoidParameters::fieldCount);
-    LowerBounds << -3,-3,-3, 0,0,0, -M_PI, -M_PI_2, -M_PI_2, 0, 0;
+    LowerBounds << -3,-3,-3, 0,0,0, -M_PI, -M_PI_2, -M_PI_2, 0.1, 0.1;
 
     //FSG_LOG_VAR(LowerBounds);
 
     Eigen::VectorXd UpperBounds(
         fsg::SuperEllipsoidParameters::fieldCount);
-    UpperBounds << 3,3,3, 1,1,1, M_PI, M_PI_2, M_PI_2, 1, 1;
+    UpperBounds << 3,3,3, 1,1,1, M_PI, M_PI_2, M_PI_2, 2, 2;
 
     //FSG_LOG_VAR(UpperBounds);
 
