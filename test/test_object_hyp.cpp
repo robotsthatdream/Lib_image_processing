@@ -906,6 +906,7 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
     values[2] = centervalue;
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("dimension shift " << dimension_shift);
 
         /* First check that gradient itself is good. */
         for (int step = -2; step <= 2; step++) {
