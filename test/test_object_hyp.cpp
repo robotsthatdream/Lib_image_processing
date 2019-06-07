@@ -855,8 +855,8 @@ bool pointCloudToFittingContext(
     fittingContext.set_rot_pitch(pitch);
     fittingContext.set_rot_roll(roll);
 
-    fittingContext.set_exp_1(0.5);
-    fittingContext.set_exp_2(0.5);
+    fittingContext.set_exp_1(1);
+    fittingContext.set_exp_2(1);
 
     return pointCloudToFittingContextWithInitialEstimate(cloud_xyz,
                                                          fittingContext);
@@ -1008,7 +1008,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     boost::random::uniform_real_distribution<> random_float_m5p5(-1, 1);
     boost::random::uniform_real_distribution<> random_float_cent_one(0.01, 1);
     boost::random::uniform_real_distribution<> random_float_mpippi(-M_PI, M_PI);
-    boost::random::uniform_real_distribution<> random_float_cent_two(0.01, 2);
+    //ost::random::uniform_real_distribution<> random_float_cent_two(1, 1);
 
     fsg::SuperEllipsoidParameters sep_groundtruth;
     sep_groundtruth.set_cen_x(random_float_m5p5(_gen));
@@ -1020,8 +1020,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     sep_groundtruth.set_rot_yaw(random_float_mpippi(_gen));
     sep_groundtruth.set_rot_pitch(random_float_mpippi(_gen));
     sep_groundtruth.set_rot_roll(random_float_mpippi(_gen));
-    sep_groundtruth.set_exp_1(random_float_cent_two(_gen));
-    sep_groundtruth.set_exp_2(random_float_cent_two(_gen));
+    sep_groundtruth.set_exp_1(1); //random_float_cent_two(_gen));
+    sep_groundtruth.set_exp_2(1); //random_float_cent_two(_gen));
 
     FSG_LOG_VAR(sep_groundtruth);
 
