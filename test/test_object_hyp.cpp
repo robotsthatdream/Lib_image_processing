@@ -756,10 +756,36 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     return true;
 }
 
+bool pointCloudToFittingContextWithInitialEstimate_both(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
+    fsg::SuperEllipsoidParameters &fittingContext) {
+
+    fsg::SuperEllipsoidParameters fittingContext_eigenlevenbergmarquardt(fittingContext);
+    bool success_eigenlevenbergmarquardt = pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(cloud_xyz, fittingContext_eigenlevenbergmarquardt);
+    fsg::SuperEllipsoidParameters fittingContext_libcmaes(fittingContext);
+    bool success_libcmaes = pointCloudToFittingContextWithInitialEstimate_LibCmaes(cloud_xyz, fittingContext_libcmaes);
+    FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both results: EigenLevenbergMarquardt=" << (success_eigenlevenbergmarquardt?"success":"failure") << "libcmaes result: " << (success_libcmaes?"success":"failure"));
+
+    if (success_eigenlevenbergmarquardt) {
+        fittingContext=fittingContext_eigenlevenbergmarquardt;
+        FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: returning EigenLevenbergMarquardt result");
+        return true;
+    }
+
+    if (success_libcmaes) {
+        fittingContext=fittingContext_libcmaes;
+        FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: returning libcmaes result");
+        return true;
+    }
+
+    FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: both failed.  Returning initial estimation.");
+    return false;
+}
+
 bool pointCloudToFittingContextWithInitialEstimate(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext) {
-    return pointCloudToFittingContextWithInitialEstimate_LibCmaes(
+    return pointCloudToFittingContextWithInitialEstimate_both(
         cloud_xyz, fittingContext);
 }
 
