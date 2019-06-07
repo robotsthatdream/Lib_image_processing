@@ -508,7 +508,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
     for (int dimension_shift = -1; dimension_shift < 11; dimension_shift++) {
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("dimension shift "
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("SuperEllipsoidTestEachDimensionForMisbehavior dimension shift "
                                           << dimension_shift);
         fsg::SuperEllipsoidParameters superellipsoidparameters =
             superellipsoidparameters_prototype;
@@ -564,7 +564,7 @@ void SuperEllipsoidTestComputeGradient(
     const float epsilon = 0.05;
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("dimension shift "
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("SuperEllipsoidTestComputeGradient dimension shift "
                                           << dimension_shift);
         fsg::SuperEllipsoidParameters superellipsoidparameters =
             superellipsoidparameters_prototype;
@@ -906,7 +906,7 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
     values[2] = centervalue;
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("dimension shift " << dimension_shift);
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("SuperEllipsoidTestEachDimensionForGradientSanity dimension shift " << dimension_shift);
 
         /* First check that gradient itself is good. */
         for (int step = -2; step <= 2; step++) {
@@ -920,9 +920,10 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
 
             superellipsoidparameters.coeff(dimension_shift) += epsilon * step;
 
-            FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
-                "dimension shift " << dimension_shift << " stepEpsilon "
-                                   << stepEpsilon);
+            // FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
+            //     "dimension shift " << dimension_shift << " stepEpsilon "
+            //                        << stepEpsilon);
+            FSG_LOG_VAR(stepEpsilon);
             FSG_LOG_VAR(superellipsoidparameters);
 
             functor(superellipsoidparameters.coeff, deviation);
@@ -972,8 +973,9 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
             if (failures==0)
             {
                 FSG_LOG_MSG("Good gradient on dimension "
-                            << dimension_shift << " values " << values << " params "
-                            << superellipsoidparameters_center);
+                            << dimension_shift << " params "
+                            << superellipsoidparameters_center
+                            << " values " << values);
             }
         }
 
