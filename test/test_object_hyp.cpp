@@ -1035,6 +1035,9 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     SuperEllipsoidTestEachDimensionForGradientSanity(sep_groundtruth,
                                                      pointCloud);
 
+    FSG_LOG_MSG("Now testing actual fit.");
+    FSG_LOG_VAR(sep_groundtruth);
+
     fsg::SuperEllipsoidParameters sep_fit;
 
     bool success = pointCloudToFittingContext(pointCloud, sep_fit, nullptr, "");
