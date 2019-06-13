@@ -764,7 +764,7 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
     bool success_eigenlevenbergmarquardt = pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(cloud_xyz, fittingContext_eigenlevenbergmarquardt);
     fsg::SuperEllipsoidParameters fittingContext_libcmaes(fittingContext);
     bool success_libcmaes = pointCloudToFittingContextWithInitialEstimate_LibCmaes(cloud_xyz, fittingContext_libcmaes);
-    FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both results: EigenLevenbergMarquardt=" << (success_eigenlevenbergmarquardt?"success":"failure") << "libcmaes result: " << (success_libcmaes?"success":"failure"));
+    FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both results: EigenLevenbergMarquardt=" << (success_eigenlevenbergmarquardt?"success":"failure") << ", libcmaes result=" << (success_libcmaes?"success":"failure"));
 
     if (success_eigenlevenbergmarquardt) {
         fittingContext=fittingContext_eigenlevenbergmarquardt;
