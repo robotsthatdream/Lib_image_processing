@@ -118,7 +118,7 @@ struct SuperEllipsoidParameters {
     pcl::PointCloud<pcl::PointXYZ>::Ptr toPointCloud(int steps);
 };
 
-    constexpr int SuperEllipsoidParameters::fieldCount;
+constexpr int SuperEllipsoidParameters::fieldCount;
 
 ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     os << "[SEFC "
@@ -508,8 +508,9 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
     for (int dimension_shift = -1; dimension_shift < 11; dimension_shift++) {
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("SuperEllipsoidTestEachDimensionForMisbehavior dimension shift "
-                                          << dimension_shift);
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
+            "SuperEllipsoidTestEachDimensionForMisbehavior dimension shift "
+            << dimension_shift);
         fsg::SuperEllipsoidParameters superellipsoidparameters =
             superellipsoidparameters_prototype;
 
@@ -564,8 +565,9 @@ void SuperEllipsoidTestComputeGradient(
     const float epsilon = 0.05;
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("SuperEllipsoidTestComputeGradient dimension shift "
-                                          << dimension_shift);
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
+            "SuperEllipsoidTestComputeGradient dimension shift "
+            << dimension_shift);
         fsg::SuperEllipsoidParameters superellipsoidparameters =
             superellipsoidparameters_prototype;
 
@@ -610,7 +612,8 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
         Eigen::VectorXf coeff_f = coeff_d.cast<float>();
         Eigen::VectorXf foo;
 
-        minimizationResult = (Eigen::LevenbergMarquardtSpace::Status)0; // lm.minimize(coeff_f);
+        minimizationResult =
+            (Eigen::LevenbergMarquardtSpace::Status)0; // lm.minimize(coeff_f);
     }
 
     Eigen::ComputationInfo ci =
@@ -649,24 +652,24 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     OptimizationFunctor functor(*cloud_xyz, indices);
 
-
-    libcmaes::FitFunc cmaes_fit_func = [&functor, &cloud_xyz](const double *x, const int N) {
+    libcmaes::FitFunc cmaes_fit_func = [&functor, &cloud_xyz](const double *x,
+                                                              const int N) {
         fsg::SuperEllipsoidParameters cmaes_eval_params;
 
-        //FSG_LOG_VAR(N);
+        // FSG_LOG_VAR(N);
 
-        if (N != fsg::SuperEllipsoidParameters::fieldCount)
-        {
-            FSG_LOG_MSG("Mismatch field/vector count: " << fsg::SuperEllipsoidParameters::fieldCount << " vs. " << N);
+        if (N != fsg::SuperEllipsoidParameters::fieldCount) {
+            FSG_LOG_MSG("Mismatch field/vector count: "
+                        << fsg::SuperEllipsoidParameters::fieldCount << " vs. "
+                        << N);
             exit(1);
         }
 
-        for (int i = 0; i < N; i++)
-        {
+        for (int i = 0; i < N; i++) {
             cmaes_eval_params.coeff(i) = x[i];
         }
 
-        //FSG_LOG_VAR(cmaes_eval_params);
+        // FSG_LOG_VAR(cmaes_eval_params);
 
         Eigen::VectorXf deviation(cloud_xyz->size());
 
@@ -674,34 +677,30 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
         double deviation_sum_of_squares = deviation.norm();
 
-        //FSG_LOG_VAR(deviation_sum_of_squares);
+        // FSG_LOG_VAR(deviation_sum_of_squares);
 
         return deviation_sum_of_squares;
     };
 
     Eigen::VectorXd OptimizationStepSize(
         fsg::SuperEllipsoidParameters::fieldCount);
-    OptimizationStepSize << 0.1, 0.1, 0.1,  0.1, 0.1, 0.1, 3,1.5,1.5, 1,1;
+    OptimizationStepSize << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 3, 1.5, 1.5, 1, 1;
 
-    //FSG_LOG_VAR(OptimizationStepSize);
+    // FSG_LOG_VAR(OptimizationStepSize);
 
-    Eigen::VectorXd LowerBounds(
-        fsg::SuperEllipsoidParameters::fieldCount);
-    LowerBounds << -3,-3,-3, 0,0,0, -M_PI, -M_PI_2, -M_PI_2, 0.1, 0.1;
+    Eigen::VectorXd LowerBounds(fsg::SuperEllipsoidParameters::fieldCount);
+    LowerBounds << -3, -3, -3, 0, 0, 0, -M_PI, -M_PI_2, -M_PI_2, 0.1, 0.1;
 
-    //FSG_LOG_VAR(LowerBounds);
+    // FSG_LOG_VAR(LowerBounds);
 
-    Eigen::VectorXd UpperBounds(
-        fsg::SuperEllipsoidParameters::fieldCount);
-    UpperBounds << 3,3,3, 1,1,1, M_PI, M_PI_2, M_PI_2, 2, 2;
+    Eigen::VectorXd UpperBounds(fsg::SuperEllipsoidParameters::fieldCount);
+    UpperBounds << 3, 3, 3, 1, 1, 1, M_PI, M_PI_2, M_PI_2, 2, 2;
 
-    //FSG_LOG_VAR(UpperBounds);
+    // FSG_LOG_VAR(UpperBounds);
 
-    libcmaes::CMAParameters<> cmaparams(
-        fittingContext.coeff,
-        OptimizationStepSize, -1,
-        LowerBounds,
-        UpperBounds, 0);
+    libcmaes::CMAParameters<> cmaparams(fittingContext.coeff,
+                                        OptimizationStepSize, -1, LowerBounds,
+                                        UpperBounds, 0);
     // CMAParameters(const dVec &x0,
     //               const dVec &sigma,
     //               const int &lambda,
@@ -725,12 +724,12 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     // https://github.com/beniz/libcmaes/wiki/Optimizing-a-function#user-content-solution-error-covariance-matrix-and-expected-distance-to-the-minimum-edm
     libcmaes::Candidate bcand = cmasols.best_candidate();
-    //double fmin = bcand.get_fvalue(); // min objective function value the
-                                      // optimizer converged to
+    // double fmin = bcand.get_fvalue(); // min objective function value the
+    // optimizer converged to
     Eigen::VectorXd bestparameters = bcand.get_x_dvec(); // vector of objective
                                                          // function parameters
                                                          // at minimum.
-    //double edm = cmasols.edm(); // expected distance to the minimum.
+    // double edm = cmasols.edm(); // expected distance to the minimum.
 
     // https://github.com/beniz/libcmaes/wiki/Defining-and-using-bounds-on-parameters#user-content-retrieving-the-best-solution
     // Eigen::VectorXd bestparameters =
@@ -777,9 +776,11 @@ void SuperEllipsoidComputeGradientAllDimensions(
     const float epsilon = 0.001;
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("SuperEllipsoidComputeGradientAllDimensions dimension shift " << dimension_shift);
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
+            "SuperEllipsoidComputeGradientAllDimensions dimension shift "
+            << dimension_shift);
 
-        for (int step = -1; step <= 1; step+=1) {
+        for (int step = -1; step <= 1; step += 1) {
             float stepEpsilon = step * epsilon;
 
             fsg::SuperEllipsoidParameters superellipsoidparameters =
@@ -799,7 +800,7 @@ void SuperEllipsoidComputeGradientAllDimensions(
             values[step + 1] = value;
         }
 
-        gradient->coeff(dimension_shift)=values[2]-values[0];
+        gradient->coeff(dimension_shift) = values[2] - values[0];
     }
     FSG_LOG_VAR(*gradient);
 }
@@ -809,35 +810,48 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
     fsg::SuperEllipsoidParameters &fittingContext) {
 
     fsg::SuperEllipsoidParameters gradient_wrt_pointcloud;
-    SuperEllipsoidComputeGradientAllDimensions(fittingContext, cloud_xyz, &gradient_wrt_pointcloud);
+    SuperEllipsoidComputeGradientAllDimensions(fittingContext, cloud_xyz,
+                                               &gradient_wrt_pointcloud);
 
-    fsg::SuperEllipsoidParameters fittingContext_eigenlevenbergmarquardt(fittingContext);
-    bool success_eigenlevenbergmarquardt = pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(cloud_xyz, fittingContext_eigenlevenbergmarquardt);
+    fsg::SuperEllipsoidParameters fittingContext_eigenlevenbergmarquardt(
+        fittingContext);
+    bool success_eigenlevenbergmarquardt =
+        pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
+            cloud_xyz, fittingContext_eigenlevenbergmarquardt);
     fsg::SuperEllipsoidParameters fittingContext_libcmaes(fittingContext);
-    bool success_libcmaes = pointCloudToFittingContextWithInitialEstimate_LibCmaes(cloud_xyz, fittingContext_libcmaes);
-    FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both results: EigenLevenbergMarquardt=" << (success_eigenlevenbergmarquardt?"success":"failure") << ", libcmaes result=" << (success_libcmaes?"success":"failure"));
+    bool success_libcmaes =
+        pointCloudToFittingContextWithInitialEstimate_LibCmaes(
+            cloud_xyz, fittingContext_libcmaes);
+    FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both results: "
+                "EigenLevenbergMarquardt="
+                << (success_eigenlevenbergmarquardt ? "success" : "failure")
+                << ", libcmaes result="
+                << (success_libcmaes ? "success" : "failure"));
 
     if (success_eigenlevenbergmarquardt) {
-        fittingContext=fittingContext_eigenlevenbergmarquardt;
-        FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: returning EigenLevenbergMarquardt result");
+        fittingContext = fittingContext_eigenlevenbergmarquardt;
+        FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: "
+                    "returning EigenLevenbergMarquardt result");
         return true;
     }
 
     if (success_libcmaes) {
-        fittingContext=fittingContext_libcmaes;
-        FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: returning libcmaes result");
+        fittingContext = fittingContext_libcmaes;
+        FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: "
+                    "returning libcmaes result");
         return true;
     }
 
-    FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: both failed.  Returning initial estimation.");
+    FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: both "
+                "failed.  Returning initial estimation.");
     return false;
 }
 
 bool pointCloudToFittingContextWithInitialEstimate(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext) {
-    return pointCloudToFittingContextWithInitialEstimate_both(
-        cloud_xyz, fittingContext);
+    return pointCloudToFittingContextWithInitialEstimate_both(cloud_xyz,
+                                                              fittingContext);
 }
 
 /**
@@ -870,7 +884,9 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
     values[2] = centervalue;
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("SuperEllipsoidTestEachDimensionForGradientSanity dimension shift " << dimension_shift);
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
+            "SuperEllipsoidTestEachDimensionForGradientSanity dimension shift "
+            << dimension_shift);
 
         /* First check that gradient itself is good. */
         for (int step = -2; step <= 2; step++) {
@@ -905,41 +921,42 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
                                << values[4] << "]");
 
         {
-            int failures=0;
+            int failures = 0;
             if (values[0] < values[1]) {
                 FSG_LOG_MSG("FAIL: bad gradient lower side on dimension "
-                            << dimension_shift << " values " << values << " params "
-                            << superellipsoidparameters_center);
+                            << dimension_shift << " values " << values
+                            << " params " << superellipsoidparameters_center);
                 failures++;
             }
 
             if (values[3] > values[4]) {
                 FSG_LOG_MSG("FAIL: bad gradient higher side on dimension "
-                            << dimension_shift << " values " << values << " params "
-                            << superellipsoidparameters_center);
+                            << dimension_shift << " values " << values
+                            << " params " << superellipsoidparameters_center);
                 failures++;
             }
 
             if (values[2] > values[1]) {
-                FSG_LOG_MSG("FAIL: bad gradient center higher than left on dimension "
-                            << dimension_shift << " values " << values << " params "
-                            << superellipsoidparameters_center);
+                FSG_LOG_MSG(
+                    "FAIL: bad gradient center higher than left on dimension "
+                    << dimension_shift << " values " << values << " params "
+                    << superellipsoidparameters_center);
                 failures++;
             }
 
             if (values[2] > values[3]) {
-                FSG_LOG_MSG("FAIL: bad gradient center higher than right on dimension "
-                            << dimension_shift << " values " << values << " params "
-                            << superellipsoidparameters_center);
+                FSG_LOG_MSG(
+                    "FAIL: bad gradient center higher than right on dimension "
+                    << dimension_shift << " values " << values << " params "
+                    << superellipsoidparameters_center);
                 failures++;
             }
 
-            if (failures==0)
-            {
+            if (failures == 0) {
                 FSG_LOG_MSG("Good gradient on dimension "
                             << dimension_shift << " params "
-                            << superellipsoidparameters_center
-                            << " values " << values);
+                            << superellipsoidparameters_center << " values "
+                            << values);
             }
         }
 
@@ -1102,7 +1119,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     boost::random::uniform_real_distribution<> random_float_m5p5(-1, 1);
     boost::random::uniform_real_distribution<> random_float_cent_one(0.01, 1);
     boost::random::uniform_real_distribution<> random_float_mpippi(-M_PI, M_PI);
-    //ost::random::uniform_real_distribution<> random_float_cent_two(1, 1);
+    // ost::random::uniform_real_distribution<> random_float_cent_two(1, 1);
 
     fsg::SuperEllipsoidParameters sep_groundtruth;
     sep_groundtruth.set_cen_x(random_float_m5p5(_gen));
@@ -1114,8 +1131,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     sep_groundtruth.set_rot_yaw(random_float_mpippi(_gen));
     sep_groundtruth.set_rot_pitch(random_float_mpippi(_gen));
     sep_groundtruth.set_rot_roll(random_float_mpippi(_gen));
-    sep_groundtruth.set_exp_1(1); //random_float_cent_two(_gen));
-    sep_groundtruth.set_exp_2(1); //random_float_cent_two(_gen));
+    sep_groundtruth.set_exp_1(1); // random_float_cent_two(_gen));
+    sep_groundtruth.set_exp_2(1); // random_float_cent_two(_gen));
 
     FSG_LOG_VAR(sep_groundtruth);
 
@@ -1167,7 +1184,8 @@ void SuperEllipsoidTest() {
 
     {
         boost::random::minstd_rand _gen;
-        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("100 times SuperEllipsoidFitARandomSQ");
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
+            "100 times SuperEllipsoidFitARandomSQ");
         for (int i = 0; i < 100; i++) {
             FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("Fitting random " << i);
             SuperEllipsoidFitARandomSQ(_gen);
@@ -1496,9 +1514,7 @@ int main(int argc, char **argv) {
                             superellipsoids_cloud_ptr->push_back(pt);
                         }
                     }
-                }
-                else
-                {
+                } else {
                     FSG_LOG_MSG("Fitting fail on id=" << obj_index_i_s << ".");
                 }
 
