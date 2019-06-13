@@ -153,7 +153,7 @@ else
         fi
 
         cd pcl
-        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=1000000
+        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
         cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                    -DCMAKE_BUILD_TYPE:STRING=Release \
                                    -DCMAKE_CXX_STANDARD=11 \
