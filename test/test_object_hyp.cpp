@@ -756,9 +756,60 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     return true;
 }
 
+void SuperEllipsoidComputeGradientAllDimensions(
+    fsg::SuperEllipsoidParameters &superellipsoidparameters_center,
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud,
+    fsg::SuperEllipsoidParameters *gradient) {
+    FSG_TRACE_THIS_FUNCTION();
+
+    FSG_LOG_VAR(superellipsoidparameters_center);
+
+    std::vector<int> indices(pointCloud->size());
+    for (size_t i = 0; i < pointCloud->size(); ++i) {
+        indices[i] = i;
+    }
+
+    OptimizationFunctor functor(*pointCloud, indices);
+
+    Eigen::VectorXf deviation(pointCloud->size());
+
+    Eigen::VectorXf values(5);
+    const float epsilon = 0.001;
+
+    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("SuperEllipsoidComputeGradientAllDimensions dimension shift " << dimension_shift);
+
+        for (int step = -1; step <= 1; step+=1) {
+            float stepEpsilon = step * epsilon;
+
+            fsg::SuperEllipsoidParameters superellipsoidparameters =
+                superellipsoidparameters_center;
+
+            superellipsoidparameters.coeff(dimension_shift) += epsilon * step;
+
+            FSG_LOG_VAR(stepEpsilon);
+            FSG_LOG_VAR(superellipsoidparameters);
+
+            functor(superellipsoidparameters.coeff, deviation);
+
+            // FSG_LOG_VAR(deviation);
+            float value = deviation.norm();
+            FSG_LOG_VAR(value);
+
+            values[step + 1] = value;
+        }
+
+        gradient->coeff(dimension_shift)=values[2]-values[0];
+    }
+    FSG_LOG_VAR(*gradient);
+}
+
 bool pointCloudToFittingContextWithInitialEstimate_both(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext) {
+
+    fsg::SuperEllipsoidParameters gradient_wrt_pointcloud;
+    SuperEllipsoidComputeGradientAllDimensions(fittingContext, cloud_xyz, &gradient_wrt_pointcloud);
 
     fsg::SuperEllipsoidParameters fittingContext_eigenlevenbergmarquardt(fittingContext);
     bool success_eigenlevenbergmarquardt = pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(cloud_xyz, fittingContext_eigenlevenbergmarquardt);
