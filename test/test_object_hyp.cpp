@@ -698,9 +698,17 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     // FSG_LOG_VAR(UpperBounds);
 
-    libcmaes::CMAParameters<> cmaparams(fittingContext.coeff,
-                                        OptimizationStepSize, -1, LowerBounds,
-                                        UpperBounds, 0);
+    // https://github.com/beniz/libcmaes/wiki/Defining-and-using-bounds-on-parameters
+    libcmaes::GenoPheno<libcmaes::pwqBoundStrategy> gp(
+        LowerBounds.data(), UpperBounds.data(),
+        fsg::SuperEllipsoidParameters::fieldCount); // genotype / phenotype
+                                                    // transform associated to
+                                                    // bounds.
+
+    libcmaes::CMAParameters<libcmaes::GenoPheno<libcmaes::pwqBoundStrategy>>
+        cmaparams(fsg::SuperEllipsoidParameters::fieldCount,
+                  fittingContext.coeffData(),
+                  0 /* OptimizationStepSize.data() */, -1, 0, gp);
     // CMAParameters(const dVec &x0,
     //               const dVec &sigma,
     //               const int &lambda,
@@ -711,7 +719,8 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     cmaparams.set_mt_feval(true); // activates the parallel evaluation
 
     libcmaes::CMASolutions cmasols =
-        libcmaes::cmaes<>(cmaes_fit_func, cmaparams);
+        libcmaes::cmaes<libcmaes::GenoPheno<libcmaes::pwqBoundStrategy>>(
+            cmaes_fit_func, cmaparams);
 
     FSG_LOG_MSG("best solution: " << cmasols);
     FSG_LOG_MSG("optimization took " << cmasols.elapsed_time() / 1000.0
