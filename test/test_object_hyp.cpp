@@ -733,6 +733,20 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     // https://github.com/beniz/libcmaes/wiki/Optimizing-a-function#user-content-solution-error-covariance-matrix-and-expected-distance-to-the-minimum-edm
     libcmaes::Candidate bcand = cmasols.best_candidate();
+
+    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION() << "cmasols.print(..., 0, cmaparams.get_gp()): ";
+
+    cmasols.print(FSG_LOG_BEGIN(),false,cmaparams.get_gp());
+
+    FSG_LOG_BEGIN() << FSG_LOG_END();
+
+    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION() << "cmasols.print(..., 1, cmaparams.get_gp()): ";
+
+    cmasols.print(FSG_LOG_BEGIN(),false,cmaparams.get_gp());
+
+    FSG_LOG_BEGIN() << FSG_LOG_END();
+
+
     // double fmin = bcand.get_fvalue(); // min objective function value the
     // optimizer converged to
     Eigen::VectorXd bestparameters = bcand.get_x_dvec(); // vector of objective
