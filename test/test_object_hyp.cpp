@@ -719,13 +719,15 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     {
         static int n = 0;
         auto libcmaes_graph_data_filename_stringstream = std::stringstream();
-        libcmaes_graph_data_filename_stringstream << "libcmaes_log_" << n << ".dat";
-        std::string libcmaes_graph_data_filename = libcmaes_graph_data_filename_stringstream.str();
+        libcmaes_graph_data_filename_stringstream << "libcmaes_log_" << n
+                                                  << ".dat";
+        std::string libcmaes_graph_data_filename =
+            libcmaes_graph_data_filename_stringstream.str();
         FSG_LOG_VAR(libcmaes_graph_data_filename);
         cmaparams.set_fplot(libcmaes_graph_data_filename);
         n++;
     }
-    
+
     cmaparams.set_mt_feval(true); // activates the parallel evaluation
     cmaparams.set_fixed_p(10, 1);
     cmaparams.set_fixed_p(9, 1);
@@ -747,18 +749,19 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     // https://github.com/beniz/libcmaes/wiki/Optimizing-a-function#user-content-solution-error-covariance-matrix-and-expected-distance-to-the-minimum-edm
     libcmaes::Candidate bcand = cmasols.best_candidate();
 
-    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION() << "cmasols.print(..., 0, cmaparams.get_gp()): ";
+    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION()
+                    << "cmasols.print(..., 0, cmaparams.get_gp()): ";
 
-    cmasols.print(FSG_LOG_BEGIN(),false,cmaparams.get_gp());
-
-    FSG_LOG_BEGIN() << FSG_LOG_END();
-
-    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION() << "cmasols.print(..., 1, cmaparams.get_gp()): ";
-
-    cmasols.print(FSG_LOG_BEGIN(),false,cmaparams.get_gp());
+    cmasols.print(FSG_LOG_BEGIN(), false, cmaparams.get_gp());
 
     FSG_LOG_BEGIN() << FSG_LOG_END();
 
+    FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION()
+                    << "cmasols.print(..., 1, cmaparams.get_gp()): ";
+
+    cmasols.print(FSG_LOG_BEGIN(), false, cmaparams.get_gp());
+
+    FSG_LOG_BEGIN() << FSG_LOG_END();
 
     // double fmin = bcand.get_fvalue(); // min objective function value the
     // optimizer converged to
