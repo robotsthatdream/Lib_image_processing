@@ -716,7 +716,16 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     //               const dVec &ubounds,
     //               const uint64_t &seed);
 
-    cmaparams.set_fplot("youroutput.dat");
+    {
+        static int n = 0;
+        auto libcmaes_graph_data_filename_stringstream = std::stringstream();
+        libcmaes_graph_data_filename_stringstream << "libcmaes_log_" << n << ".dat";
+        std::string libcmaes_graph_data_filename = libcmaes_graph_data_filename_stringstream.str();
+        FSG_LOG_VAR(libcmaes_graph_data_filename);
+        cmaparams.set_fplot(libcmaes_graph_data_filename);
+        n++;
+    }
+    
     cmaparams.set_mt_feval(true); // activates the parallel evaluation
     cmaparams.set_fixed_p(10, 1);
     cmaparams.set_fixed_p(9, 1);
