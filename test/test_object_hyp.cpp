@@ -718,6 +718,8 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     cmaparams.set_fplot("youroutput.dat");
     cmaparams.set_mt_feval(true); // activates the parallel evaluation
+    cmaparams.set_fixed_p(10, 1);
+    cmaparams.set_fixed_p(9, 1);
 
     libcmaes::CMASolutions cmasols =
         libcmaes::cmaes<libcmaes::GenoPheno<libcmaes::pwqBoundStrategy>>(
