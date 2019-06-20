@@ -708,7 +708,7 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     libcmaes::CMAParameters<libcmaes::GenoPheno<libcmaes::pwqBoundStrategy>>
         cmaparams(fsg::SuperEllipsoidParameters::fieldCount,
                   fittingContext.coeffData(),
-                  0 /* OptimizationStepSize.data() */, -1, 0, gp);
+                  1000 /* OptimizationStepSize.data() */, -1, 0, gp);
     // CMAParameters(const dVec &x0,
     //               const dVec &sigma,
     //               const int &lambda,
