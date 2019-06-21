@@ -737,7 +737,7 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     cmaparams.set_stopping_criteria(libcmaes::TOLX,false);
     cmaparams.set_stopping_criteria(libcmaes::CONDITIONCOV,false);
 
-    cmaparams.set_algo(aCMAES);
+    cmaparams.set_algo(IPOP_CMAES);
     cmaparams.set_ftolerance(1e-5);
     cmaparams.set_xtolerance(1e-5);
     
