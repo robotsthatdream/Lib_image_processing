@@ -112,7 +112,7 @@ else
 
         cd opencv
         export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
-        cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
+        "$IMAGE_PROCESSING_SOURCE_ROOT"/cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                    -D CMAKE_BUILD_TYPE:STRING=Release \
                                    -D BUILD_JAVA:BOOL=OFF \
                                    -D BUILD_PACKAGE:BOOL=OFF \
@@ -154,7 +154,7 @@ else
 
         cd pcl
         export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
-        cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
+        "$IMAGE_PROCESSING_SOURCE_ROOT"/cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                    -DCMAKE_BUILD_TYPE:STRING=Release \
                                    -DCMAKE_CXX_STANDARD=11 \
                                    -DWITH_QHULL=ON \
@@ -179,7 +179,7 @@ else(
 
     cd CMM_Lib
     export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
-    cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
+    "$IMAGE_PROCESSING_SOURCE_ROOT"/cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                -DCMAKE_BUILD_TYPE=Release \
 
     cd ${IMAGE_PROCESSING_BUILD_ROOT}/CMM_Lib.OSID_${OS_ID}.buildtree.Release
@@ -203,7 +203,7 @@ else(
 
     cd "${IMAGE_PROCESSING_SOURCE_ROOT}"
     export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
-    cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
+    "$IMAGE_PROCESSING_SOURCE_ROOT"/cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                -DCMAKE_BUILD_TYPE=${IMAGE_PROCESSING_BUILD_TYPE} \
                                -DCMM_INSTALL_TREE:STRING="${CMM_IT}" \
 
