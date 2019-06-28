@@ -721,11 +721,11 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
         auto libcmaes_graph_data_filename_stringstream = std::stringstream();
         libcmaes_graph_data_filename_stringstream << "libcmaes_log_" << n
                                                   << ".dat";
+        n++;
         std::string libcmaes_graph_data_filename =
             libcmaes_graph_data_filename_stringstream.str();
         FSG_LOG_VAR(libcmaes_graph_data_filename);
         cmaparams.set_fplot(libcmaes_graph_data_filename);
-        n++;
     }
 
     cmaparams.set_mt_feval(true); // activates the parallel evaluation
@@ -895,6 +895,58 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
                 << (success_eigenlevenbergmarquardt ? "success" : "failure")
                 << ", libcmaes result="
                 << (success_libcmaes ? "success" : "failure"));
+
+    if (1) {
+        boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
+            new pcl::visualization::PCLVisualizer("viewer"));
+        viewer->setBackgroundColor(0, 0, 0);
+        viewer->setCameraPosition(-2, 0, 0, 1, 0, 0, 0, 1, 0);
+
+        pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
+            ground_truth_color_handler(cloud_xyz, 0, 255, 0);
+        viewer->addPointCloud<pcl::PointXYZ>(
+            cloud_xyz, ground_truth_color_handler, "ground_truth");
+        viewer->setPointCloudRenderingProperties(
+            pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "ground_truth");
+
+        auto pc_seplce = fittingContext_libcmaes.toPointCloud(10);
+
+        pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
+            sep_libcmaes_color_handler(pc_seplce, 255, 0, 255);
+        viewer->addPointCloud<pcl::PointXYZ>(
+            pc_seplce, sep_libcmaes_color_handler, "sep_libcmaes");
+        viewer->setPointCloudRenderingProperties(
+            pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "sep_libcmaes");
+
+        auto pc_elm = fittingContext_eigenlevenbergmarquardt.toPointCloud(10);
+
+        pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
+            sep_levenbergmarquardt_color_handler(pc_elm, 255, 0, 0);
+        viewer->addPointCloud<pcl::PointXYZ>(
+            pc_elm, sep_levenbergmarquardt_color_handler,
+            "sep_levenbergmarquardt");
+        viewer->setPointCloudRenderingProperties(
+            pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2,
+            "sep_levenbergmarquardt");
+
+        for (int i = 0; i < 3; i++) {
+            viewer->spinOnce(100);
+            boost::this_thread::sleep(boost::posix_time::microseconds(100000));
+        }
+
+        {
+            static int n = 0;
+            auto libcmaes_png_filename_stringstream = std::stringstream();
+            libcmaes_png_filename_stringstream << "libcmaes_png_" << n
+                                               << ".png";
+            n++;
+            std::string libcmaes_png_filename =
+                libcmaes_png_filename_stringstream.str();
+            FSG_LOG_VAR(libcmaes_png_filename);
+            viewer->saveScreenshot(libcmaes_png_filename);
+        }
+        viewer->close();
+    }
 
     if (success_eigenlevenbergmarquardt) {
         fittingContext = fittingContext_eigenlevenbergmarquardt;
