@@ -758,6 +758,9 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     FSG_LOG_VAR(cmaparams.get_maximize());
     FSG_LOG_VAR(cmaparams.get_uh());
     FSG_LOG_VAR(cmaparams.get_tpa());
+    FSG_LOG_VAR(cmaparams.get_sigma_init());
+    FSG_LOG_VAR(cmaparams.get_restarts());
+    FSG_LOG_VAR(cmaparams.get_lazy_update());
 
     libcmaes::CMASolutions cmasols =
         libcmaes::cmaes<libcmaes::GenoPheno<libcmaes::pwqBoundStrategy>>(
