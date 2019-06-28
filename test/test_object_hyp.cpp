@@ -707,8 +707,7 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     libcmaes::CMAParameters<libcmaes::GenoPheno<libcmaes::pwqBoundStrategy>>
         cmaparams(fsg::SuperEllipsoidParameters::fieldCount,
-                  fittingContext.coeffData(),
-                  3, 100, 0, gp);
+                  fittingContext.coeffData(), 3, 100, 0, gp);
     // CMAParameters(const dVec &x0,
     //               const dVec &sigma,
     //               const int &lambda,
@@ -733,14 +732,14 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     cmaparams.set_fixed_p(9, 1);
     cmaparams.set_ftarget(0.001);
     cmaparams.set_max_fevals(42000000);
-    cmaparams.set_stopping_criteria(libcmaes::STAGNATION,false);
-    cmaparams.set_stopping_criteria(libcmaes::TOLX,false);
-    cmaparams.set_stopping_criteria(libcmaes::CONDITIONCOV,false);
+    cmaparams.set_stopping_criteria(libcmaes::STAGNATION, false);
+    cmaparams.set_stopping_criteria(libcmaes::TOLX, false);
+    cmaparams.set_stopping_criteria(libcmaes::CONDITIONCOV, false);
 
     cmaparams.set_algo(IPOP_CMAES);
     cmaparams.set_ftolerance(1e-5);
     cmaparams.set_xtolerance(1e-5);
-    
+
     FSG_LOG_VAR(cmaparams.get_x0min());
     FSG_LOG_VAR(cmaparams.get_x0max());
     FSG_LOG_VAR(cmaparams.get_max_iter());
@@ -750,7 +749,7 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     FSG_LOG_VAR(cmaparams.get_ftolerance());
     FSG_LOG_VAR(cmaparams.get_xtolerance());
     FSG_LOG_VAR(cmaparams.get_algo());
-    //FSG_LOG_VAR(cmaparams.get_gp());
+    // FSG_LOG_VAR(cmaparams.get_gp());
     FSG_LOG_VAR(cmaparams.get_fplot());
     FSG_LOG_VAR(cmaparams.get_gradient());
     FSG_LOG_VAR(cmaparams.get_edm());
