@@ -899,6 +899,7 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
             new pcl::visualization::PCLVisualizer("viewer"));
         viewer->setBackgroundColor(0, 0, 0);
         viewer->setCameraPosition(-3, 0, 0, 1, 0, 0, 0, 1, 0);
+        viewer->addCoordinateSystem(1.0);
 
         pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
             ground_truth_color_handler(cloud_xyz, 0, 255, 0);
