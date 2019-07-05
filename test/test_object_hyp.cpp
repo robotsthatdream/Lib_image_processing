@@ -610,7 +610,6 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
             "Eigen::LevenbergMarquardt::minimize()");
         Eigen::VectorXd coeff_d = fittingContext.coeff;
         Eigen::VectorXf coeff_f = coeff_d.cast<float>();
-        Eigen::VectorXf foo;
 
         minimizationResult =
             (Eigen::LevenbergMarquardtSpace::Status)0; // lm.minimize(coeff_f);
