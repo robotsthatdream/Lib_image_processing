@@ -676,7 +676,7 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
         functor(cmaes_eval_params.coeff, deviation);
 
-        double deviation_sum_of_squares = deviation.norm();
+        double deviation_sum_of_squares = -deviation.norm();
 
         // FSG_LOG_VAR(deviation_sum_of_squares);
 
