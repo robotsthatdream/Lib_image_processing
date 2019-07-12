@@ -969,6 +969,26 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
 bool pointCloudToFittingContextWithInitialEstimate(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext) {
+
+    {
+        std::vector<int> indices(cloud_xyz->size());
+        for (size_t i = 0; i < cloud_xyz->size(); ++i) {
+            indices[i] = i;
+        }
+
+        OptimizationFunctor functor(*cloud_xyz, indices);
+
+        Eigen::VectorXf deviation(cloud_xyz->size());
+
+        functor(fittingContext.coeff, deviation);
+
+        // FSG_LOG_VAR(deviation);
+        FSG_LOG_VAR(deviation.norm());
+        FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate: initial "
+                    "estimate has deviation.norm() = "
+                    << deviation.norm());
+    }
+
     return pointCloudToFittingContextWithInitialEstimate_both(cloud_xyz,
                                                               fittingContext);
 }
