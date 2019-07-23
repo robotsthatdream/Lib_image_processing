@@ -17,6 +17,7 @@
 #include <vtkRenderWindow.h>
 
 #include "../include/image_processing/SurfaceOfInterest.h"
+#include "git_version.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
@@ -1336,6 +1337,7 @@ void SuperEllipsoidTest() {
 
 int main(int argc, char **argv) {
     FSG_LOG_INIT__CALL_FROM_CPP_MAIN();
+    FSG_LOG_VAR(GIT_VERSION);
     FSG_TRACE_THIS_FUNCTION();
 
     if (argc == 2) {

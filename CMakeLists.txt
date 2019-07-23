@@ -1,6 +1,38 @@
 cmake_minimum_required(VERSION 2.8)
 project(image_processing)
 
+#================================================================
+# Reproducibility: make sure what we compile is a known git commit.
+# It will be logged.
+#================================================================
+set (GIT_EXECUTABLE "git")
+
+# This ensures that what is compiled is something committed and identifiable with a git hash.
+#
+# This includes https://stackoverflow.com/questions/38823537/execute-git-describe-in-custom-target
+# Store version into variable
+execute_process(
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+  COMMAND ${GIT_EXECUTABLE} diff-index HEAD RESULT_VARIABLE ret)
+if(NOT ret EQUAL "0")
+  message( "This is fine.")
+#    message( FATAL_ERROR "Build tree not clean.  Please commit any needed change and remove the rest.")
+endif()
+
+execute_process(
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+  COMMAND ${GIT_EXECUTABLE} describe --tags --always
+  OUTPUT_VARIABLE GIT_REPO_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  message( "GIT_REPO_VERSION=${GIT_REPO_VERSION}")
+
+
+set (GIT_VERSION_STRING_INCLUDE_DIRECTORY "${PROJECT_BINARY_DIR}/git_version")
+file(MAKE_DIRECTORY ${GIT_VERSION_STRING_INCLUDE_DIRECTORY})
+configure_file("git_version.hpp.in" "${GIT_VERSION_STRING_INCLUDE_DIRECTORY}/git_version.hpp" ESCAPE_QUOTES)
+#================================================================
+
+
 set(SOURCE_FILES
     src/MotionDetection.cpp
     src/SupervoxelSet.cpp
@@ -50,7 +82,7 @@ set_property(TARGET iagmm PROPERTY IMPORTED_LOCATION "${IAGMM_INSTALL_TREE}/lib/
 
 include(CMake/FindLibCmaes.cmake)
 
-include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS} "${IAGMM_INSTALL_TREE}/include" "${LIBCMAES_INCLUDE_DIR}")
+include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS} "${IAGMM_INSTALL_TREE}/include" "${LIBCMAES_INCLUDE_DIR}" ${GIT_VERSION_STRING_INCLUDE_DIRECTORY})
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 
@@ -187,4 +219,3 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
   endif()
-  
