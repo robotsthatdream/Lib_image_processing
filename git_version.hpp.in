@@ -1,1 +1,2 @@
 const char *GIT_VERSION = "${GIT_REPO_VERSION}";
+const char *GIT_LOG = "${GIT_LOG_ESCAPED}";

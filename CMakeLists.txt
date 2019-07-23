@@ -24,12 +24,44 @@ execute_process(
   COMMAND ${GIT_EXECUTABLE} describe --tags --always
   OUTPUT_VARIABLE GIT_REPO_VERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE)
-  message( "GIT_REPO_VERSION=${GIT_REPO_VERSION}")
+message( "GIT_REPO_VERSION=${GIT_REPO_VERSION}")
 
+set (string_backslash "\\")
+set (string_newline "\n")
+set (string_quote "\"")
+
+set (regex_backslash "${string_backslash}${string_backslash}")
+set (regex_newline "${string_backslash}${string_newline}")
+set (regex_quote "${string_backslash}${string_quote}")
+
+message( "NEWLINE${string_newline}NEWLINE")
+message( "BACKSLASH${string_backslash}BACKSLASH")
+message( "QUOTE${string_quote}QUOTE")
+
+set (pattern_for_new_line_in_string "(${regex_newline})" )
+set (replacemement_for_new_line_in_string "\\\\n${string_quote}\\n${string_quote}" )
+
+execute_process(
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+  COMMAND ${GIT_EXECUTABLE} log -1 --decorate -p
+  OUTPUT_VARIABLE GIT_LOG
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+# Replace backslash with double-backslash
+string(REGEX REPLACE "(${regex_backslash})" "${regex_backslash}\\1" GIT_LOG_ESCAPED1 "${GIT_LOG}")
+# Replace quote with backslash-quote
+string(REGEX REPLACE "(${regex_quote})" "AA${regex_backslash}${string_quote}BB" GIT_LOG_ESCAPED2 "${GIT_LOG_ESCAPED1}")
+#string(REGEX REPLACE "([^a-zA-Z0-9\" ])" "${regex_backslash}\\1" GIT_LOG_ESCAPED1 "${GIT_LOG}")
+# Replace newline with properly escaped newline
+string(REGEX REPLACE
+  ${pattern_for_new_line_in_string}
+  ${replacemement_for_new_line_in_string}
+  GIT_LOG_ESCAPED "${GIT_LOG_ESCAPED2}")
+
+message( "GIT_LOG_ESCAPED=${GIT_LOG_ESCAPED}")
 
 set (GIT_VERSION_STRING_INCLUDE_DIRECTORY "${PROJECT_BINARY_DIR}/git_version")
 file(MAKE_DIRECTORY ${GIT_VERSION_STRING_INCLUDE_DIRECTORY})
-configure_file("git_version.hpp.in" "${GIT_VERSION_STRING_INCLUDE_DIRECTORY}/git_version.hpp" ESCAPE_QUOTES)
+configure_file("git_version.hpp.in" "${GIT_VERSION_STRING_INCLUDE_DIRECTORY}/git_version.hpp")
 #================================================================
 
 
