@@ -7,21 +7,55 @@ project(image_processing)
 #================================================================
 set (GIT_EXECUTABLE "git")
 
+message (STATUS "-------------------------------------------------------------------")
+message (STATUS "In directory ${CMAKE_CURRENT_LIST_DIR}")
+message (STATUS "-------------------------------------------------------------------")
+
 # This ensures that what is compiled is something committed and identifiable with a git hash.
 #
-# This includes https://stackoverflow.com/questions/38823537/execute-git-describe-in-custom-target
-# Store version into variable
+# Ref https://stackoverflow.com/questions/38823537/execute-git-describe-in-custom-target
+# and https://stackoverflow.com/questions/3878624/how-do-i-programmatically-determine-if-there-are-uncommitted-changes
 execute_process(
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-  COMMAND ${GIT_EXECUTABLE} diff-index HEAD RESULT_VARIABLE ret)
-if(NOT ret EQUAL "0")
-  message( "This is fine.")
-#    message( FATAL_ERROR "Build tree not clean.  Please commit any needed change and remove the rest.")
+  RESULT_VARIABLE ret
+  COMMAND ${GIT_EXECUTABLE} update-index -q --ignore-submodules --refresh )
+if( NOT ${ret} EQUAL "0" )
+  message( FATAL_ERROR "Could not check if build tree clean in directory ${CMAKE_CURRENT_LIST_DIR}")
 endif()
 
 execute_process(
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-  COMMAND ${GIT_EXECUTABLE} describe --tags --always
+  RESULT_VARIABLE ret
+  COMMAND ${GIT_EXECUTABLE} diff-files --quiet --ignore-submodules -- )
+if( NOT ${ret} EQUAL "0" )
+  message( SEND_ERROR "Build tree not clean: you have unstaged changes.")
+  execute_process(
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    COMMAND ${GIT_EXECUTABLE} diff-files --name-status -r --ignore-submodules -- )
+  set (git_tree_unclean "true")
+endif()
+
+execute_process(
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+  RESULT_VARIABLE ret
+  COMMAND ${GIT_EXECUTABLE} diff-index --cached --quiet HEAD --ignore-submodules -- )
+if( NOT ${ret} EQUAL "0" )
+  execute_process(
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    COMMAND ${GIT_EXECUTABLE} diff-index --cached --name-status -r --ignore-submodules HEAD -- )
+  message( SEND_ERROR "Build tree not clean: your index contains uncommitted changes.")
+  set (git_tree_unclean "true")
+endif()
+
+if( "${git_tree_unclean}" STREQUAL "true" )
+  message( FATAL_ERROR "Refusing to build.")
+endif()
+
+message (STATUS "${git_tree_unclean}" )
+
+execute_process(
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+  COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty
   OUTPUT_VARIABLE GIT_REPO_VERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 message( "GIT_REPO_VERSION=${GIT_REPO_VERSION}")
