@@ -991,7 +991,7 @@ bool pointCloudToFittingContextWithInitialEstimate(
                     << deviation.norm());
     }
 
-    return pointCloudToFittingContextWithInitialEstimate_both(cloud_xyz,
+    return pointCloudToFittingContextWithInitialEstimate_LibCmaes(cloud_xyz,
                                                               fittingContext);
 }
 
