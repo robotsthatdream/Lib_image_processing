@@ -1143,12 +1143,12 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
     }
 }
 
-bool pointCloudToFittingContext(
+fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
-    fsg::SuperEllipsoidParameters &fittingContext,
     pcl::visualization::PCLVisualizer *viewer,
     const std::string &obj_index_i_s) {
     FSG_TRACE_THIS_FUNCTION();
+    fsg::SuperEllipsoidParameters initialEstimate;
     pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
     feature_extractor.setInputCloud(cloud_xyz);
     // Minimize eccentricity computation.
@@ -1230,30 +1230,29 @@ bool pointCloudToFittingContext(
                         obj_index_i_s + ":minor eigen vector");
     }
 
-    fittingContext.set_cen_x(mass_center(0));
-    fittingContext.set_cen_y(mass_center(1));
-    fittingContext.set_cen_z(mass_center(2));
+    initialEstimate.set_cen_x(mass_center(0));
+    initialEstimate.set_cen_y(mass_center(1));
+    initialEstimate.set_cen_z(mass_center(2));
 
-    fittingContext.set_rad_a(major_vector.norm());
+    initialEstimate.set_rad_a(major_vector.norm());
 
-    fittingContext.set_rad_b(middle_vector.norm());
+    initialEstimate.set_rad_b(middle_vector.norm());
 
-    fittingContext.set_rad_c(minor_vector.norm());
+    initialEstimate.set_rad_c(minor_vector.norm());
 
     float yaw, pitch, roll;
     matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
 
     FSG_LOG_MSG("yaw=" << yaw << ", pitch=" << pitch << ", roll=" << roll);
 
-    fittingContext.set_rot_yaw(yaw);
-    fittingContext.set_rot_pitch(pitch);
-    fittingContext.set_rot_roll(roll);
+    initialEstimate.set_rot_yaw(yaw);
+    initialEstimate.set_rot_pitch(pitch);
+    initialEstimate.set_rot_roll(roll);
 
-    fittingContext.set_exp_1(1);
-    fittingContext.set_exp_2(1);
+    initialEstimate.set_exp_1(1);
+    initialEstimate.set_exp_2(1);
 
-    return pointCloudToFittingContextWithInitialEstimate(cloud_xyz,
-                                                         fittingContext);
+    return initialEstimate;
 }
 
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
@@ -1291,9 +1290,11 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     FSG_LOG_MSG("Now testing actual fit.");
     FSG_LOG_VAR(sep_groundtruth);
 
-    fsg::SuperEllipsoidParameters sep_fit;
+    fsg::SuperEllipsoidParameters initialEstimate = pointCloudComputeFitComputeInitialEstimate(pointCloud, nullptr, "");
 
-    bool success = pointCloudToFittingContext(pointCloud, sep_fit, nullptr, "");
+    fsg::SuperEllipsoidParameters sep_fit = initialEstimate;
+
+    bool success = pointCloudToFittingContextWithInitialEstimate(pointCloud, sep_fit);
 
     if (!success) {
         FSG_LOG_MSG(
@@ -1631,10 +1632,11 @@ int main(int argc, char **argv) {
                     }
                 }
 
-                fsg::SuperEllipsoidParameters fittingContext;
+                fsg::SuperEllipsoidParameters initialEstimate = pointCloudComputeFitComputeInitialEstimate(cloud_xyz, &(*viewer), obj_index_i_s);
+                
+                fsg::SuperEllipsoidParameters fittingContext = initialEstimate;
 
-                bool success = pointCloudToFittingContext(
-                    cloud_xyz, fittingContext, &(*viewer), obj_index_i_s);
+                bool success = pointCloudToFittingContextWithInitialEstimate(cloud_xyz, fittingContext);
 
                 if (success) {
 
