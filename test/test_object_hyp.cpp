@@ -136,19 +136,19 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     return os;
 }
 
-SuperEllipsoidParameters operator*(double d, const SuperEllipsoidParameters &sefc) {
+SuperEllipsoidParameters operator*(double d,
+                                   const SuperEllipsoidParameters &sefc) {
     SuperEllipsoidParameters result;
-#define FSGX(name)                                                             \
-    result.set_##name(d * sefc.get_##name() );
+#define FSGX(name) result.set_##name(d *sefc.get_##name());
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
     return result;
 }
 
-SuperEllipsoidParameters operator+(const SuperEllipsoidParameters &sep1, const SuperEllipsoidParameters &sep2) {
+SuperEllipsoidParameters operator+(const SuperEllipsoidParameters &sep1,
+                                   const SuperEllipsoidParameters &sep2) {
     SuperEllipsoidParameters result;
-#define FSGX(name)                                                             \
-    result.set_##name(sep1.get_##name() + sep2.get_##name() );
+#define FSGX(name) result.set_##name(sep1.get_##name() + sep2.get_##name());
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
     return result;
@@ -1010,8 +1010,8 @@ bool pointCloudToFittingContextWithInitialEstimate(
                     << deviation.norm());
     }
 
-    return pointCloudToFittingContextWithInitialEstimate_LibCmaes(cloud_xyz,
-                                                              fittingContext);
+    return pointCloudToFittingContextWithInitialEstimate_LibCmaes(
+        cloud_xyz, fittingContext);
 }
 
 /**
@@ -1354,13 +1354,16 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     FSG_LOG_MSG("Now testing actual fit.");
     FSG_LOG_VAR(sep_groundtruth);
 
-    fsg::SuperEllipsoidParameters initialEstimate = pointCloudComputeFitComputeInitialEstimate(pointCloud, nullptr, "");
+    fsg::SuperEllipsoidParameters initialEstimate =
+        pointCloudComputeFitComputeInitialEstimate(pointCloud, nullptr, "");
 
-    SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(pointCloud, initialEstimate, sep_groundtruth);
+    SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
+        pointCloud, initialEstimate, sep_groundtruth);
 
     fsg::SuperEllipsoidParameters sep_fit = initialEstimate;
 
-    bool success = pointCloudToFittingContextWithInitialEstimate(pointCloud, sep_fit);
+    bool success =
+        pointCloudToFittingContextWithInitialEstimate(pointCloud, sep_fit);
 
     if (!success) {
         FSG_LOG_MSG(
@@ -1698,11 +1701,14 @@ int main(int argc, char **argv) {
                     }
                 }
 
-                fsg::SuperEllipsoidParameters initialEstimate = pointCloudComputeFitComputeInitialEstimate(cloud_xyz, &(*viewer), obj_index_i_s);
-                
+                fsg::SuperEllipsoidParameters initialEstimate =
+                    pointCloudComputeFitComputeInitialEstimate(
+                        cloud_xyz, &(*viewer), obj_index_i_s);
+
                 fsg::SuperEllipsoidParameters fittingContext = initialEstimate;
 
-                bool success = pointCloudToFittingContextWithInitialEstimate(cloud_xyz, fittingContext);
+                bool success = pointCloudToFittingContextWithInitialEstimate(
+                    cloud_xyz, fittingContext);
 
                 if (success) {
 
