@@ -1273,6 +1273,52 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     return initialEstimate;
 }
 
+void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud,
+    fsg::SuperEllipsoidParameters sep_initialEstimate,
+    fsg::SuperEllipsoidParameters sep_groundtruth)
+{
+    FSG_TRACE_THIS_FUNCTION();
+
+    static ofstream myfile = NULL;
+    if (myfile == NULL)
+    {
+        myfile.open ("SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions.log");
+    }
+
+    myfile << sep_initialEstimate << sep_groundtruth << " ";
+
+    FSG_LOG_VAR(sep_initialEstimate);
+    FSG_LOG_VAR(sep_groundtruth);
+    fsg::SuperEllipsoidParameters sep_current;
+    for (double d=0; d<1.0; d+=0.01)
+    {
+        FSG_LOG_VAR(d);
+        sep_current = (1.0 - d) * sep_initialEstimate + d * sep_groundtruth;
+
+        const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
+            sep_current.toPointCloud(10);
+
+        std::vector<int> indices(pointCloud->size());
+        for (size_t i = 0; i < pointCloud->size(); ++i) {
+            indices[i] = i;
+        }
+
+        OptimizationFunctor functor(*pointCloud, indices);
+
+        Eigen::VectorXf deviation(pointCloud->size());
+
+        functor(sep_current.coeff, deviation);
+
+        double dn = deviation.norm();
+        // FSG_LOG_VAR(deviation);
+        FSG_LOG_VAR(dn);
+
+        myfile << "d= " << d << " dn= " << dn << "\n";
+        myfile.flush();
+    }
+}
+
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     FSG_TRACE_THIS_FUNCTION();
     boost::random::uniform_real_distribution<> random_float_m5p5(-1, 1);
@@ -1309,6 +1355,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     FSG_LOG_VAR(sep_groundtruth);
 
     fsg::SuperEllipsoidParameters initialEstimate = pointCloudComputeFitComputeInitialEstimate(pointCloud, nullptr, "");
+
+    SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(pointCloud, initialEstimate, sep_groundtruth);
 
     fsg::SuperEllipsoidParameters sep_fit = initialEstimate;
 
