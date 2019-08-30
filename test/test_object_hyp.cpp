@@ -1353,14 +1353,15 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
 {
     FSG_TRACE_THIS_FUNCTION();
 
-    static ofstream myfile = NULL;
-    if (myfile == NULL)
+    static ofstream *slicelog = NULL;
+    if (slicelog == NULL)
     {
-        myfile.open(
+        slicelog = new ofstream(
             "SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions.log");
+        FSG_LOG_VAR(slicelog);
     }
 
-    myfile << sep_initialEstimate << sep_groundtruth << " ";
+    (*slicelog) << sep_initialEstimate << sep_groundtruth << " ";
 
     FSG_LOG_VAR(sep_initialEstimate);
     FSG_LOG_VAR(sep_groundtruth);
@@ -1389,9 +1390,10 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
         // FSG_LOG_VAR(deviation);
         FSG_LOG_VAR(dn);
 
-        myfile << "d= " << d << " dn= " << dn << "\n";
-        myfile.flush();
+        (*slicelog) << "d= " << d << " dn= " << dn << " ";
     }
+    (*slicelog) << "\n";
+    slicelog->flush();
 }
 
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
