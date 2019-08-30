@@ -1366,8 +1366,10 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
     FSG_LOG_VAR(sep_initialEstimate);
     FSG_LOG_VAR(sep_groundtruth);
     fsg::SuperEllipsoidParameters sep_current;
-    for (double d = 0; d <= 1.0; d += 0.01)
+    const int steps = 100;
+    for (int step = 0; step <= steps; step++)
     {
+        double d = (double)step / (double)steps;
         FSG_LOG_VAR(d);
         sep_current = (1.0 - d) * sep_initialEstimate + d * sep_groundtruth;
 
