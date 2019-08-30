@@ -136,6 +136,24 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
     return os;
 }
 
+SuperEllipsoidParameters operator*(double d, const SuperEllipsoidParameters &sefc) {
+    SuperEllipsoidParameters result;
+#define FSGX(name)                                                             \
+    result.set_##name(d * sefc.get_##name() );
+    ALL_SuperEllipsoidParameters_FIELDS;
+#undef FSGX
+    return result;
+}
+
+SuperEllipsoidParameters operator+(const SuperEllipsoidParameters &sep1, const SuperEllipsoidParameters &sep2) {
+    SuperEllipsoidParameters result;
+#define FSGX(name)                                                             \
+    result.set_##name(sep1.get_##name() + sep2.get_##name() );
+    ALL_SuperEllipsoidParameters_FIELDS;
+#undef FSGX
+    return result;
+}
+
 float powf_sym(float x, float y) {
     if (std::signbit(x) != 0)
         return -powf(-x, y);
