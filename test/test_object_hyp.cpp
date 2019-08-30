@@ -387,7 +387,9 @@ struct OptimizationFunctor : pcl::Functor<float>
             // FSG_LOG_VAR(outside_if_over_1);
 
             const float deviation = outside_if_over_1 - 1;
+#if FUNCTOR_LOG_INSIDE == 1
             FSG_LOG_VAR(deviation);
+#endif
 
             fvec[i] = deviation;
             sum_of_squares += deviation * deviation;
