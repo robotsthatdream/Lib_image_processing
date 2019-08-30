@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(image_processing)
 
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
 # get_cmake_property(_variableNames VARIABLES)
 # list (SORT _variableNames)
 # foreach (_variableName ${_variableNames})
