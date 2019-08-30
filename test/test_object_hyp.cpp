@@ -37,7 +37,8 @@ namespace ip = image_processing;
 
 using namespace fsg::matrixrotationangles;
 
-namespace fsg {
+namespace fsg
+{
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudT;
 typedef fsg::PointCloudT::Ptr PointCloudTP;
 
@@ -49,7 +50,8 @@ typedef fsg::PointCloudT::Ptr PointCloudTP;
 
     Total 11 parameters
 */
-struct SuperEllipsoidParameters {
+struct SuperEllipsoidParameters
+{
 // https://en.wikipedia.org/wiki/X_Macro
 
 #define ALL_SuperEllipsoidParameters_FIELDS                                    \
@@ -65,7 +67,8 @@ struct SuperEllipsoidParameters {
     FSGX(exp_1)                                                                \
     FSGX(exp_2)
 
-    static SuperEllipsoidParameters Zero() {
+    static SuperEllipsoidParameters Zero()
+    {
         SuperEllipsoidParameters zero;
 #define FSGX(name) zero.set_##name(0.00);
         ALL_SuperEllipsoidParameters_FIELDS;
@@ -73,7 +76,8 @@ struct SuperEllipsoidParameters {
         return zero;
     }
 
-    static SuperEllipsoidParameters Default() {
+    static SuperEllipsoidParameters Default()
+    {
         SuperEllipsoidParameters dv = Zero();
 
         dv.set_rad_a(1.0);
@@ -84,7 +88,8 @@ struct SuperEllipsoidParameters {
         return dv;
     }
 
-    enum idx {
+    enum idx
+    {
 #define FSGX(name) name,
         ALL_SuperEllipsoidParameters_FIELDS
 #undef FSGX
@@ -121,7 +126,8 @@ struct SuperEllipsoidParameters {
 
 constexpr int SuperEllipsoidParameters::fieldCount;
 
-ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
+ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc)
+{
     os << "[SEFC "
        << "center=(" << sefc.get_cen_x() << "," << sefc.get_cen_y() << ","
        << sefc.get_cen_z() << "), "
@@ -137,7 +143,8 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc) {
 }
 
 SuperEllipsoidParameters operator*(double d,
-                                   const SuperEllipsoidParameters &sefc) {
+                                   const SuperEllipsoidParameters &sefc)
+{
     SuperEllipsoidParameters result;
 #define FSGX(name) result.set_##name(d *sefc.get_##name());
     ALL_SuperEllipsoidParameters_FIELDS;
@@ -146,7 +153,8 @@ SuperEllipsoidParameters operator*(double d,
 }
 
 SuperEllipsoidParameters operator+(const SuperEllipsoidParameters &sep1,
-                                   const SuperEllipsoidParameters &sep2) {
+                                   const SuperEllipsoidParameters &sep2)
+{
     SuperEllipsoidParameters result;
 #define FSGX(name) result.set_##name(sep1.get_##name() + sep2.get_##name());
     ALL_SuperEllipsoidParameters_FIELDS;
@@ -154,7 +162,8 @@ SuperEllipsoidParameters operator+(const SuperEllipsoidParameters &sep1,
     return result;
 }
 
-float powf_sym(float x, float y) {
+float powf_sym(float x, float y)
+{
     if (std::signbit(x) != 0)
         return -powf(-x, y);
     else
@@ -173,7 +182,8 @@ double *SuperEllipsoidParameters::coeffData() { return (this->coeff.data()); }
     OptimizationFunctor`.
  */
 pcl::PointCloud<pcl::PointXYZ>::Ptr
-SuperEllipsoidParameters::toPointCloud(int steps) {
+SuperEllipsoidParameters::toPointCloud(int steps)
+{
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
         new pcl::PointCloud<pcl::PointXYZ>);
     FSG_TRACE_THIS_FUNCTION();
@@ -207,20 +217,25 @@ SuperEllipsoidParameters::toPointCloud(int steps) {
     const float increment = M_PI_2 / steps;
 
     // Pitch is eta in Biegelbauer et al.
-    for (float pitch = -M_PI_2; pitch < M_PI_2; pitch += increment) {
+    for (float pitch = -M_PI_2; pitch < M_PI_2; pitch += increment)
+    {
 
         pt.z = dilatfactor_z * powf_sym(sin(pitch), exp_1);
         float cos_pitch_exp_1 = powf_sym(cos(pitch), exp_1);
 
         // Yaw is omega in Biegelbauer et al.
-        for (float yaw = -M_PI; yaw < M_PI; yaw += increment) {
+        for (float yaw = -M_PI; yaw < M_PI; yaw += increment)
+        {
 
             pt.x = dilatfactor_x * powf_sym(cos(yaw), exp_2) * cos_pitch_exp_1;
             pt.y = dilatfactor_y * powf_sym(sin(yaw), exp_2) * cos_pitch_exp_1;
 
-            if ((pt.x * pt.x + pt.y * pt.y + pt.z * pt.z) < 20.0) {
+            if ((pt.x * pt.x + pt.y * pt.y + pt.z * pt.z) < 20.0)
+            {
                 cloud_step1->push_back(pt);
-            } else {
+            }
+            else
+            {
                 FSG_LOG_MSG("Ignoring too far point " << pt);
             }
         }
@@ -258,15 +273,16 @@ SuperEllipsoidParameters::toPointCloud(int steps) {
     Compare with the forward transformation implemented in
     `SuperEllipsoidParameters::toPointCloud`.
  */
-struct OptimizationFunctor : pcl::Functor<float> {
+struct OptimizationFunctor : pcl::Functor<float>
+{
     /** Functor constructor
      * \param[in] source cloud
      * \param[in] indices the indices of data points to evaluate
      */
     OptimizationFunctor(const pcl::PointCloud<pcl::PointXYZ> &cloud,
                         const std::vector<int> &indices)
-        : pcl::Functor<float>(indices.size()), cloud_(cloud),
-          indices_(indices) {
+        : pcl::Functor<float>(indices.size()), cloud_(cloud), indices_(indices)
+    {
         FSG_LOG_MSG("Created functor with value count: " << values());
     }
 
@@ -289,7 +305,8 @@ struct OptimizationFunctor : pcl::Functor<float> {
      * \param[out] fvec the resultant functions evaluations
      * \return 0
      */
-    int operator()(const Eigen::VectorXd &param, Eigen::VectorXf &fvec) const {
+    int operator()(const Eigen::VectorXd &param, Eigen::VectorXf &fvec) const
+    {
 #if FUNCTOR_LOG_INSIDE == 1
         fsg::SuperEllipsoidParameters *sep =
             (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
@@ -336,7 +353,8 @@ struct OptimizationFunctor : pcl::Functor<float> {
 
         float sum_of_squares = 0;
 
-        for (signed int i = 0; i < values(); ++i) {
+        for (signed int i = 0; i < values(); ++i)
+        {
             // Take current point;
             const pcl::PointXYZ p = cloud_.points[indices_[i]];
             // FSG_LOG_VAR(p);
@@ -385,7 +403,8 @@ struct OptimizationFunctor : pcl::Functor<float> {
     const std::vector<int> &indices_;
 };
 
-struct cloud_reg {
+struct cloud_reg
+{
     const char *key;
     const fsg::PointCloudTP cloud;
     const char *const name;
@@ -394,13 +413,15 @@ struct cloud_reg {
     friend ostream &operator<<(ostream &os, const cloud_reg &sefc);
 };
 
-ostream &operator<<(ostream &os, const cloud_reg &cr) {
+ostream &operator<<(ostream &os, const cloud_reg &cr)
+{
     os << "[cloud_reg " << FSG_OSTREAM_FIELD(cr, key)
        << FSG_OSTREAM_FIELD(cr, name) << FSG_OSTREAM_FIELD(cr, active) << "]";
     return os;
 }
 
-class Context {
+class Context
+{
     const pcl::visualization::PCLVisualizer::Ptr m_viewer;
     std::forward_list<cloud_reg> m_clouds;
 
@@ -412,13 +433,15 @@ class Context {
     void updateInViewer(cloud_reg &cr);
 };
 
-void Context::updateInViewer(cloud_reg &cr) {
+void Context::updateInViewer(cloud_reg &cr)
+{
     m_viewer->setPointCloudRenderingProperties(
         pcl::visualization::PCL_VISUALIZER_OPACITY, cr.active ? 1.0 : 0.0,
         cr.name);
 }
 
-void Context::addCloud(cloud_reg &reg) {
+void Context::addCloud(cloud_reg &reg)
+{
     // FSG_LOG_MSG("Adding cloud with key " << reg.key << ", name " <<
     // reg.name);
     FSG_LOG_MSG("Adding cloud " << reg);
@@ -431,20 +454,25 @@ void Context::addCloud(cloud_reg &reg) {
 }
 
 void Context::handleKeyboardEvent(
-    const pcl::visualization::KeyboardEvent &event) {
-    if (event.keyUp()) {
+    const pcl::visualization::KeyboardEvent &event)
+{
+    if (event.keyUp())
+    {
         const std::string keySym = event.getKeySym();
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("Handle key pressed '" << keySym
                                                                  << "'");
 
-        if (keySym.compare("twosuperior") == 0) {
+        if (keySym.compare("twosuperior") == 0)
+        {
             FSG_LOG_MSG("Resetting camera.");
             m_viewer->setCameraPosition(0, 0, 0, 0, 0, 1, 0, -1, 0);
         }
 
-        for (auto &cr : m_clouds) {
+        for (auto &cr : m_clouds)
+        {
             // FSG_LOG_MSG("Checking key " << cr.key << ", name " << cr.name);
-            if ((keySym.compare(cr.key) == 0)) {
+            if ((keySym.compare(cr.key) == 0))
+            {
                 // FSG_LOG_MSG("keysym " << keySym << " matches cloud name "
                 //                       << cr.name << " => toggling (was "
                 //                       << cr.active << ")");
@@ -458,7 +486,8 @@ void Context::handleKeyboardEvent(
 }
 
 void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event,
-                           void *context_void) {
+                           void *context_void)
+{
     boost::shared_ptr<Context> context =
         *static_cast<boost::shared_ptr<Context> *>(context_void);
 
@@ -466,8 +495,10 @@ void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event,
 }
 
 Eigen::ComputationInfo minimizationResultToComputationInfo(
-    Eigen::LevenbergMarquardtSpace::Status minimizationResult) {
-    switch (minimizationResult) {
+    Eigen::LevenbergMarquardtSpace::Status minimizationResult)
+{
+    switch (minimizationResult)
+    {
     case Eigen::LevenbergMarquardtSpace::Status::NotStarted:
         return Eigen::ComputationInfo::InvalidInput;
     case Eigen::LevenbergMarquardtSpace::Status::Running:
@@ -497,12 +528,14 @@ Eigen::ComputationInfo minimizationResultToComputationInfo(
     return Eigen::ComputationInfo::InvalidInput; // Make compiler happy.
 }
 
-void FloatTest() {
+void FloatTest()
+{
     FSG_TRACE_THIS_FUNCTION();
     float ref = 1.0;
     float epsilon = ref;
     float ref_plus_epsilon = 0;
-    do {
+    do
+    {
         epsilon = epsilon / 2.0;
         // FSG_LOG_VAR(epsilon);
         ref_plus_epsilon = ref + epsilon;
@@ -521,19 +554,22 @@ static const float fit_control_epsilon = 0.01;
    cloud fits precisely the parameter.
  */
 void SuperEllipsoidTestEachDimensionForMisbehavior(
-    fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype) {
+    fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype)
+{
     FSG_TRACE_THIS_FUNCTION();
 
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
-    for (int dimension_shift = -1; dimension_shift < 11; dimension_shift++) {
+    for (int dimension_shift = -1; dimension_shift < 11; dimension_shift++)
+    {
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
             "SuperEllipsoidTestEachDimensionForMisbehavior dimension shift "
             << dimension_shift);
         fsg::SuperEllipsoidParameters superellipsoidparameters =
             superellipsoidparameters_prototype;
 
-        if (dimension_shift >= 0) {
+        if (dimension_shift >= 0)
+        {
             superellipsoidparameters.coeff(dimension_shift) = 1.5;
         }
 
@@ -541,7 +577,8 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
             superellipsoidparameters.toPointCloud(10);
 
         std::vector<int> indices(pointCloud->size());
-        for (size_t i = 0; i < pointCloud->size(); ++i) {
+        for (size_t i = 0; i < pointCloud->size(); ++i)
+        {
             indices[i] = i;
         }
 
@@ -554,7 +591,8 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
         // FSG_LOG_VAR(deviation);
         FSG_LOG_VAR(deviation.norm());
 
-        if (deviation.norm() > fit_control_epsilon) {
+        if (deviation.norm() > fit_control_epsilon)
+        {
             FSG_LOG_MSG("SuperEllipsoidTestEachDimensionForMisbehavior FAIL on "
                         "dimension "
                         << dimension_shift << ".");
@@ -564,12 +602,14 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
 
 void SuperEllipsoidTestComputeGradient(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype,
-    pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud) {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud)
+{
 
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
     std::vector<int> indices(pointCloud->size());
-    for (size_t i = 0; i < pointCloud->size(); ++i) {
+    for (size_t i = 0; i < pointCloud->size(); ++i)
+    {
         indices[i] = i;
     }
 
@@ -585,7 +625,8 @@ void SuperEllipsoidTestComputeGradient(
 
     const float epsilon = 0.05;
 
-    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++)
+    {
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
             "SuperEllipsoidTestComputeGradient dimension shift "
             << dimension_shift);
@@ -609,14 +650,16 @@ void SuperEllipsoidTestComputeGradient(
 
 bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
-    fsg::SuperEllipsoidParameters &fittingContext) {
+    fsg::SuperEllipsoidParameters &fittingContext)
+{
     FSG_TRACE_THIS_FUNCTION();
     fsg::SuperEllipsoidParameters initialEstimate = fittingContext;
 
     FSG_LOG_MSG("Initial estimate : " << initialEstimate);
 
     std::vector<int> indices(cloud_xyz->size());
-    for (size_t i = 0; i < cloud_xyz->size(); ++i) {
+    for (size_t i = 0; i < cloud_xyz->size(); ++i)
+    {
         indices[i] = i;
     }
 
@@ -646,7 +689,8 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     FSG_LOG_MSG("Initial estimation : " << initialEstimate);
     FSG_LOG_MSG("After minimization : " << fittingContext);
 
-    if (ci != Eigen::ComputationInfo::Success) {
+    if (ci != Eigen::ComputationInfo::Success)
+    {
         FSG_LOG_MSG("Levenberg-Marquardt fitting failed, with code: " << ci);
         return false;
     }
@@ -655,14 +699,16 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
 
 bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
-    fsg::SuperEllipsoidParameters &fittingContext) {
+    fsg::SuperEllipsoidParameters &fittingContext)
+{
     FSG_TRACE_THIS_FUNCTION();
     fsg::SuperEllipsoidParameters initialEstimate = fittingContext;
 
     FSG_LOG_MSG("Initial estimate : " << initialEstimate);
 
     std::vector<int> indices(cloud_xyz->size());
-    for (size_t i = 0; i < cloud_xyz->size(); ++i) {
+    for (size_t i = 0; i < cloud_xyz->size(); ++i)
+    {
         indices[i] = i;
     }
 
@@ -678,14 +724,16 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
         // FSG_LOG_VAR(N);
 
-        if (N != fsg::SuperEllipsoidParameters::fieldCount) {
+        if (N != fsg::SuperEllipsoidParameters::fieldCount)
+        {
             FSG_LOG_MSG("Mismatch field/vector count: "
                         << fsg::SuperEllipsoidParameters::fieldCount << " vs. "
                         << N);
             exit(1);
         }
 
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < N; i++)
+        {
             cmaes_eval_params.coeff(i) = x[i];
         }
 
@@ -835,7 +883,8 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
         FSG_LOG_VAR(deviation.norm());
     }
 
-    if (cma_status < 0) {
+    if (cma_status < 0)
+    {
         FSG_LOG_MSG("CMAES fitting failed, with code: " << cma_status);
         return false;
     }
@@ -845,13 +894,15 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 void SuperEllipsoidComputeGradientAllDimensions(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_center,
     pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud,
-    fsg::SuperEllipsoidParameters *gradient) {
+    fsg::SuperEllipsoidParameters *gradient)
+{
     FSG_TRACE_THIS_FUNCTION();
 
     FSG_LOG_VAR(superellipsoidparameters_center);
 
     std::vector<int> indices(pointCloud->size());
-    for (size_t i = 0; i < pointCloud->size(); ++i) {
+    for (size_t i = 0; i < pointCloud->size(); ++i)
+    {
         indices[i] = i;
     }
 
@@ -862,12 +913,14 @@ void SuperEllipsoidComputeGradientAllDimensions(
     Eigen::VectorXf values(5);
     const float epsilon = 0.001;
 
-    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++)
+    {
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
             "SuperEllipsoidComputeGradientAllDimensions dimension shift "
             << dimension_shift);
 
-        for (int step = -1; step <= 1; step += 1) {
+        for (int step = -1; step <= 1; step += 1)
+        {
             float stepEpsilon = step * epsilon;
 
             fsg::SuperEllipsoidParameters superellipsoidparameters =
@@ -894,7 +947,8 @@ void SuperEllipsoidComputeGradientAllDimensions(
 
 bool pointCloudToFittingContextWithInitialEstimate_both(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
-    fsg::SuperEllipsoidParameters &fittingContext) {
+    fsg::SuperEllipsoidParameters &fittingContext)
+{
 
     fsg::SuperEllipsoidParameters gradient_wrt_pointcloud;
     SuperEllipsoidComputeGradientAllDimensions(fittingContext, cloud_xyz,
@@ -915,7 +969,8 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
                 << ", libcmaes result="
                 << (success_libcmaes ? "success" : "failure"));
 
-    if (1) {
+    if (1)
+    {
         boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(
             new pcl::visualization::PCLVisualizer("viewer"));
         viewer->setBackgroundColor(0, 0, 0);
@@ -949,7 +1004,8 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
             pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2,
             "sep_levenbergmarquardt");
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++)
+        {
             viewer->spinOnce(100);
             boost::this_thread::sleep(boost::posix_time::microseconds(100000));
         }
@@ -968,14 +1024,16 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
         viewer->close();
     }
 
-    if (success_eigenlevenbergmarquardt) {
+    if (success_eigenlevenbergmarquardt)
+    {
         fittingContext = fittingContext_eigenlevenbergmarquardt;
         FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: "
                     "returning EigenLevenbergMarquardt result");
         return true;
     }
 
-    if (success_libcmaes) {
+    if (success_libcmaes)
+    {
         fittingContext = fittingContext_libcmaes;
         FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both: "
                     "returning libcmaes result");
@@ -989,11 +1047,13 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
 
 bool pointCloudToFittingContextWithInitialEstimate(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
-    fsg::SuperEllipsoidParameters &fittingContext) {
+    fsg::SuperEllipsoidParameters &fittingContext)
+{
 
     {
         std::vector<int> indices(cloud_xyz->size());
-        for (size_t i = 0; i < cloud_xyz->size(); ++i) {
+        for (size_t i = 0; i < cloud_xyz->size(); ++i)
+        {
             indices[i] = i;
         }
 
@@ -1021,13 +1081,15 @@ bool pointCloudToFittingContextWithInitialEstimate(
 */
 void SuperEllipsoidTestEachDimensionForGradientSanity(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_center,
-    pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud) {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud)
+{
     FSG_TRACE_THIS_FUNCTION();
 
     FSG_LOG_VAR(superellipsoidparameters_center);
 
     std::vector<int> indices(pointCloud->size());
-    for (size_t i = 0; i < pointCloud->size(); ++i) {
+    for (size_t i = 0; i < pointCloud->size(); ++i)
+    {
         indices[i] = i;
     }
 
@@ -1043,14 +1105,17 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
     FSG_LOG_VAR(centervalue);
     values[2] = centervalue;
 
-    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++) {
+    for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++)
+    {
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
             "SuperEllipsoidTestEachDimensionForGradientSanity dimension shift "
             << dimension_shift);
 
         /* First check that gradient itself is good. */
-        for (int step = -2; step <= 2; step++) {
-            if (step == 0) {
+        for (int step = -2; step <= 2; step++)
+        {
+            if (step == 0)
+            {
                 continue;
             }
             float stepEpsilon = step * epsilon;
@@ -1082,21 +1147,24 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
 
         {
             int failures = 0;
-            if (values[0] < values[1]) {
+            if (values[0] < values[1])
+            {
                 FSG_LOG_MSG("FAIL: bad gradient lower side on dimension "
                             << dimension_shift << " values " << values
                             << " params " << superellipsoidparameters_center);
                 failures++;
             }
 
-            if (values[3] > values[4]) {
+            if (values[3] > values[4])
+            {
                 FSG_LOG_MSG("FAIL: bad gradient higher side on dimension "
                             << dimension_shift << " values " << values
                             << " params " << superellipsoidparameters_center);
                 failures++;
             }
 
-            if (values[2] > values[1]) {
+            if (values[2] > values[1])
+            {
                 FSG_LOG_MSG(
                     "FAIL: bad gradient center higher than left on dimension "
                     << dimension_shift << " values " << values << " params "
@@ -1104,7 +1172,8 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
                 failures++;
             }
 
-            if (values[2] > values[3]) {
+            if (values[2] > values[3])
+            {
                 FSG_LOG_MSG(
                     "FAIL: bad gradient center higher than right on dimension "
                     << dimension_shift << " values " << values << " params "
@@ -1112,7 +1181,8 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
                 failures++;
             }
 
-            if (failures == 0) {
+            if (failures == 0)
+            {
                 FSG_LOG_MSG("Good gradient on dimension "
                             << dimension_shift << " params "
                             << superellipsoidparameters_center << " values "
@@ -1136,7 +1206,8 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
         bool success = pointCloudToFittingContextWithInitialEstimate(
             pointCloud, superellipsoidparameters_fit);
 
-        if (!success) {
+        if (!success)
+        {
             FSG_LOG_MSG("Fit after gradient epsilon failed, thus gradient test "
                         "FAIL, on dimension "
                         << dimension_shift);
@@ -1153,7 +1224,8 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
 
         FSG_LOG_VAR(deviation.norm());
 
-        if (deviation.norm() > fit_control_epsilon) {
+        if (deviation.norm() > fit_control_epsilon)
+        {
             FSG_LOG_MSG(
                 "Test FAIL fitting parameter at epsilon deviation on dimension "
                 << dimension_shift);
@@ -1163,8 +1235,8 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
 
 fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
-    pcl::visualization::PCLVisualizer *viewer,
-    const std::string &obj_index_i_s) {
+    pcl::visualization::PCLVisualizer *viewer, const std::string &obj_index_i_s)
+{
     FSG_TRACE_THIS_FUNCTION();
     fsg::SuperEllipsoidParameters initialEstimate;
     pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
@@ -1228,7 +1300,8 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
                            2.0 * minor_vector(1) + mass_center(1),
                            2.0 * minor_vector(2) + mass_center(2));
 
-    if (viewer != NULL) {
+    if (viewer != NULL)
+    {
         std::string obbId(obj_index_i_s + ":obb");
         FSG_LOG_MSG("will add obb with id: " << obbId);
 
@@ -1283,7 +1356,8 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
     static ofstream myfile = NULL;
     if (myfile == NULL)
     {
-        myfile.open ("SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions.log");
+        myfile.open(
+            "SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions.log");
     }
 
     myfile << sep_initialEstimate << sep_groundtruth << " ";
@@ -1291,7 +1365,7 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
     FSG_LOG_VAR(sep_initialEstimate);
     FSG_LOG_VAR(sep_groundtruth);
     fsg::SuperEllipsoidParameters sep_current;
-    for (double d=0; d<1.0; d+=0.01)
+    for (double d = 0; d <= 1.0; d += 0.01)
     {
         FSG_LOG_VAR(d);
         sep_current = (1.0 - d) * sep_initialEstimate + d * sep_groundtruth;
@@ -1300,7 +1374,8 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
             sep_current.toPointCloud(10);
 
         std::vector<int> indices(pointCloud->size());
-        for (size_t i = 0; i < pointCloud->size(); ++i) {
+        for (size_t i = 0; i < pointCloud->size(); ++i)
+        {
             indices[i] = i;
         }
 
@@ -1319,7 +1394,8 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
     }
 }
 
-bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
+bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
+{
     FSG_TRACE_THIS_FUNCTION();
     boost::random::uniform_real_distribution<> random_float_m5p5(-1, 1);
     boost::random::uniform_real_distribution<> random_float_cent_one(0.01, 1);
@@ -1365,7 +1441,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     bool success =
         pointCloudToFittingContextWithInitialEstimate(pointCloud, sep_fit);
 
-    if (!success) {
+    if (!success)
+    {
         FSG_LOG_MSG(
             "Fit failed, thus test FAIL, on parameter: " << sep_groundtruth);
         return false;
@@ -1378,7 +1455,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
 
     FSG_LOG_VAR(deviation.norm());
 
-    if (deviation.norm() > fit_control_epsilon) {
+    if (deviation.norm() > fit_control_epsilon)
+    {
         FSG_LOG_MSG("Test FAIL fitting parameter: " << sep_groundtruth);
         return false;
     }
@@ -1386,7 +1464,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen) {
     return true;
 }
 
-void SuperEllipsoidTest() {
+void SuperEllipsoidTest()
+{
     {
         fsg::SuperEllipsoidParameters superellipsoidparameters_prototype =
             fsg::SuperEllipsoidParameters::Default();
@@ -1398,29 +1477,34 @@ void SuperEllipsoidTest() {
         boost::random::minstd_rand _gen;
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
             "100 times SuperEllipsoidFitARandomSQ");
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100; i++)
+        {
             FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("Fitting random " << i);
             SuperEllipsoidFitARandomSQ(_gen);
         }
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     FSG_LOG_INIT__CALL_FROM_CPP_MAIN();
     FSG_LOG_VAR(GIT_VERSION);
     FSG_LOG_VAR(GIT_LOG);
     FSG_TRACE_THIS_FUNCTION();
 
-    if (argc == 2) {
+    if (argc == 2)
+    {
         std::string test = "test";
-        if (test.compare(argv[1]) == 0) {
+        if (test.compare(argv[1]) == 0)
+        {
             FloatTest();
             SuperEllipsoidTest();
             return 0;
         }
     }
 
-    if (argc != 4) {
+    if (argc != 4)
+    {
 
         std::cerr << "Usage : \n\t- pcd file\n\t- gmm archive\n\t- label"
                   << std::endl;
@@ -1453,7 +1537,8 @@ int main(int argc, char **argv) {
                 "load classifier archive: " << gmm_archive);
             //* Load the CMMs classifier from the archive
             std::ifstream ifs(gmm_archive);
-            if (!ifs) {
+            if (!ifs)
+            {
                 FSG_LOG_MSG("Unable to open archive : " << gmm_archive);
                 return 1;
             }
@@ -1526,7 +1611,8 @@ int main(int argc, char **argv) {
             {
                 pcl::PointXYZRGB pt;
                 for (auto it_p = input_cloud_soi->begin();
-                     it_p != input_cloud_soi->end(); it_p++) {
+                     it_p != input_cloud_soi->end(); it_p++)
+                {
                     // auto current_p = it_p->second;
                     pt.x = it_p->x;
                     pt.y = it_p->y;
@@ -1551,12 +1637,14 @@ int main(int argc, char **argv) {
 
             int kept = 0;
             for (auto it_sv = supervoxels.begin(); it_sv != supervoxels.end();
-                 it_sv++) {
+                 it_sv++)
+            {
                 // int current_sv_label = it_sv->first;
                 pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
                 float c = weights_for_this_modality[it_sv->first][lbl];
 
-                if (c < 0.5) {
+                if (c < 0.5)
+                {
                     // FSG_LOG_MSG( " skipping sv of label " << current_sv_label
                     // <<
                     // " weight " << c );
@@ -1575,7 +1663,8 @@ int main(int argc, char **argv) {
                 int b = float(dist(_gen) * 56) * (c + 0.5);
 
                 pcl::PointXYZRGB pt;
-                for (auto v : *(current_sv->voxels_)) {
+                for (auto v : *(current_sv->voxels_))
+                {
                     pt.x = v.x;
                     pt.y = v.y;
                     pt.z = v.z;
@@ -1607,7 +1696,8 @@ int main(int argc, char **argv) {
 
             /* each object */
             for (const auto &obj_hyp :
-                 obj_hypotheses | boost::adaptors::indexed(0)) {
+                 obj_hypotheses | boost::adaptors::indexed(0))
+            {
 
                 std::string obj_index_i_s = std::to_string(obj_hyp.index());
                 FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
@@ -1624,7 +1714,8 @@ int main(int argc, char **argv) {
                 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
                     new pcl::PointCloud<pcl::PointXYZ>);
 
-                if (p_obj_hyp->size() <= 1) {
+                if (p_obj_hyp->size() <= 1)
+                {
                     FSG_LOG_MSG("Skipping hypothesis object id="
                                 << obj_index_i_s
                                 << " because too few supervoxels: "
@@ -1640,13 +1731,15 @@ int main(int argc, char **argv) {
                     int kept = 0;
                     pcl::PointXYZ pt;
                     for (auto it_sv = supervoxels.begin();
-                         it_sv != supervoxels.end(); it_sv++) {
+                         it_sv != supervoxels.end(); it_sv++)
+                    {
                         int current_sv_label = it_sv->first;
                         pcl::Supervoxel<ip::PointT>::Ptr current_sv =
                             it_sv->second;
 
                         if (p_obj_hyp->find(current_sv_label) ==
-                            p_obj_hyp->end()) {
+                            p_obj_hyp->end())
+                        {
                             // FSG_LOG_MSG( "Supervoxel " << current_sv_label <<
                             // "
                             // not part of current object, skipping." );
@@ -1661,7 +1754,8 @@ int main(int argc, char **argv) {
                             << obj_index_i_s << ", including, "
                                                 "will add "
                             << current_sv->voxels_->size() << " point(s).");
-                        for (auto v : *(current_sv->voxels_)) {
+                        for (auto v : *(current_sv->voxels_))
+                        {
                             pt.x = v.x;
                             pt.y = v.y;
                             pt.z = v.z;
@@ -1675,7 +1769,8 @@ int main(int argc, char **argv) {
                                 << " for hypothesis id=" << obj_index_i_s);
                 }
 
-                if (cloud_xyz->size() < 20) {
+                if (cloud_xyz->size() < 20)
+                {
                     FSG_LOG_MSG(
                         "Skipping hypothesis object id="
                         << obj_index_i_s
@@ -1689,7 +1784,8 @@ int main(int argc, char **argv) {
                 {
                     pcl::PointXYZRGB pt;
 
-                    for (auto v : *cloud_xyz) {
+                    for (auto v : *cloud_xyz)
+                    {
                         pt.x = v.x;
                         pt.y = v.y;
                         pt.z = v.z;
@@ -1710,7 +1806,8 @@ int main(int argc, char **argv) {
                 bool success = pointCloudToFittingContextWithInitialEstimate(
                     cloud_xyz, fittingContext);
 
-                if (success) {
+                if (success)
+                {
 
                     pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
                         fittingContext.toPointCloud(100);
@@ -1721,7 +1818,8 @@ int main(int argc, char **argv) {
                         r = 127.0 + r / 2.0;
                         g = 127.0 + g / 2.0;
                         b = 127.0 + b / 2.0;
-                        for (auto v : *proj_points) {
+                        for (auto v : *proj_points)
+                        {
                             pt.x = v.x;
                             pt.y = v.y;
                             pt.z = v.z;
@@ -1732,7 +1830,9 @@ int main(int argc, char **argv) {
                             superellipsoids_cloud_ptr->push_back(pt);
                         }
                     }
-                } else {
+                }
+                else
+                {
                     FSG_LOG_MSG("Fitting fail on id=" << obj_index_i_s << ".");
                 }
 
@@ -1748,7 +1848,8 @@ int main(int argc, char **argv) {
             //{ "t", superellipsoid_cloud, "superellipsoid_cloud" },
         };
 
-        for (auto &cr : clouds) {
+        for (auto &cr : clouds)
+        {
             context_p->addCloud(cr);
             viewer->setPointCloudRenderingProperties(
                 pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, cr.name);
@@ -1764,7 +1865,8 @@ int main(int argc, char **argv) {
         viewer->getRenderWindow()->GetInteractor();
     viewer->addOrientationMarkerWidgetAxes(interactor);
 
-    while (!viewer->wasStopped()) {
+    while (!viewer->wasStopped())
+    {
         viewer->spinOnce(100);
         boost::this_thread::sleep(boost::posix_time::microseconds(100000));
     }

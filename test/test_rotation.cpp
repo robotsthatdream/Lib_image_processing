@@ -5,8 +5,10 @@
 #include <Eigen/Geometry>
 #include <cmath>
 
-namespace fsg {
-namespace matrixrotationangles {
+namespace fsg
+{
+namespace matrixrotationangles
+{
 
 /* See documentation for the following topics in test_rotation.hpp:
 
@@ -21,7 +23,8 @@ namespace matrixrotationangles {
  */
 
 void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
-                      float &roll) {
+                      float &roll)
+{
     /* Ok, so how do we compute our angles?
 
        Yaw is the one we can compute first.
@@ -77,7 +80,8 @@ void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
 }
 
 void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
-                      Eigen::Matrix3f &m) {
+                      Eigen::Matrix3f &m)
+{
     // std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch
     //           << " roll=" << roll << std::endl;
     m = Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ()) *
@@ -99,20 +103,26 @@ using namespace fsg::matrixrotationangles;
 
 void expect_identical_3x3_matrices(const Eigen::Matrix3f &m1,
                                    const Eigen::Matrix3f &m2,
-                                   const float epsilon = 1e-5) {
-    for (int row = 0; row <= 2; row++) {
-        for (int col = 0; col <= 2; col++) {
+                                   const float epsilon = 1e-5)
+{
+    for (int row = 0; row <= 2; row++)
+    {
+        for (int col = 0; col <= 2; col++)
+        {
             EXPECT_NEAR(m1(row, col), m2(row, col), epsilon) << "row=" << row
                                                              << ", col=" << col;
         }
     }
 }
 
-bool check_if_unitary(const Eigen::Matrix3f &m) {
-    for (int i = 0; i < 3; ++i) {
+bool check_if_unitary(const Eigen::Matrix3f &m)
+{
+    for (int i = 0; i < 3; ++i)
+    {
         std::cerr << "norm(col(" << i << ")) = " << m.col(i).squaredNorm()
                   << std::endl;
-        for (int j = 0; j < i; ++j) {
+        for (int j = 0; j < i; ++j)
+        {
             std::cerr << "(col(" << i << ")).(col(" << j
                       << ")) = " << m.col(i).dot(m.col(j)) << std::endl;
         }
@@ -120,18 +130,21 @@ bool check_if_unitary(const Eigen::Matrix3f &m) {
     return true;
 }
 
-class TwoWayTest : public ::testing::Test {
+class TwoWayTest : public ::testing::Test
+{
   protected:
     Eigen::Matrix3f model_m;
     float model_yaw, model_pitch, model_roll;
 
-    void CheckTwoWays() {
+    void CheckTwoWays()
+    {
         // std::cerr << model_m << std::endl
         //           << " model_yaw=" << model_yaw
         //           << " model_pitch=" << model_pitch
         //           << " model_roll=" << model_roll << std::endl;
 
-        if (!model_m.isUnitary()) {
+        if (!model_m.isUnitary())
+        {
             check_if_unitary(model_m);
         }
 
@@ -150,7 +163,8 @@ class TwoWayTest : public ::testing::Test {
     }
 };
 
-TEST(RotMatTest, EigenTest_CoeffAccessIsMRowColumn) {
+TEST(RotMatTest, EigenTest_CoeffAccessIsMRowColumn)
+{
     Eigen::Matrix3f m;
 
     m.row(0) << 1, 2, 3;
@@ -164,7 +178,8 @@ TEST(RotMatTest, EigenTest_CoeffAccessIsMRowColumn) {
     EXPECT_EQ(m(2, 2), 9);
 }
 
-TEST_F(TwoWayTest, Identity) {
+TEST_F(TwoWayTest, Identity)
+{
     model_m.row(0) << 1, 0, 0;
     model_m.row(1) << 0, 1, 0;
     model_m.row(2) << 0, 0, 1;
@@ -174,8 +189,8 @@ TEST_F(TwoWayTest, Identity) {
     CheckTwoWays();
 }
 
-TEST_F(TwoWayTest,
-       YawTest_RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2) {
+TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2)
+{
     // This matrix sends X to Y.
     // This matrix sends Y to -X.
     // This matrix sends Z to Z.
@@ -191,7 +206,8 @@ TEST_F(TwoWayTest,
 
 #define M_SQRT2_2 ((M_SQRT2) / 2.0)
 
-TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4) {
+TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4)
+{
     // This matrix sends X to Y.
     // This matrix sends Y to -X.
     // This matrix sends Z to Z.
@@ -205,7 +221,8 @@ TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4) {
     CheckTwoWays();
 }
 
-TEST_F(TwoWayTest, PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2) {
+TEST_F(TwoWayTest, PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2)
+{
     // This matrix sends X to Z.
     // This matrix sends Y to Y.
     // This matrix sends Z to -X.
@@ -219,7 +236,8 @@ TEST_F(TwoWayTest, PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2) {
     CheckTwoWays();
 }
 
-TEST_F(TwoWayTest, PitchTest_LiftBookPagetopEighthTurnMustYieldPitchPi4) {
+TEST_F(TwoWayTest, PitchTest_LiftBookPagetopEighthTurnMustYieldPitchPi4)
+{
     // This matrix sends X to Z.
     // This matrix sends Y to Y.
     // This matrix sends Z to -X.
@@ -233,7 +251,8 @@ TEST_F(TwoWayTest, PitchTest_LiftBookPagetopEighthTurnMustYieldPitchPi4) {
     CheckTwoWays();
 }
 
-TEST_F(TwoWayTest, RollTest_OpenBookCoverQuarterTurnMustYieldRollMinusPi2) {
+TEST_F(TwoWayTest, RollTest_OpenBookCoverQuarterTurnMustYieldRollMinusPi2)
+{
     // This matrix sends X to X.
     // This matrix sends Y to -Z.
     // This matrix sends Z to Y.
@@ -247,7 +266,8 @@ TEST_F(TwoWayTest, RollTest_OpenBookCoverQuarterTurnMustYieldRollMinusPi2) {
     CheckTwoWays();
 }
 
-TEST_F(TwoWayTest, RollTest_OpenBookCoverEighthTurnMustYieldRollMinusPi4) {
+TEST_F(TwoWayTest, RollTest_OpenBookCoverEighthTurnMustYieldRollMinusPi4)
+{
     // This matrix sends X to X.
     // This matrix sends Y to -Z.
     // This matrix sends Z to Y.
@@ -261,7 +281,8 @@ TEST_F(TwoWayTest, RollTest_OpenBookCoverEighthTurnMustYieldRollMinusPi4) {
     CheckTwoWays();
 }
 
-TEST_F(TwoWayTest, YawAndHalfPitchTest) {
+TEST_F(TwoWayTest, YawAndHalfPitchTest)
+{
     // This matrix sends X to (Y+Z)/SQRT2.
     // This matrix sends Y to -X.
     // This matrix sends Z to (-Y+Z)/SQRT2.
@@ -276,7 +297,8 @@ TEST_F(TwoWayTest, YawAndHalfPitchTest) {
     CheckTwoWays();
 }
 
-TEST_F(TwoWayTest, YawAndRollTest) {
+TEST_F(TwoWayTest, YawAndRollTest)
+{
     // This matrix sends X to Y.
     // This matrix sends Y to Z.
     // This matrix sends Z to X.
@@ -290,7 +312,8 @@ TEST_F(TwoWayTest, YawAndRollTest) {
     CheckTwoWays();
 }
 
-TEST_F(TwoWayTest, HalfPitchAndRollTest) {
+TEST_F(TwoWayTest, HalfPitchAndRollTest)
+{
     // This matrix sends X to (X+Z)/SQRT2.
     // This matrix sends Y to (Z-X)/SQRT2.
     // This matrix sends Z to -Y.
@@ -305,7 +328,8 @@ TEST_F(TwoWayTest, HalfPitchAndRollTest) {
     CheckTwoWays();
 }
 
-TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX) {
+TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX)
+{
     float yaw = 1, pitch = 1, roll = 1;
     Eigen::Vector3f x = Eigen::Vector3f::UnitX();
     Eigen::Vector3f y = Eigen::Vector3f::UnitY();
@@ -338,15 +362,19 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX) {
         << "Adding roll must not change image of x.";
 }
 
-TEST_F(TwoWayTest, FullTest_AnyComboMustConvertAndBack) {
+TEST_F(TwoWayTest, FullTest_AnyComboMustConvertAndBack)
+{
 
     const float increment = M_PI_2 / 10;
 
-    for (model_yaw = -M_PI * 0.98; model_yaw < M_PI; model_yaw += increment) {
+    for (model_yaw = -M_PI * 0.98; model_yaw < M_PI; model_yaw += increment)
+    {
         for (model_pitch = -M_PI_2 * 0.98; model_pitch < M_PI_2;
-             model_pitch += increment) {
+             model_pitch += increment)
+        {
             for (model_roll = -M_PI_2; model_roll < M_PI_2;
-                 model_roll += increment) {
+                 model_roll += increment)
+            {
                 angles_to_matrix(model_yaw, model_pitch, model_roll, model_m);
 
                 CheckTwoWays();
@@ -357,7 +385,8 @@ TEST_F(TwoWayTest, FullTest_AnyComboMustConvertAndBack) {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
