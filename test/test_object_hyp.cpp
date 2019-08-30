@@ -298,7 +298,7 @@ struct OptimizationFunctor : pcl::Functor<float>
 //     return result;
 // }
 
-#define FUNCTOR_LOG_INSIDE 0
+#define FUNCTOR_LOG_INSIDE 1
 
     /** Cost function to be minimized
      * \param[in] x the variables array
@@ -384,7 +384,7 @@ struct OptimizationFunctor : pcl::Functor<float>
             const float outside_if_over_1 =
                 powf_abs(term, exp_2_over_exp_1) +
                 powf_abs(v_scaled(2), two_over_exp_1);
-            // FSG_LOG_VAR(outside_if_over_1);
+            FSG_LOG_VAR(outside_if_over_1);
 
             const float deviation = outside_if_over_1;
             // FSG_LOG_VAR(deviation);
