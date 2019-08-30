@@ -1114,10 +1114,10 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
         /* First check that gradient itself is good. */
         for (int step = -2; step <= 2; step++)
         {
-            if (step == 0)
+            /*if (step == 0)
             {
                 continue;
-            }
+            }*/
             float stepEpsilon = step * epsilon;
 
             fsg::SuperEllipsoidParameters superellipsoidparameters =
