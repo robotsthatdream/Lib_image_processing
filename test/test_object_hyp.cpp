@@ -1440,8 +1440,21 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     FSG_LOG_MSG("Now testing actual fit.");
     FSG_LOG_VAR(sep_groundtruth);
 
-    fsg::SuperEllipsoidParameters initialEstimate =
-        pointCloudComputeFitComputeInitialEstimate(pointCloud, nullptr, "");
+    // fsg::SuperEllipsoidParameters initialEstimate =
+    //     pointCloudComputeFitComputeInitialEstimate(pointCloud, nullptr, "");
+    
+    fsg::SuperEllipsoidParameters initialEstimate;
+    initialEstimate.set_cen_x(random_float_m5p5(_gen));
+    initialEstimate.set_cen_y(random_float_m5p5(_gen));
+    initialEstimate.set_cen_z(random_float_m5p5(_gen));
+    initialEstimate.set_rad_a(random_float_cent_one(_gen));
+    initialEstimate.set_rad_b(random_float_cent_one(_gen));
+    initialEstimate.set_rad_c(random_float_cent_one(_gen));
+    initialEstimate.set_rot_yaw(random_float_mpippi(_gen));
+    initialEstimate.set_rot_pitch(random_float_mpippi(_gen));
+    initialEstimate.set_rot_roll(random_float_mpippi(_gen));
+    initialEstimate.set_exp_1(1); // random_float_cent_two(_gen));
+    initialEstimate.set_exp_2(1); // random_float_cent_two(_gen));
 
     SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
         pointCloud, initialEstimate, sep_groundtruth);
