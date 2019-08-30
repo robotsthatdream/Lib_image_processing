@@ -287,6 +287,7 @@ struct OptimizationFunctor : pcl::Functor<float>
     }
 
 #define powf_abs(x, y) powf(fabs(x), y)
+#define pow_abs(x, y) pow(fabs(x), y)
 // float powf_abs(const float x, const float y) const {
 //     FSG_TRACE_THIS_FUNCTION();
 //     FSG_LOG_VAR(x);
@@ -313,9 +314,9 @@ struct OptimizationFunctor : pcl::Functor<float>
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
 #endif
 
-        const float exp_1 = param(fsg::SuperEllipsoidParameters::idx::exp_1);
+        const double exp_1 = param(fsg::SuperEllipsoidParameters::idx::exp_1);
         // FSG_LOG_VAR(exp_1);
-        const float exp_2 = param(fsg::SuperEllipsoidParameters::idx::exp_2);
+        const double exp_2 = param(fsg::SuperEllipsoidParameters::idx::exp_2);
         // FSG_LOG_VAR(exp_2);
 
         // if ((exp_1 > 2.0) || (exp_2 > 2.0)) {
@@ -335,7 +336,7 @@ struct OptimizationFunctor : pcl::Functor<float>
         // FSG_LOG_VAR(cen);
 
         // Compute rotation matrix
-        Eigen::Matrix3f rotmat;
+        Eigen::Matrix3d rotmat;
         angles_to_matrix(param(fsg::SuperEllipsoidParameters::idx::rot_yaw),
                          param(fsg::SuperEllipsoidParameters::idx::rot_pitch),
                          param(fsg::SuperEllipsoidParameters::idx::rot_roll),
@@ -344,14 +345,14 @@ struct OptimizationFunctor : pcl::Functor<float>
         rotmat.transposeInPlace();
         // FSG_LOG_VAR(rotmat);
 
-        const float two_over_exp_1 = 2.0 / exp_1;
-        const float two_over_exp_2 = 2.0 / exp_2;
-        const float exp_2_over_exp_1 = exp_2 / exp_1;
+        const double two_over_exp_1 = 2.0 / exp_1;
+        const double two_over_exp_2 = 2.0 / exp_2;
+        const double exp_2_over_exp_1 = exp_2 / exp_1;
         // FSG_LOG_VAR(two_over_exp_2);
         // FSG_LOG_VAR(two_over_exp_1);
         // FSG_LOG_VAR(exp_2_over_exp_1);
 
-        float sum_of_squares = 0;
+        double sum_of_squares = 0;
 
         for (signed int i = 0; i < values(); ++i)
         {
@@ -360,16 +361,16 @@ struct OptimizationFunctor : pcl::Functor<float>
             // FSG_LOG_VAR(p);
 
             // Compute vector from center.
-            const Eigen::Vector3f v_raw(p.x - cen.x, p.y - cen.y, p.z - cen.z);
+            const Eigen::Vector3d v_raw(p.x - cen.x, p.y - cen.y, p.z - cen.z);
             // FSG_LOG_VAR(v_raw);
 
             // Rotate vector
-            const Eigen::Vector3f v_aligned = rotmat * v_raw;
+            const Eigen::Vector3d v_aligned = rotmat * v_raw;
             // FSG_LOG_VAR(v_aligned);
 
             // TODO check major/middle/minor vs X,Y,Z...
 
-            Eigen::Vector3f v_scaled;
+            Eigen::Vector3d v_scaled;
             // FIXME radii here are not major middle minor, only x y z or 1 2 3.
             v_scaled << v_aligned(0) /
                             param(fsg::SuperEllipsoidParameters::idx::rad_a),
@@ -377,16 +378,16 @@ struct OptimizationFunctor : pcl::Functor<float>
                 v_aligned(2) / param(fsg::SuperEllipsoidParameters::idx::rad_c);
             // FSG_LOG_VAR(v_scaled);
 
-            const float term = powf_abs(v_scaled(0), two_over_exp_2) +
-                               powf_abs(v_scaled(1), two_over_exp_2);
+            const double term = pow_abs(v_scaled(0), two_over_exp_2) +
+                               pow_abs(v_scaled(1), two_over_exp_2);
             // FSG_LOG_VAR(term);
 
-            const float outside_if_over_1 =
-                powf_abs(term, exp_2_over_exp_1) +
-                powf_abs(v_scaled(2), two_over_exp_1);
+            const double outside_if_over_1 =
+                pow_abs(term, exp_2_over_exp_1) +
+                pow_abs(v_scaled(2), two_over_exp_1);
             // FSG_LOG_VAR(outside_if_over_1);
 
-            const float deviation = outside_if_over_1 - 1;
+            const double deviation = outside_if_over_1 - 1;
 #if FUNCTOR_LOG_INSIDE == 1
             FSG_LOG_VAR(deviation);
 #endif
