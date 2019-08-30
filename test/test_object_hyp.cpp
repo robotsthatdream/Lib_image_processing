@@ -298,7 +298,7 @@ struct OptimizationFunctor : pcl::Functor<float>
 //     return result;
 // }
 
-#define FUNCTOR_LOG_INSIDE 1
+#define FUNCTOR_LOG_INSIDE 0
 
     /** Cost function to be minimized
      * \param[in] x the variables array
@@ -1370,7 +1370,7 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
     FSG_LOG_VAR(sep_initialEstimate);
     FSG_LOG_VAR(sep_groundtruth);
     fsg::SuperEllipsoidParameters sep_current;
-    const int steps = 100;
+    const int steps = 1000;
     for (int step = 0; step <= steps; step++)
     {
         double d = (double)step / (double)steps;
