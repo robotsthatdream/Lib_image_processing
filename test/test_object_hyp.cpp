@@ -113,9 +113,9 @@ struct SuperEllipsoidParameters
         ;
 
     // https://stackoverflow.com/questions/11490988/c-compile-time-error-expected-identifier-before-numeric-constant
-    Eigen::VectorXd coeff = Eigen::VectorXd(fieldCount);
+    VECTORX coeff = VECTORX(fieldCount);
 
-    double *coeffData();
+    FNUM_TYPE *coeffData();
 
     SuperEllipsoidParameters() : coeff(fieldCount){};
 
@@ -143,7 +143,7 @@ ostream &operator<<(ostream &os, const SuperEllipsoidParameters &sefc)
     return os;
 }
 
-SuperEllipsoidParameters operator*(double d,
+SuperEllipsoidParameters operator*(FNUM_TYPE d,
                                    const SuperEllipsoidParameters &sefc)
 {
     SuperEllipsoidParameters result;
@@ -174,7 +174,7 @@ FNUM_TYPE sym_pow(FNUM_TYPE x, FNUM_TYPE y)
 /** Provide access to coeff data as C-style array.  Number of
     values is provided in SuperEllipsoidParameters::fieldcount.
  */
-double *SuperEllipsoidParameters::coeffData() { return (this->coeff.data()); }
+FNUM_TYPE *SuperEllipsoidParameters::coeffData() { return (this->coeff.data()); }
 
 /** This method implements the forward transformation from a
     12-dimension model to a point cloud.
@@ -307,7 +307,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
      * \param[out] fvec the resultant functions evaluations
      * \return 0
      */
-    int operator()(const Eigen::VectorXd &param, VECTORX &fvec) const
+    int operator()(const VECTORX &param, VECTORX &fvec) const
     {
 #if FUNCTOR_LOG_INSIDE == 1
         fsg::SuperEllipsoidParameters *sep =
@@ -355,7 +355,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         // FSG_LOG_VAR(two_over_exp_1);
         // FSG_LOG_VAR(exp_2_over_exp_1);
 
-        FNUM_TYPE sum_of_squares = 0;
+        //FNUM_TYPE sum_of_squares = 0;
 
         for (signed int i = 0; i < values(); ++i)
         {
@@ -396,13 +396,14 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
 #endif
 
             fvec[i] = deviation;
-            sum_of_squares += deviation * deviation;
+            //sum_of_squares += deviation * deviation;
         }
 // FSG_LOG_VAR(fvec);
-#if FUNCTOR_LOG_INSIDE == 1
-        FSG_LOG_VAR(sum_of_squares);
-#endif
-        return (sum_of_squares); // FIXME returns int.
+//#if FUNCTOR_LOG_INSIDE == 1
+        //FSG_LOG_VAR(sum_of_squares);
+//#endif
+        //return (sum_of_squares); // FIXME returns int.
+        return 0;
     }
 
     const pcl::PointCloud<pcl::PointXYZ> &cloud_;
@@ -684,7 +685,7 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     {
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
             "Eigen::LevenbergMarquardt::minimize()");
-        Eigen::VectorXd coeff_d = fittingContext.coeff;
+        VECTORX coeff_d = fittingContext.coeff;
         VECTORX coeff_f = coeff_d.cast<FNUM_TYPE>();
 
         minimizationResult =
@@ -724,13 +725,13 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
         indices[i] = i;
     }
 
-    std::vector<double> x0(fsg::SuperEllipsoidParameters::fieldCount, 0);
+    std::vector<FNUM_TYPE> x0(fsg::SuperEllipsoidParameters::fieldCount, 0);
 
     // copy to
 
     OptimizationFunctor functor(*cloud_xyz, indices);
 
-    libcmaes::FitFunc cmaes_fit_func = [&functor, &cloud_xyz](const double *x,
+    libcmaes::FitFunc cmaes_fit_func = [&functor, &cloud_xyz](const FNUM_TYPE *x,
                                                               const int N) {
         fsg::SuperEllipsoidParameters cmaes_eval_params;
 
@@ -755,25 +756,25 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
         functor(cmaes_eval_params.coeff, deviation);
 
-        double deviation_sum_of_squares = -deviation.norm();
+        FNUM_TYPE deviation_sum_of_squares = -deviation.norm();
 
         // FSG_LOG_VAR(deviation_sum_of_squares);
 
         return deviation_sum_of_squares;
     };
 
-    Eigen::VectorXd OptimizationStepSize(
+    VECTORX OptimizationStepSize(
         fsg::SuperEllipsoidParameters::fieldCount);
     OptimizationStepSize << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 3, 1.5, 1.5, 1, 1;
 
     // FSG_LOG_VAR(OptimizationStepSize);
 
-    Eigen::VectorXd LowerBounds(fsg::SuperEllipsoidParameters::fieldCount);
+    VECTORX LowerBounds(fsg::SuperEllipsoidParameters::fieldCount);
     LowerBounds << -3, -3, -3, 0, 0, 0, -sg_pi, -sg_pi_2, -sg_pi_2, 0.1, 0.1;
 
     // FSG_LOG_VAR(LowerBounds);
 
-    Eigen::VectorXd UpperBounds(fsg::SuperEllipsoidParameters::fieldCount);
+    VECTORX UpperBounds(fsg::SuperEllipsoidParameters::fieldCount);
     UpperBounds << 3, 3, 3, 1, 1, 1, sg_pi, sg_pi_2, sg_pi_2, 2, 2;
 
     // FSG_LOG_VAR(UpperBounds);
@@ -871,15 +872,15 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     FSG_LOG_BEGIN() << FSG_LOG_END();
 
-    // double fmin = bcand.get_fvalue(); // min objective function value the
+    // FNUM_TYPE fmin = bcand.get_fvalue(); // min objective function value the
     // optimizer converged to
-    Eigen::VectorXd bestparameters = bcand.get_x_dvec(); // vector of objective
+    VECTORX bestparameters = bcand.get_x_dvec(); // vector of objective
                                                          // function parameters
                                                          // at minimum.
-    // double edm = cmasols.edm(); // expected distance to the minimum.
+    // FNUM_TYPE edm = cmasols.edm(); // expected distance to the minimum.
 
     // https://github.com/beniz/libcmaes/wiki/Defining-and-using-bounds-on-parameters#user-content-retrieving-the-best-solution
-    // Eigen::VectorXd bestparameters =
+    // VECTORX bestparameters =
     // gp.pheno(cmasols.get_best_seen_candidate().get_x_dvec());
 
     fittingContext.coeff = bestparameters;
@@ -1234,7 +1235,7 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
             FSG_LOG_VAR(superellipsoidparameters_fit);
             FSG_LOG_VAR(superellipsoidparameters_center);
 
-            Eigen::VectorXd deviation = superellipsoidparameters_fit.coeff -
+            VECTORX deviation = superellipsoidparameters_fit.coeff -
                                         superellipsoidparameters_center.coeff;
 
             FSG_LOG_VAR(deviation.norm());
@@ -1385,7 +1386,7 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
     const int steps = 1000;
     for (int step = 0; step <= steps; step++)
     {
-        double d = (double)step / (double)steps;
+        FNUM_TYPE d = (FNUM_TYPE)step / (FNUM_TYPE)steps;
         FSG_LOG_VAR(d);
         sep_current = (1.0 - d) * sep_initialEstimate + d * sep_groundtruth;
 
@@ -1404,7 +1405,7 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
 
         functor(sep_current.coeff, deviation);
 
-        double dn = deviation.norm();
+        FNUM_TYPE dn = deviation.norm();
         // FSG_LOG_VAR(deviation);
         FSG_LOG_VAR(dn);
 
@@ -1487,7 +1488,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
         FSG_LOG_VAR(sep_groundtruth);
         FSG_LOG_VAR(sep_fit);
 
-        Eigen::VectorXd deviation = sep_fit.coeff - sep_groundtruth.coeff;
+        VECTORX deviation = sep_fit.coeff - sep_groundtruth.coeff;
 
         FSG_LOG_VAR(deviation.norm());
 
