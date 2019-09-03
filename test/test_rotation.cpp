@@ -4,6 +4,7 @@
 #include <Eigen/Geometry>
 #include <cmath>
 #include "test_rotation.hpp"
+#include "number_type.hpp"
 
 namespace fsg
 {

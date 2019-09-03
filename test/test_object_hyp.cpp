@@ -32,6 +32,7 @@
 
 #include "fsg_trace.hpp"
 #include "test_rotation.hpp"
+#include "number_type.hpp"
 
 namespace ip = image_processing;
 

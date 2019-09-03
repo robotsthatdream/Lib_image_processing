@@ -1,23 +1,6 @@
+#ifndef TEST_ROTATION_HPP
+
 #include <Eigen/Core>
-
-#ifdef USE_DOUBLE
-#define FNUM_TYPE double
-#define FNUM_LITERAL(number) number
-#define WITH_SUFFIX_fx(symbolname) symbolname
-#define WITH_SUFFIX_fd(symbolname) symbolname##d
-#define WITH_SUFFIX_xd(symbolname) symbolname##d
-#else
-#define FNUM_TYPE float
-#define FNUM_LITERAL(number) number##f
-#define WITH_SUFFIX_fx(symbolname) symbolname##f
-#define WITH_SUFFIX_fd(symbolname) symbolname##f
-#define WITH_SUFFIX_xd(symbolname) symbolname
-#endif
-
-#pragma GCC diagnostic warning "-Wdouble-promotion"
-#pragma GCC diagnostic warning "-Wfloat-equal"
-#pragma GCC diagnostic warning "-Wfloat-conversion"
-#pragma GCC diagnostic warning "-Wconversion"
 
 namespace fsg
 {
@@ -197,3 +180,5 @@ void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
 
 } // namespace matrixrotationangles
 } // namespace fsg
+
+#endif /* TEST_ROTATION_HPP */
