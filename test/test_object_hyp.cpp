@@ -634,7 +634,7 @@ void SuperEllipsoidTestComputeGradient(
 
     FSG_LOG_VAR(center_value);
 
-    const FNUM_TYPE epsilon = 0.05;
+    const FNUM_TYPE epsilon = FNUM_LITERAL(0.05);
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++)
     {
@@ -923,7 +923,7 @@ void SuperEllipsoidComputeGradientAllDimensions(
     Eigen::VectorXf deviation(pointCloud->size());
 
     Eigen::VectorXf values(5);
-    const FNUM_TYPE epsilon = 0.001;
+    const FNUM_TYPE epsilon = FNUM_LITERAL(0.001);
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++)
     {
@@ -1110,7 +1110,7 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
     Eigen::VectorXf deviation(pointCloud->size());
 
     Eigen::VectorXf values(5);
-    const FNUM_TYPE epsilon = 0.001;
+    const FNUM_TYPE epsilon = FNUM_LITERAL(0.001);
 
     functor(superellipsoidparameters_center.coeff, deviation);
     FNUM_TYPE centervalue = deviation.norm();
