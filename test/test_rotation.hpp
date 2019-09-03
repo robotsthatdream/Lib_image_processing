@@ -1,4 +1,5 @@
 #ifndef TEST_ROTATION_HPP
+#define TEST_ROTATION_HPP
 
 #include <Eigen/Core>
 

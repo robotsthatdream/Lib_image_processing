@@ -1,4 +1,5 @@
 #ifndef NUMBER_TYPE_HPP
+#define NUMBER_TYPE_HPP
 
 #define USE_DOUBLE 1
 
