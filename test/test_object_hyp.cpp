@@ -1425,17 +1425,17 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     // ost::random::uniform_real_distribution<> random_number_cent_two(1, 1);
 
     fsg::SuperEllipsoidParameters sep_groundtruth;
-    sep_groundtruth.set_cen_x(random_number_m5p5(_gen));
-    sep_groundtruth.set_cen_y(random_number_m5p5(_gen));
-    sep_groundtruth.set_cen_z(random_number_m5p5(_gen));
-    sep_groundtruth.set_rad_a(random_number_cent_one(_gen));
-    sep_groundtruth.set_rad_b(random_number_cent_one(_gen));
-    sep_groundtruth.set_rad_c(random_number_cent_one(_gen));
-    sep_groundtruth.set_rot_yaw(random_number_mpippi(_gen));
-    sep_groundtruth.set_rot_pitch(random_number_mpippi(_gen));
-    sep_groundtruth.set_rot_roll(random_number_mpippi(_gen));
-    sep_groundtruth.set_exp_1(1); // random_number_cent_two(_gen));
-    sep_groundtruth.set_exp_2(1); // random_number_cent_two(_gen));
+    sep_groundtruth.set_cen_x((FNUM_TYPE)random_number_m5p5(_gen));
+    sep_groundtruth.set_cen_y((FNUM_TYPE)random_number_m5p5(_gen));
+    sep_groundtruth.set_cen_z((FNUM_TYPE)random_number_m5p5(_gen));
+    sep_groundtruth.set_rad_a((FNUM_TYPE)random_number_cent_one(_gen));
+    sep_groundtruth.set_rad_b((FNUM_TYPE)random_number_cent_one(_gen));
+    sep_groundtruth.set_rad_c((FNUM_TYPE)random_number_cent_one(_gen));
+    sep_groundtruth.set_rot_yaw((FNUM_TYPE)random_number_mpippi(_gen));
+    sep_groundtruth.set_rot_pitch((FNUM_TYPE)random_number_mpippi(_gen));
+    sep_groundtruth.set_rot_roll((FNUM_TYPE)random_number_mpippi(_gen));
+    sep_groundtruth.set_exp_1(sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
+    sep_groundtruth.set_exp_2(sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
 
     FSG_LOG_VAR(sep_groundtruth);
 
@@ -1456,17 +1456,17 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     //     pointCloudComputeFitComputeInitialEstimate(pointCloud, nullptr, "");
 
     fsg::SuperEllipsoidParameters initialEstimate;
-    initialEstimate.set_cen_x(random_number_m5p5(_gen));
-    initialEstimate.set_cen_y(random_number_m5p5(_gen));
-    initialEstimate.set_cen_z(random_number_m5p5(_gen));
-    initialEstimate.set_rad_a(random_number_cent_one(_gen));
-    initialEstimate.set_rad_b(random_number_cent_one(_gen));
-    initialEstimate.set_rad_c(random_number_cent_one(_gen));
-    initialEstimate.set_rot_yaw(random_number_mpippi(_gen));
-    initialEstimate.set_rot_pitch(random_number_mpippi(_gen));
-    initialEstimate.set_rot_roll(random_number_mpippi(_gen));
-    initialEstimate.set_exp_1(1); // random_number_cent_two(_gen));
-    initialEstimate.set_exp_2(1); // random_number_cent_two(_gen));
+    initialEstimate.set_cen_x((FNUM_TYPE)random_number_m5p5(_gen));
+    initialEstimate.set_cen_y((FNUM_TYPE)random_number_m5p5(_gen));
+    initialEstimate.set_cen_z((FNUM_TYPE)random_number_m5p5(_gen));
+    initialEstimate.set_rad_a((FNUM_TYPE)random_number_cent_one(_gen));
+    initialEstimate.set_rad_b((FNUM_TYPE)random_number_cent_one(_gen));
+    initialEstimate.set_rad_c((FNUM_TYPE)random_number_cent_one(_gen));
+    initialEstimate.set_rot_yaw((FNUM_TYPE)random_number_mpippi(_gen));
+    initialEstimate.set_rot_pitch((FNUM_TYPE)random_number_mpippi(_gen));
+    initialEstimate.set_rot_roll((FNUM_TYPE)random_number_mpippi(_gen));
+    initialEstimate.set_exp_1(sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
+    initialEstimate.set_exp_2(sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
 
     SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
         pointCloud, initialEstimate, sep_groundtruth);
