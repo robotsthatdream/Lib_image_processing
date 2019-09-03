@@ -1,5 +1,7 @@
 #ifndef NUMBER_TYPE_HPP
 
+#define USE_DOUBLE 1
+
 #ifdef USE_DOUBLE
 #define FNUM_TYPE double
 #define FNUM_LITERAL(number) number
