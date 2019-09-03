@@ -1325,7 +1325,7 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     // http://pointclouds.org/documentation/tutorials/moment_of_inertia.php
 
     VECTOR3 position(position_OBB.x, position_OBB.y, position_OBB.z);
-    Eigen::Quaternionf quat(rotational_matrix_OBB);
+    QUATERNION quat(rotational_matrix_OBB);
 
     pcl::PointXYZ center(mass_center(0), mass_center(1), mass_center(2));
 

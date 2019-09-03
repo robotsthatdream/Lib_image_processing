@@ -48,5 +48,6 @@ static constexpr FNUM_TYPE sg_half = FNUM_LITERAL(0.5);
 #define VECTOR4 Eigen::WITH_SUFFIX_fd(Vector4)
 #define MATRIX4 Eigen::WITH_SUFFIX_fd(Matrix4)
 #define VECTORX Eigen::WITH_SUFFIX_fd(VectorX)
+#define QUATERNION Eigen::WITH_SUFFIX_fd(Quaternion)
 
 #endif /* NUMBER_TYPE_HPP */
