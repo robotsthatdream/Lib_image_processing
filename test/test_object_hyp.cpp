@@ -588,7 +588,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
             superellipsoidparameters.toPointCloud(10);
 
         std::vector<int> indices(pointCloud->size());
-        for (size_t i = 0; i < pointCloud->size(); ++i)
+        for (int i = 0; i < (int)pointCloud->size(); ++i)
         {
             indices[i] = i;
         }
@@ -619,7 +619,7 @@ void SuperEllipsoidTestComputeGradient(
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
     std::vector<int> indices(pointCloud->size());
-    for (size_t i = 0; i < pointCloud->size(); ++i)
+    for (int i = 0; i < (int)pointCloud->size(); ++i)
     {
         indices[i] = i;
     }
@@ -669,7 +669,7 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     FSG_LOG_MSG("Initial estimate : " << initialEstimate);
 
     std::vector<int> indices(cloud_xyz->size());
-    for (size_t i = 0; i < cloud_xyz->size(); ++i)
+    for (int i = 0; i < (int)cloud_xyz->size(); ++i)
     {
         indices[i] = i;
     }
@@ -719,7 +719,7 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     FSG_LOG_MSG("Initial estimate : " << initialEstimate);
 
     std::vector<int> indices(cloud_xyz->size());
-    for (size_t i = 0; i < cloud_xyz->size(); ++i)
+    for (int i = 0; i < (int)cloud_xyz->size(); ++i)
     {
         indices[i] = i;
     }
@@ -913,7 +913,7 @@ void SuperEllipsoidComputeGradientAllDimensions(
     FSG_LOG_VAR(superellipsoidparameters_center);
 
     std::vector<int> indices(pointCloud->size());
-    for (size_t i = 0; i < pointCloud->size(); ++i)
+    for (int i = 0; i < (int)pointCloud->size(); ++i)
     {
         indices[i] = i;
     }
@@ -1064,7 +1064,7 @@ bool pointCloudToFittingContextWithInitialEstimate(
 
     {
         std::vector<int> indices(cloud_xyz->size());
-        for (size_t i = 0; i < cloud_xyz->size(); ++i)
+        for (int i = 0; i < (int)cloud_xyz->size(); ++i)
         {
             indices[i] = i;
         }
@@ -1100,7 +1100,7 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
     FSG_LOG_VAR(superellipsoidparameters_center);
 
     std::vector<int> indices(pointCloud->size());
-    for (size_t i = 0; i < pointCloud->size(); ++i)
+    for (int i = 0; i < (int)pointCloud->size(); ++i)
     {
         indices[i] = i;
     }
@@ -1393,7 +1393,7 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
             sep_current.toPointCloud(10);
 
         std::vector<int> indices(pointCloud->size());
-        for (size_t i = 0; i < pointCloud->size(); ++i)
+        for (int i = 0; i < (int)pointCloud->size(); ++i)
         {
             indices[i] = i;
         }
