@@ -1285,7 +1285,7 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     feature_extractor.setAngleStep(360);
     feature_extractor.compute();
 
-    VECTOR3 mass_center;
+    Eigen::Vector3f mass_center; // Type imposed by pcl::MomentOfInertiaEstimation
     feature_extractor.getMassCenter(
         mass_center); // FIXME should check return value
 
