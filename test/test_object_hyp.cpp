@@ -1690,9 +1690,9 @@ int main(int argc, char **argv)
                 // different colors, then multiplied by biased relevance.
                 // Hope this allows to easily distinguish supervoxels by
                 // colors.
-                int r = float(dist(_gen) * 56) * (c + 0.5);
-                int g = float(dist(_gen) * 56) * (c + 0.5);
-                int b = float(dist(_gen) * 56) * (c + 0.5);
+                int r = FNUM_TYPE(dist(_gen) * 56) * (c + 0.5);
+                int g = FNUM_TYPE(dist(_gen) * 56) * (c + 0.5);
+                int b = FNUM_TYPE(dist(_gen) * 56) * (c + 0.5);
 
                 pcl::PointXYZRGB pt;
                 for (auto v : *(current_sv->voxels_))
@@ -1737,9 +1737,9 @@ int main(int argc, char **argv)
 
                 std::set<uint32_t> *p_obj_hyp = &(obj_hyp.value());
 
-                int r = float(dist(_gen) * 85);
-                int g = float(dist(_gen) * 85);
-                int b = float(dist(_gen) * 85);
+                int r = FNUM_TYPE(dist(_gen) * 85);
+                int g = FNUM_TYPE(dist(_gen) * 85);
+                int b = FNUM_TYPE(dist(_gen) * 85);
 
                 FSG_LOG_MSG("Assigned color = " << r << "," << g << "," << b);
 
