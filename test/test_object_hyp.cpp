@@ -288,7 +288,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         FSG_LOG_MSG("Created functor with value count: " << values());
     }
 
-#define pow_abs(x, y) WITH_SUFFIX_fx(pow)(WITH_SUFFIX_fx(fabs)q(x), y)
+#define pow_abs(x, y) WITH_SUFFIX_fx(pow)(WITH_SUFFIX_fx(fabs)(x), y)
 // FNUM_TYPE pow_abs(const FNUM_TYPE x, const FNUM_TYPE y) const {
 //     FSG_TRACE_THIS_FUNCTION();
 //     FSG_LOG_VAR(x);
