@@ -225,7 +225,6 @@ install(TARGETS ${PROJECT_NAME}
 #target_link_libraries(color_hist_supervoxel  image_processing ${OpenCV_LIBRARIES})
 
 message(STATUS "LIBCMAES_LIBRARIES=${LIBCMAES_LIBRARIES}")
-message(STATUS "LIBCMAES_LIBRARIES=${LIBCMAES_LIBRARIES}")
 
 add_executable(test_object_hyp test/test_object_hyp.cpp test/test_rotation.cpp)
 target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb ${LIBCMAES_LIBRARIES})
