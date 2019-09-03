@@ -163,20 +163,12 @@ SuperEllipsoidParameters operator+(const SuperEllipsoidParameters &sep1,
     return result;
 }
 
-float powf_sym(float x, float y)
+FNUM_TYPE sym_pow(FNUM_TYPE x, FNUM_TYPE y)
 {
     if (std::signbit(x) != 0)
-        return -powf(-x, y);
+        return -WITH_SUFFIX_fx(pow)(-x, y);
     else
-        return powf(x, y);
-}
-
-double pow_sym(double x, double y)
-{
-    if (std::signbit(x) != 0)
-        return -pow(-x, y);
-    else
-        return pow(x, y);
+        return WITH_SUFFIX_fx(pow)(x, y);
 }
 
 /** Provide access to coeff data as C-style array.  Number of
@@ -229,17 +221,17 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     for (FNUM_TYPE pitch = -sg_pi_2; pitch < sg_pi_2; pitch += increment)
     {
 
-        pt.z = dilatfactor_z * powf_sym(sin(pitch), exp_1);
-        FNUM_TYPE cos_pitch_exp_1 = powf_sym(cos(pitch), exp_1);
+        pt.z = dilatfactor_z * sym_pow(WITH_SUFFIX_fx(sin)(pitch), exp_1);
+        FNUM_TYPE cos_pitch_exp_1 = sym_pow(WITH_SUFFIX_fx(cos)(pitch), exp_1);
 
         // Yaw is omega in Biegelbauer et al.
         for (FNUM_TYPE yaw = -sg_pi; yaw < sg_pi; yaw += increment)
         {
 
-            pt.x = dilatfactor_x * powf_sym(cos(yaw), exp_2) * cos_pitch_exp_1;
-            pt.y = dilatfactor_y * powf_sym(sin(yaw), exp_2) * cos_pitch_exp_1;
+            pt.x = dilatfactor_x * sym_pow(WITH_SUFFIX_fx(cos)(yaw), exp_2) * cos_pitch_exp_1;
+            pt.y = dilatfactor_y * sym_pow(WITH_SUFFIX_fx(sin)(yaw), exp_2) * cos_pitch_exp_1;
 
-            if ((pt.x * pt.x + pt.y * pt.y + pt.z * pt.z) < 20.0)
+            if ((pt.x * pt.x + pt.y * pt.y + pt.z * pt.z) < FNUM_LITERAL(20.0))
             {
                 cloud_step1->push_back(pt);
             }
@@ -296,8 +288,8 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         FSG_LOG_MSG("Created functor with value count: " << values());
     }
 
-#define powf_abs(x, y) powf(fabs(x), y)
-// FNUM_TYPE powf_abs(const FNUM_TYPE x, const FNUM_TYPE y) const {
+#define pow_abs(x, y) WITH_SUFFIX_fx(pow)(WITH_SUFFIX_fx(fabs)(x), y)
+// FNUM_TYPE pow_abs(const FNUM_TYPE x, const FNUM_TYPE y) const {
 //     FSG_TRACE_THIS_FUNCTION();
 //     FSG_LOG_VAR(x);
 //     FSG_LOG_VAR(y);
@@ -389,13 +381,13 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
                 v_aligned(2) / param(fsg::SuperEllipsoidParameters::idx::rad_c);
             // FSG_LOG_VAR(v_scaled);
 
-            const FNUM_TYPE term = powf_abs(v_scaled(0), two_over_exp_2) +
-                                   powf_abs(v_scaled(1), two_over_exp_2);
+            const FNUM_TYPE term = pow_abs(v_scaled(0), two_over_exp_2) +
+                                   pow_abs(v_scaled(1), two_over_exp_2);
             // FSG_LOG_VAR(term);
 
             const FNUM_TYPE outside_if_over_1 =
-                powf_abs(term, exp_2_over_exp_1) +
-                powf_abs(v_scaled(2), two_over_exp_1);
+                pow_abs(term, exp_2_over_exp_1) +
+                pow_abs(v_scaled(2), two_over_exp_1);
             // FSG_LOG_VAR(outside_if_over_1);
 
             const FNUM_TYPE deviation = outside_if_over_1 - 1;
@@ -1681,7 +1673,7 @@ int main(int argc, char **argv)
             {
                 // int current_sv_label = it_sv->first;
                 pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
-                float c = weights_for_this_modality[it_sv->first][lbl];
+                FNUM_TYPE c = weights_for_this_modality[it_sv->first][lbl];
 
                 if (c < 0.5)
                 {
