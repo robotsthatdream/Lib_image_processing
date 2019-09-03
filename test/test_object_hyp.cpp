@@ -540,6 +540,8 @@ void FloatTest()
     FNUM_TYPE ref = 1.0;
     FNUM_TYPE epsilon = ref;
     FNUM_TYPE ref_plus_epsilon = 0;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
     do
     {
         epsilon = epsilon / sg_2;
@@ -547,11 +549,9 @@ void FloatTest()
         ref_plus_epsilon = ref + epsilon;
         // FSG_LOG_VAR(ref_plus_epsilon);
     } while (
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
         ref_plus_epsilon != ref
-#pragma GCC diagnostic pop
         );
+#pragma GCC diagnostic pop
     FSG_LOG_MSG("First epsilon that added to "
                 << ref << " does not change a bit: " << epsilon);
 }
