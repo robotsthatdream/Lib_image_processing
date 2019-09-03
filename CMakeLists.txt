@@ -4,11 +4,13 @@ project(image_processing)
 option(CMAKE_DISABLE_SOURCE_CHANGES "Refuse to build if uncommitted changes." ON)
 # option(CMAKE_DISABLE_IN_SOURCE_BUILD "Refuse to build in-source." ON)
 
-# get_cmake_property(_variableNames VARIABLES)
-# list (SORT _variableNames)
-# foreach (_variableName ${_variableNames})
-#     message(STATUS "${_variableName}=${${_variableName}}")
-#   endforeach()
+option(WITH_DOUBLE_PRECISION "Compute with double precision?" ON)
+
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+  message(STATUS "DEBUG ${_variableName}=${${_variableName}}")
+endforeach()
 
 #================================================================
 # Reproducibility: make sure what we compile is a known git commit.
