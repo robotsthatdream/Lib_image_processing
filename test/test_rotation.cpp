@@ -1,10 +1,10 @@
 #define _USE_MATH_DEFINES
+#include "test_rotation.hpp"
+#include "number_type.hpp"
 #include "gtest/gtest.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <cmath>
-#include "test_rotation.hpp"
-#include "number_type.hpp"
 
 namespace fsg
 {
@@ -23,8 +23,8 @@ namespace matrixrotationangles
 
  */
 
-void matrix_to_angles(const MATRIX3 & m, FNUM_TYPE &yaw,
-                      FNUM_TYPE &pitch, FNUM_TYPE &roll)
+void matrix_to_angles(const MATRIX3 &m, FNUM_TYPE &yaw, FNUM_TYPE &pitch,
+                      FNUM_TYPE &roll)
 {
     /* Ok, so how do we compute our angles?
 
@@ -48,9 +48,7 @@ void matrix_to_angles(const MATRIX3 & m, FNUM_TYPE &yaw,
     yaw = atan2f(m(1, 0), m(0, 0));
 
     const MATRIX3 m_without_yaw =
-        Eigen::WITH_SUFFIX_fd(AngleAxis)(
-            -yaw, VECTOR3::UnitZ()) *
-        m;
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(-yaw, VECTOR3::UnitZ()) * m;
 
     // std::cerr << "m_without_yaw" << std::endl << m_without_yaw << std::endl;
 
@@ -67,8 +65,7 @@ void matrix_to_angles(const MATRIX3 & m, FNUM_TYPE &yaw,
         m_without_yaw(FNUM_LITERAL(0.0), FNUM_LITERAL(0.0)));
 
     const MATRIX3 m_without_yaw_nor_pitch =
-        Eigen::WITH_SUFFIX_fd(AngleAxis)(
-            pitch, VECTOR3::UnitY()) *
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(pitch, VECTOR3::UnitY()) *
         m_without_yaw;
 
     // std::cerr << "m_without_yaw_nor_pitch" << std::endl <<
@@ -89,16 +86,13 @@ void matrix_to_angles(const MATRIX3 & m, FNUM_TYPE &yaw,
 }
 
 void angles_to_matrix(const FNUM_TYPE &yaw, const FNUM_TYPE &pitch,
-                      const FNUM_TYPE &roll, MATRIX3 & m)
+                      const FNUM_TYPE &roll, MATRIX3 &m)
 {
     // std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch
     //           << " roll=" << roll << std::endl;
-    m = Eigen::WITH_SUFFIX_fd(AngleAxis)(
-            yaw, VECTOR3::UnitZ()) *
-        Eigen::WITH_SUFFIX_fd(AngleAxis)(
-            -pitch, VECTOR3::UnitY()) *
-        Eigen::WITH_SUFFIX_fd(AngleAxis)(
-            roll, VECTOR3::UnitX());
+    m = Eigen::WITH_SUFFIX_fd(AngleAxis)(yaw, VECTOR3::UnitZ()) *
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(-pitch, VECTOR3::UnitY()) *
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(roll, VECTOR3::UnitX());
     // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
     // std::endl;
 }
@@ -113,8 +107,7 @@ void angles_to_matrix(const FNUM_TYPE &yaw, const FNUM_TYPE &pitch,
 
 using namespace fsg::matrixrotationangles;
 
-void expect_identical_3x3_matrices(const MATRIX3 & m1,
-                                   const MATRIX3 & m2,
+void expect_identical_3x3_matrices(const MATRIX3 &m1, const MATRIX3 &m2,
                                    const FNUM_TYPE epsilon = FNUM_LITERAL(1e-5))
 {
     for (int row = 0; row <= 2; row++)
@@ -127,7 +120,7 @@ void expect_identical_3x3_matrices(const MATRIX3 & m1,
     }
 }
 
-bool check_if_unitary(const MATRIX3 & m)
+bool check_if_unitary(const MATRIX3 &m)
 {
     for (int i = 0; i < 3; ++i)
     {
@@ -379,14 +372,14 @@ TEST_F(TwoWayTest, FullTest_AnyComboMustConvertAndBack)
 
     const FNUM_TYPE increment = (sg_pi_2) / (FNUM_LITERAL(10.0));
 
-    for (model_yaw = (-sg_pi) * (FNUM_LITERAL(0.98));
-         model_yaw < sg_pi; model_yaw += increment)
+    for (model_yaw = (-sg_pi) * (FNUM_LITERAL(0.98)); model_yaw < sg_pi;
+         model_yaw += increment)
     {
         for (model_pitch = (-sg_pi_2) * (FNUM_LITERAL(0.98));
              model_pitch < sg_pi_2; model_pitch += increment)
         {
-            for (model_roll = -sg_pi_2;
-                 model_roll < sg_pi_2; model_roll += increment)
+            for (model_roll = -sg_pi_2; model_roll < sg_pi_2;
+                 model_roll += increment)
             {
                 angles_to_matrix(model_yaw, model_pitch, model_roll, model_m);
 

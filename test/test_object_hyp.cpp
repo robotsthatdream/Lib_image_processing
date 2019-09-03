@@ -31,8 +31,8 @@
 #include <unsupported/Eigen/NumericalDiff>
 
 #include "fsg_trace.hpp"
-#include "test_rotation.hpp"
 #include "number_type.hpp"
+#include "test_rotation.hpp"
 
 namespace ip = image_processing;
 
@@ -174,7 +174,10 @@ FNUM_TYPE sym_pow(FNUM_TYPE x, FNUM_TYPE y)
 /** Provide access to coeff data as C-style array.  Number of
     values is provided in SuperEllipsoidParameters::fieldcount.
  */
-FNUM_TYPE *SuperEllipsoidParameters::coeffData() { return (this->coeff.data()); }
+FNUM_TYPE *SuperEllipsoidParameters::coeffData()
+{
+    return (this->coeff.data());
+}
 
 /** This method implements the forward transformation from a
     12-dimension model to a point cloud.
@@ -228,8 +231,10 @@ SuperEllipsoidParameters::toPointCloud(int steps)
         for (FNUM_TYPE yaw = -sg_pi; yaw < sg_pi; yaw += increment)
         {
 
-            pt.x = dilatfactor_x * sym_pow(WITH_SUFFIX_fx(cos)(yaw), exp_2) * cos_pitch_exp_1;
-            pt.y = dilatfactor_y * sym_pow(WITH_SUFFIX_fx(sin)(yaw), exp_2) * cos_pitch_exp_1;
+            pt.x = dilatfactor_x * sym_pow(WITH_SUFFIX_fx(cos)(yaw), exp_2) *
+                   cos_pitch_exp_1;
+            pt.y = dilatfactor_y * sym_pow(WITH_SUFFIX_fx(sin)(yaw), exp_2) *
+                   cos_pitch_exp_1;
 
             if ((pt.x * pt.x + pt.y * pt.y + pt.z * pt.z) < FNUM_LITERAL(20.0))
             {
@@ -355,7 +360,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         // FSG_LOG_VAR(two_over_exp_1);
         // FSG_LOG_VAR(exp_2_over_exp_1);
 
-        //FNUM_TYPE sum_of_squares = 0;
+        // FNUM_TYPE sum_of_squares = 0;
 
         for (signed int i = 0; i < values(); ++i)
         {
@@ -377,8 +382,10 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
             // FIXME radii here are not major middle minor, only x y z or 1 2 3.
             v_scaled << v_aligned(sg_0) /
                             param(fsg::SuperEllipsoidParameters::idx::rad_a),
-                v_aligned(sg_1) / param(fsg::SuperEllipsoidParameters::idx::rad_b),
-                v_aligned(sg_2) / param(fsg::SuperEllipsoidParameters::idx::rad_c);
+                v_aligned(sg_1) /
+                    param(fsg::SuperEllipsoidParameters::idx::rad_b),
+                v_aligned(sg_2) /
+                    param(fsg::SuperEllipsoidParameters::idx::rad_c);
             // FSG_LOG_VAR(v_scaled);
 
             const FNUM_TYPE term = pow_abs(v_scaled(sg_0), two_over_exp_2) +
@@ -396,13 +403,13 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
 #endif
 
             fvec[i] = deviation;
-            //sum_of_squares += deviation * deviation;
+            // sum_of_squares += deviation * deviation;
         }
-// FSG_LOG_VAR(fvec);
-//#if FUNCTOR_LOG_INSIDE == 1
-        //FSG_LOG_VAR(sum_of_squares);
-//#endif
-        //return (sum_of_squares); // FIXME returns int.
+        // FSG_LOG_VAR(fvec);
+        //#if FUNCTOR_LOG_INSIDE == 1
+        // FSG_LOG_VAR(sum_of_squares);
+        //#endif
+        // return (sum_of_squares); // FIXME returns int.
         return 0;
     }
 
@@ -549,9 +556,7 @@ void FloatTest()
         // FSG_LOG_VAR(epsilon);
         ref_plus_epsilon = ref + epsilon;
         // FSG_LOG_VAR(ref_plus_epsilon);
-    } while (
-        ref_plus_epsilon != ref
-        );
+    } while (ref_plus_epsilon != ref);
 #pragma GCC diagnostic pop
     FSG_LOG_MSG("First epsilon that added to "
                 << ref << " does not change a bit: " << epsilon);
@@ -731,7 +736,8 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
 
 //     OptimizationFunctor functor(*cloud_xyz, indices);
 
-//     libcmaes::FitFunc cmaes_fit_func = [&functor, &cloud_xyz](const FNUM_TYPE *x,
+//     libcmaes::FitFunc cmaes_fit_func = [&functor, &cloud_xyz](const FNUM_TYPE
+//     *x,
 //                                                               const int N) {
 //         fsg::SuperEllipsoidParameters cmaes_eval_params;
 
@@ -740,7 +746,8 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
 //         if (N != fsg::SuperEllipsoidParameters::fieldCount)
 //         {
 //             FSG_LOG_MSG("Mismatch field/vector count: "
-//                         << fsg::SuperEllipsoidParameters::fieldCount << " vs. "
+//                         << fsg::SuperEllipsoidParameters::fieldCount << " vs.
+//                         "
 //                         << N);
 //             exit(1);
 //         }
@@ -765,25 +772,34 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
 
 //     VECTORX OptimizationStepSize(
 //         fsg::SuperEllipsoidParameters::fieldCount);
-//     OptimizationStepSize << FNUM_LITERAL(0.1), FNUM_LITERAL(0.1), FNUM_LITERAL(0.1), FNUM_LITERAL(0.1), FNUM_LITERAL(0.1), FNUM_LITERAL(0.1), FNUM_LITERAL(3.0), FNUM_LITERAL(1.5), FNUM_LITERAL(1.5), sg_1, sg_1;
+//     OptimizationStepSize << FNUM_LITERAL(0.1), FNUM_LITERAL(0.1),
+//     FNUM_LITERAL(0.1), FNUM_LITERAL(0.1), FNUM_LITERAL(0.1),
+//     FNUM_LITERAL(0.1), FNUM_LITERAL(3.0), FNUM_LITERAL(1.5),
+//     FNUM_LITERAL(1.5), sg_1, sg_1;
 
 //     // FSG_LOG_VAR(OptimizationStepSize);
 
 //     VECTORX LowerBounds(fsg::SuperEllipsoidParameters::fieldCount);
-//     LowerBounds << FNUM_LITERAL(-3.0), FNUM_LITERAL(-3.0), FNUM_LITERAL(-3.0), sg_0, sg_0, sg_0, -sg_pi, -sg_pi_2, -sg_pi_2, FNUM_LITERAL(0.1), FNUM_LITERAL(0.1);
+//     LowerBounds << FNUM_LITERAL(-3.0), FNUM_LITERAL(-3.0),
+//     FNUM_LITERAL(-3.0), sg_0, sg_0, sg_0, -sg_pi, -sg_pi_2, -sg_pi_2,
+//     FNUM_LITERAL(0.1), FNUM_LITERAL(0.1);
 
 //     // FSG_LOG_VAR(LowerBounds);
 
 //     VECTORX UpperBounds(fsg::SuperEllipsoidParameters::fieldCount);
-//     UpperBounds << FNUM_LITERAL(3.0), FNUM_LITERAL(3.0), FNUM_LITERAL(3.0), sg_1, sg_1, sg_1, sg_pi, sg_pi_2, sg_pi_2, FNUM_LITERAL(2.0), FNUM_LITERAL(2.0);
+//     UpperBounds << FNUM_LITERAL(3.0), FNUM_LITERAL(3.0), FNUM_LITERAL(3.0),
+//     sg_1, sg_1, sg_1, sg_pi, sg_pi_2, sg_pi_2, FNUM_LITERAL(2.0),
+//     FNUM_LITERAL(2.0);
 
 //     // FSG_LOG_VAR(UpperBounds);
 
-//     // https://github.com/beniz/libcmaes/wiki/Defining-and-using-bounds-on-parameters
+//     //
+//     https://github.com/beniz/libcmaes/wiki/Defining-and-using-bounds-on-parameters
 //     libcmaes::GenoPheno<libcmaes::pwqBoundStrategy> gp(
 //         LowerBounds.data(), UpperBounds.data(),
 //         fsg::SuperEllipsoidParameters::fieldCount); // genotype / phenotype
-//                                                     // transform associated to
+//                                                     // transform associated
+//                                                     to
 //                                                     // bounds.
 
 //     libcmaes::CMAParameters<libcmaes::GenoPheno<libcmaes::pwqBoundStrategy>>
@@ -855,7 +871,8 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
 //     FSG_LOG_VAR(cma_status); // the optimization status, failed if < 0
 //     FSG_LOG_VAR(cmasols.status_msg());
 
-//     // https://github.com/beniz/libcmaes/wiki/Optimizing-a-function#user-content-solution-error-covariance-matrix-and-expected-distance-to-the-minimum-edm
+//     //
+//     https://github.com/beniz/libcmaes/wiki/Optimizing-a-function#user-content-solution-error-covariance-matrix-and-expected-distance-to-the-minimum-edm
 //     libcmaes::Candidate bcand = cmasols.best_candidate();
 
 //     FSG_LOG_BEGIN() << FSG_LOCATION() << FSG_INDENTATION()
@@ -872,14 +889,17 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
 
 //     FSG_LOG_BEGIN() << FSG_LOG_END();
 
-//     // FNUM_TYPE fmin = bcand.get_fvalue(); // min objective function value the
+//     // FNUM_TYPE fmin = bcand.get_fvalue(); // min objective function value
+//     the
 //     // optimizer converged to
 //     VECTORX bestparameters = bcand.get_x_dvec(); // vector of objective
-//                                                          // function parameters
+//                                                          // function
+//                                                          parameters
 //                                                          // at minimum.
 //     // FNUM_TYPE edm = cmasols.edm(); // expected distance to the minimum.
 
-//     // https://github.com/beniz/libcmaes/wiki/Defining-and-using-bounds-on-parameters#user-content-retrieving-the-best-solution
+//     //
+//     https://github.com/beniz/libcmaes/wiki/Defining-and-using-bounds-on-parameters#user-content-retrieving-the-best-solution
 //     // VECTORX bestparameters =
 //     // gp.pheno(cmasols.get_best_seen_candidate().get_x_dvec());
 
@@ -976,7 +996,8 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
     // bool success_libcmaes =
     //     pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     //         cloud_xyz, fittingContext_libcmaes);
-    // FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both results: "
+    // FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate_both results:
+    // "
     //             "EigenLevenbergMarquardt="
     //             << (success_eigenlevenbergmarquardt ? "success" : "failure")
     //             << ", libcmaes result="
@@ -995,7 +1016,8 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
     //     viewer->addPointCloud<pcl::PointXYZ>(
     //         cloud_xyz, ground_truth_color_handler, "ground_truth");
     //     viewer->setPointCloudRenderingProperties(
-    //         pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "ground_truth");
+    //         pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2,
+    //         "ground_truth");
 
     //     auto pc_seplce = fittingContext_libcmaes.toPointCloud(10);
 
@@ -1004,9 +1026,11 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
     //     viewer->addPointCloud<pcl::PointXYZ>(
     //         pc_seplce, sep_libcmaes_color_handler, "sep_libcmaes");
     //     viewer->setPointCloudRenderingProperties(
-    //         pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "sep_libcmaes");
+    //         pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2,
+    //         "sep_libcmaes");
 
-    //     auto pc_elm = fittingContext_eigenlevenbergmarquardt.toPointCloud(10);
+    //     auto pc_elm =
+    //     fittingContext_eigenlevenbergmarquardt.toPointCloud(10);
 
     //     pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
     //         sep_levenbergmarquardt_color_handler(pc_elm, 255, 0, 0);
@@ -1242,7 +1266,8 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
 
         //     if (deviation.norm() > fit_control_epsilon)
         //     {
-        //         FSG_LOG_MSG("Test FAIL fitting parameter at epsilon deviation "
+        //         FSG_LOG_MSG("Test FAIL fitting parameter at epsilon deviation
+        //         "
         //                     "on dimension "
         //                     << dimension_shift);
         //     }
@@ -1304,7 +1329,8 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     VECTOR3 position(position_OBB.x, position_OBB.y, position_OBB.z);
     Eigen::Quaternionf quat(rotational_matrix_OBB);
 
-    pcl::PointXYZ center(mass_center(sg_0), mass_center(sg_1), mass_center(sg_2));
+    pcl::PointXYZ center(mass_center(sg_0), mass_center(sg_1),
+                         mass_center(sg_2));
 
     // FIXME clarify/generalize major/z.
     pcl::PointXYZ maj_axis(sg_2 * major_vector(sg_0) + mass_center(sg_0),
@@ -1434,8 +1460,10 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     sep_groundtruth.set_rot_yaw((FNUM_TYPE)random_number_mpippi(_gen));
     sep_groundtruth.set_rot_pitch((FNUM_TYPE)random_number_mpippi(_gen));
     sep_groundtruth.set_rot_roll((FNUM_TYPE)random_number_mpippi(_gen));
-    sep_groundtruth.set_exp_1(sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
-    sep_groundtruth.set_exp_2(sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
+    sep_groundtruth.set_exp_1(
+        sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
+    sep_groundtruth.set_exp_2(
+        sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
 
     FSG_LOG_VAR(sep_groundtruth);
 
@@ -1465,8 +1493,10 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     initialEstimate.set_rot_yaw((FNUM_TYPE)random_number_mpippi(_gen));
     initialEstimate.set_rot_pitch((FNUM_TYPE)random_number_mpippi(_gen));
     initialEstimate.set_rot_roll((FNUM_TYPE)random_number_mpippi(_gen));
-    initialEstimate.set_exp_1(sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
-    initialEstimate.set_exp_2(sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
+    initialEstimate.set_exp_1(
+        sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
+    initialEstimate.set_exp_2(
+        sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
 
     SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
         pointCloud, initialEstimate, sep_groundtruth);
@@ -1476,7 +1506,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     //     fsg::SuperEllipsoidParameters sep_fit = initialEstimate;
 
     //     bool success =
-    //         pointCloudToFittingContextWithInitialEstimate(pointCloud, sep_fit);
+    //         pointCloudToFittingContextWithInitialEstimate(pointCloud,
+    //         sep_fit);
 
     //     if (!success)
     //     {
@@ -1696,9 +1727,9 @@ int main(int argc, char **argv)
                 // different colors, then multiplied by biased relevance.
                 // Hope this allows to easily distinguish supervoxels by
                 // colors.
-                uint8_t r = uint8_t( dist(_gen) * 56 * (c + 0.5));
-                uint8_t g = uint8_t( dist(_gen) * 56 * (c + 0.5));
-                uint8_t b = uint8_t( dist(_gen) * 56 * (c + 0.5));
+                uint8_t r = uint8_t(dist(_gen) * 56 * (c + 0.5));
+                uint8_t g = uint8_t(dist(_gen) * 56 * (c + 0.5));
+                uint8_t b = uint8_t(dist(_gen) * 56 * (c + 0.5));
 
                 pcl::PointXYZRGB pt;
                 for (auto v : *(current_sv->voxels_))
@@ -1871,7 +1902,8 @@ int main(int argc, char **argv)
                 // }
                 // else
                 // {
-                //     FSG_LOG_MSG("Fitting fail on id=" << obj_index_i_s << ".");
+                //     FSG_LOG_MSG("Fitting fail on id=" << obj_index_i_s <<
+                //     ".");
                 // }
 
                 FSG_LOG_MSG("End new obj hyp, id=" << obj_index_i_s << ".");
