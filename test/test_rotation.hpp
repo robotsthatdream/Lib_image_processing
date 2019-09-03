@@ -2,6 +2,7 @@
 #define TEST_ROTATION_HPP
 
 #include <Eigen/Core>
+#include "number_type.hpp"
 
 namespace fsg
 {
@@ -173,11 +174,11 @@ namespace matrixrotationangles
 
 */
 
-void matrix_to_angles(const Eigen::Matrix3f &m, float &yaw, float &pitch,
-                      float &roll);
+void matrix_to_angles(const MATRIX3 &m, FNUM_TYPE &yaw, FNUM_TYPE &pitch,
+                      FNUM_TYPE &roll);
 
-void angles_to_matrix(const float &yaw, const float &pitch, const float &roll,
-                      Eigen::Matrix3f &m);
+void angles_to_matrix(const FNUM_TYPE &yaw, const FNUM_TYPE &pitch, const FNUM_TYPE &roll,
+                      MATRIX3 &m);
 
 } // namespace matrixrotationangles
 } // namespace fsg
