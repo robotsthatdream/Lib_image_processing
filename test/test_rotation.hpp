@@ -14,6 +14,11 @@
 #define WITH_SUFFIX_xd(symbolname) symbolname
 #endif
 
+#pragma GCC diagnostic warning "-Wdouble-promotion"
+#pragma GCC diagnostic warning "-Wfloat-equal"
+#pragma GCC diagnostic warning "-Wfloat-conversion"
+#pragma GCC diagnostic warning "-Wconversion"
+
 namespace fsg
 {
 namespace matrixrotationangles

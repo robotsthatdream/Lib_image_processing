@@ -24,7 +24,6 @@
 #include "cmaes.h"
 #pragma GCC diagnostic pop
 
-#include "test_rotation.hpp"
 #include <boost/archive/text_iarchive.hpp>
 #include <iagmm/gmm.hpp>
 #include <math.h>
@@ -32,6 +31,7 @@
 #include <unsupported/Eigen/NumericalDiff>
 
 #include "fsg_trace.hpp"
+#include "test_rotation.hpp"
 
 namespace ip = image_processing;
 

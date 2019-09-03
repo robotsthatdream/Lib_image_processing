@@ -219,10 +219,6 @@ install(TARGETS ${PROJECT_NAME}
 message(STATUS "LIBCMAES_LIBRARIES=${LIBCMAES_LIBRARIES}")
 message(STATUS "LIBCMAES_LIBRARIES=${LIBCMAES_LIBRARIES}")
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-set_source_files_properties(test/test_object_hyp.cpp test/test_rotation.cpp PROPERTIES COMPILE_FLAGS "-Wdouble-promotion -Wfloat-equal -Wfloat-conversion -Wconversion")
-endif ()
-
 add_executable(test_object_hyp test/test_object_hyp.cpp test/test_rotation.cpp)
 target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb ${LIBCMAES_LIBRARIES})
 #target_include_directories(test_object_hyp ${LIBCMAES_INCLUDE_DIR})

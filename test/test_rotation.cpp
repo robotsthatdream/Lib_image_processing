@@ -1,9 +1,9 @@
 #define _USE_MATH_DEFINES
-#include "test_rotation.hpp"
 #include "gtest/gtest.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <cmath>
+#include "test_rotation.hpp"
 
 namespace fsg
 {
@@ -82,8 +82,9 @@ void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) & m, FNUM_TYPE &yaw,
 
      */
 
-    roll = WITH_SUFFIX_xd(atan2)(m_without_yaw_nor_pitch(2, 1),
-                                 m_without_yaw_nor_pitch(1, 1));
+    roll = WITH_SUFFIX_fx(atan2)(
+        m_without_yaw_nor_pitch(FNUM_LITERAL(2.0), FNUM_LITERAL(1.0)),
+        m_without_yaw_nor_pitch(FNUM_LITERAL(1.0), FNUM_LITERAL(1.0)));
 }
 
 void angles_to_matrix(const FNUM_TYPE &yaw, const FNUM_TYPE &pitch,
@@ -163,9 +164,9 @@ class TwoWayTest : public ::testing::Test
         FNUM_TYPE yaw_computed, pitch_computed, roll_computed;
         matrix_to_angles(model_m, yaw_computed, pitch_computed, roll_computed);
 
-        EXPECT_NEAR(model_yaw, yaw_computed, 1e-5);
-        EXPECT_NEAR(model_pitch, pitch_computed, 1e-5);
-        EXPECT_NEAR(model_roll, roll_computed, 1e-5);
+        EXPECT_NEAR(model_yaw, yaw_computed, FNUM_LITERAL(1e-5));
+        EXPECT_NEAR(model_pitch, pitch_computed, FNUM_LITERAL(1e-5));
+        EXPECT_NEAR(model_roll, roll_computed, FNUM_LITERAL(1e-5));
 
         Eigen::WITH_SUFFIX_fd(Matrix3) m_computed;
         angles_to_matrix(model_yaw, model_pitch, model_roll, m_computed);
@@ -177,24 +178,24 @@ TEST(RotMatTest, EigenTest_CoeffAccessIsMRowColumn)
 {
     Eigen::WITH_SUFFIX_fd(Matrix3) m;
 
-    m.row(0) << 1, 2, 3;
-    m.row(1) << 4, 5, 6;
-    m.row(2) << 7, 8, 9;
+    m.row(0) << FNUM_LITERAL(1.0), FNUM_LITERAL(2.0), FNUM_LITERAL(3.0);
+    m.row(1) << FNUM_LITERAL(4.0), FNUM_LITERAL(5.0), FNUM_LITERAL(6.0);
+    m.row(2) << FNUM_LITERAL(7.0), FNUM_LITERAL(8.0), FNUM_LITERAL(9.0);
 
-    EXPECT_EQ(m(0, 0), 1);
-    EXPECT_EQ(m(1, 0), 4);
-    EXPECT_EQ(m(2, 0), 7);
-    EXPECT_EQ(m(2, 1), 8);
-    EXPECT_EQ(m(2, 2), 9);
+    EXPECT_EQ(m(0, 0), FNUM_LITERAL(1.0));
+    EXPECT_EQ(m(1, FNUM_LITERAL(0.0)), 4);
+    EXPECT_EQ(m(FNUM_LITERAL(2.0), FNUM_LITERAL(0.0)), 7);
+    EXPECT_EQ(m(FNUM_LITERAL(2.0), 1), 8);
+    EXPECT_EQ(m(FNUM_LITERAL(2.0), 2), 9);
 }
 
 TEST_F(TwoWayTest, Identity)
 {
-    model_m.row(0) << 1, 0, 0;
-    model_m.row(1) << 0, 1, 0;
-    model_m.row(2) << 0, 0, 1;
+    model_m.row(0) << 1, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0);
+    model_m.row(1) << FNUM_LITERAL(0.0), 1, FNUM_LITERAL(0.0);
+    model_m.row(2) << FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), 1;
 
-    model_yaw = model_pitch = model_roll = 0;
+    model_yaw = model_pitch = model_roll = FNUM_LITERAL(0.0);
 
     CheckTwoWays();
 }
@@ -204,12 +205,12 @@ TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2)
     // This matrix sends X to Y.
     // This matrix sends Y to -X.
     // This matrix sends Z to Z.
-    model_m.row(0) << 0, -1, 0;
-    model_m.row(1) << 1, 0, 0;
-    model_m.row(2) << 0, 0, 1;
+    model_m.row(0) << FNUM_LITERAL(0.0), -1, FNUM_LITERAL(0.0);
+    model_m.row(1) << 1, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0);
+    model_m.row(2) << FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), 1;
 
     model_yaw = (FNUM_TYPE)M_PI_2;
-    model_pitch = model_roll = 0;
+    model_pitch = model_roll = FNUM_LITERAL(0.0);
 
     CheckTwoWays();
 }
@@ -221,12 +222,12 @@ TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4)
     // This matrix sends X to Y.
     // This matrix sends Y to -X.
     // This matrix sends Z to Z.
-    model_m.row(0) << M_SQRT2_2, -M_SQRT2_2, 0;
-    model_m.row(1) << M_SQRT2_2, M_SQRT2_2, 0;
-    model_m.row(2) << 0, 0, 1;
+    model_m.row(0) << M_SQRT2_2, -M_SQRT2_2, FNUM_LITERAL(0.0);
+    model_m.row(1) << M_SQRT2_2, M_SQRT2_2, FNUM_LITERAL(0.0);
+    model_m.row(2) << FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), 1;
 
     model_yaw = (FNUM_TYPE)M_PI_4;
-    model_pitch = model_roll = 0;
+    model_pitch = model_roll = FNUM_LITERAL(0.0);
 
     CheckTwoWays();
 }
@@ -236,11 +237,11 @@ TEST_F(TwoWayTest, PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2)
     // This matrix sends X to Z.
     // This matrix sends Y to Y.
     // This matrix sends Z to -X.
-    model_m.row(0) << 0, 0, -1;
-    model_m.row(1) << 0, 1, 0;
-    model_m.row(2) << 1, 0, 0;
+    model_m.row(0) << FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), -1;
+    model_m.row(1) << FNUM_LITERAL(0.0), 1, FNUM_LITERAL(0.0);
+    model_m.row(2) << 1, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0);
 
-    model_yaw = model_roll = 0;
+    model_yaw = model_roll = FNUM_LITERAL(0.0);
     model_pitch = (FNUM_TYPE)M_PI_2;
 
     CheckTwoWays();
@@ -251,11 +252,11 @@ TEST_F(TwoWayTest, PitchTest_LiftBookPagetopEighthTurnMustYieldPitchPi4)
     // This matrix sends X to Z.
     // This matrix sends Y to Y.
     // This matrix sends Z to -X.
-    model_m.row(0) << M_SQRT2_2, 0, -M_SQRT2_2;
-    model_m.row(1) << 0, 1, 0;
-    model_m.row(2) << M_SQRT2_2, 0, M_SQRT2_2;
+    model_m.row(0) << M_SQRT2_2, FNUM_LITERAL(0.0), -M_SQRT2_2;
+    model_m.row(1) << FNUM_LITERAL(0.0), 1, FNUM_LITERAL(0.0);
+    model_m.row(2) << M_SQRT2_2, FNUM_LITERAL(0.0), M_SQRT2_2;
 
-    model_yaw = model_roll = 0;
+    model_yaw = model_roll = FNUM_LITERAL(0.0);
     model_pitch = (FNUM_TYPE)M_PI_4;
 
     CheckTwoWays();
@@ -266,11 +267,11 @@ TEST_F(TwoWayTest, RollTest_OpenBookCoverQuarterTurnMustYieldRollMinusPi2)
     // This matrix sends X to X.
     // This matrix sends Y to -Z.
     // This matrix sends Z to Y.
-    model_m.row(0) << 1, 0, 0;
-    model_m.row(1) << 0, 0, 1;
-    model_m.row(2) << 0, -1, 0;
+    model_m.row(0) << 1, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0);
+    model_m.row(1) << FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), 1;
+    model_m.row(2) << FNUM_LITERAL(0.0), -1, FNUM_LITERAL(0.0);
 
-    model_yaw = model_pitch = 0;
+    model_yaw = model_pitch = FNUM_LITERAL(0.0);
     model_roll = (FNUM_TYPE)(-M_PI_2);
 
     CheckTwoWays();
@@ -281,11 +282,11 @@ TEST_F(TwoWayTest, RollTest_OpenBookCoverEighthTurnMustYieldRollMinusPi4)
     // This matrix sends X to X.
     // This matrix sends Y to -Z.
     // This matrix sends Z to Y.
-    model_m.row(0) << 1, 0, 0;
-    model_m.row(1) << 0, M_SQRT2_2, M_SQRT2_2;
-    model_m.row(2) << 0, -M_SQRT2_2, M_SQRT2_2;
+    model_m.row(0) << 1, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0);
+    model_m.row(1) << FNUM_LITERAL(0.0), M_SQRT2_2, M_SQRT2_2;
+    model_m.row(2) << FNUM_LITERAL(0.0), -M_SQRT2_2, M_SQRT2_2;
 
-    model_yaw = model_pitch = 0;
+    model_yaw = model_pitch = FNUM_LITERAL(0.0);
     model_roll = (FNUM_TYPE)(-M_PI_4);
 
     CheckTwoWays();
@@ -296,13 +297,13 @@ TEST_F(TwoWayTest, YawAndHalfPitchTest)
     // This matrix sends X to (Y+Z)/SQRT2.
     // This matrix sends Y to -X.
     // This matrix sends Z to (-Y+Z)/SQRT2.
-    model_m.row(0) << 0, -1, 0;
-    model_m.row(1) << M_SQRT2_2, 0, -M_SQRT2_2;
-    model_m.row(2) << M_SQRT2_2, 0, M_SQRT2_2;
+    model_m.row(0) << FNUM_LITERAL(0.0), -1, FNUM_LITERAL(0.0);
+    model_m.row(1) << M_SQRT2_2, FNUM_LITERAL(0.0), -M_SQRT2_2;
+    model_m.row(2) << M_SQRT2_2, FNUM_LITERAL(0.0), M_SQRT2_2;
 
     model_yaw = (FNUM_TYPE)M_PI_2;
     model_pitch = (FNUM_TYPE)M_PI_4;
-    model_roll = 0;
+    model_roll = FNUM_LITERAL(0.0);
 
     CheckTwoWays();
 }
@@ -312,12 +313,12 @@ TEST_F(TwoWayTest, YawAndRollTest)
     // This matrix sends X to Y.
     // This matrix sends Y to Z.
     // This matrix sends Z to X.
-    model_m.row(0) << 0, 0, 1;
-    model_m.row(1) << 1, 0, 0;
-    model_m.row(2) << 0, 1, 0;
+    model_m.row(0) << FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), 1;
+    model_m.row(1) << 1, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0);
+    model_m.row(2) << FNUM_LITERAL(0.0), 1, FNUM_LITERAL(0.0);
 
     model_yaw = model_roll = (FNUM_TYPE)M_PI_2;
-    model_pitch = 0;
+    model_pitch = FNUM_LITERAL(0.0);
 
     CheckTwoWays();
 }
@@ -327,11 +328,11 @@ TEST_F(TwoWayTest, HalfPitchAndRollTest)
     // This matrix sends X to (X+Z)/SQRT2.
     // This matrix sends Y to (Z-X)/SQRT2.
     // This matrix sends Z to -Y.
-    model_m.row(0) << M_SQRT2_2, -M_SQRT2_2, 0;
-    model_m.row(1) << 0, 0, -1;
-    model_m.row(2) << M_SQRT2_2, M_SQRT2_2, 0;
+    model_m.row(0) << M_SQRT2_2, -M_SQRT2_2, FNUM_LITERAL(0.0);
+    model_m.row(1) << FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), -1;
+    model_m.row(2) << M_SQRT2_2, M_SQRT2_2, FNUM_LITERAL(0.0);
 
-    model_yaw = 0;
+    model_yaw = FNUM_LITERAL(0.0);
     model_pitch = (FNUM_TYPE)M_PI_4;
     model_roll = (FNUM_TYPE)M_PI_2;
 
@@ -346,15 +347,15 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX)
 
     Eigen::WITH_SUFFIX_fd(Matrix3) m;
 
-    angles_to_matrix(yaw, 0, 0, m);
+    angles_to_matrix(yaw, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), m);
     // Eigen::WITH_SUFFIX_fd(Vector3) x1 = m * x;
     Eigen::WITH_SUFFIX_fd(Vector3) y1 = m * y;
 
-    angles_to_matrix(yaw, pitch, 0, m);
+    angles_to_matrix(yaw, pitch, FNUM_LITERAL(0.0), m);
     Eigen::WITH_SUFFIX_fd(Vector3) x2 = m * x;
     Eigen::WITH_SUFFIX_fd(Vector3) y2 = m * y;
 
-    EXPECT_NEAR(y1(0), y2(0), 1e-5)
+    EXPECT_NEAR(y1(FNUM_LITERAL(0.0)), y2(FNUM_LITERAL(0.0)), 1e-5)
         << "Adding pitch must not change image of y.";
     EXPECT_NEAR(y1(1), y2(1), 1e-5)
         << "Adding pitch must not change image of y.";
@@ -364,7 +365,7 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX)
     angles_to_matrix(yaw, pitch, roll, m);
     Eigen::WITH_SUFFIX_fd(Vector3) x3 = m * x;
 
-    EXPECT_NEAR(x2(0), x3(0), 1e-5)
+    EXPECT_NEAR(x2(FNUM_LITERAL(0.0)), x3(FNUM_LITERAL(0.0)), 1e-5)
         << "Adding roll must not change image of x.";
     EXPECT_NEAR(x2(1), x3(1), 1e-5)
         << "Adding roll must not change image of x.";
