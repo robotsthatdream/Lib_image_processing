@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(image_processing)
 
 set(CMAKE_DISABLE_SOURCE_CHANGES ON CACHE BOOL "Refuse to build if uncommitted changes.")
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON CACHE BOOL "Refuse to build in-source.")
 
 # get_cmake_property(_variableNames VARIABLES)
 # list (SORT _variableNames)
