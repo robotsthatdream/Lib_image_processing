@@ -933,12 +933,12 @@ void SuperEllipsoidComputeGradientAllDimensions(
 
         for (int step = -1; step <= 1; step += 1)
         {
-            FNUM_TYPE stepEpsilon = step * epsilon;
+            FNUM_TYPE stepEpsilon = step * (FNUM_TYPE)epsilon;
 
             fsg::SuperEllipsoidParameters superellipsoidparameters =
                 superellipsoidparameters_center;
 
-            superellipsoidparameters.coeff(dimension_shift) += epsilon * step;
+            superellipsoidparameters.coeff(dimension_shift) += stepEpsilon;
 
             FSG_LOG_VAR(stepEpsilon);
             FSG_LOG_VAR(superellipsoidparameters);
@@ -1130,12 +1130,12 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
             {
                 continue;
             }*/
-            FNUM_TYPE stepEpsilon = step * epsilon;
+            FNUM_TYPE stepEpsilon = step * (FNUM_TYPE)epsilon;
 
             fsg::SuperEllipsoidParameters superellipsoidparameters =
                 superellipsoidparameters_center;
 
-            superellipsoidparameters.coeff(dimension_shift) += epsilon * step;
+            superellipsoidparameters.coeff(dimension_shift) += stepEpsilon;
 
             // FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(
             //     "dimension shift " << dimension_shift << " stepEpsilon "
