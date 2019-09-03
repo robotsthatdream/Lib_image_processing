@@ -233,6 +233,7 @@ set (SG_SOURCE_FILES
 
 add_executable(test_object_hyp ${SG_SOURCE_FILES})
 target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb ${LIBCMAES_LIBRARIES})
+target_compile_definitions(test_object_hyp PRIVATE WITH_DOUBLE_PRECISION=${WITH_DOUBLE_PRECISION})
 #target_include_directories(test_object_hyp ${LIBCMAES_INCLUDE_DIR})
 
 
