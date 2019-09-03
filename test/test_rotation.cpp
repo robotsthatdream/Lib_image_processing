@@ -61,7 +61,7 @@ void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) & m, FNUM_TYPE &yaw,
        of image of X on X).
     */
 
-    pitch = WITH_SUFFIX_xd(atan2)(
+    pitch = WITH_SUFFIX_fx(atan2)(
         m_without_yaw(FNUM_LITERAL(2.0), FNUM_LITERAL(0.0)),
         m_without_yaw(FNUM_LITERAL(0.0), FNUM_LITERAL(0.0)));
 
