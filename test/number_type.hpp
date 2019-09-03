@@ -35,6 +35,8 @@
 static constexpr FNUM_TYPE sg_pi = (FNUM_TYPE) M_PI;
 static constexpr FNUM_TYPE sg_pi_2 = (FNUM_TYPE) M_PI_2;
 static constexpr FNUM_TYPE sg_pi_4 = (FNUM_TYPE) M_PI_4;
+static constexpr FNUM_TYPE sg_0 = FNUM_LITERAL(0.0);
+static constexpr FNUM_TYPE sg_1 = FNUM_LITERAL(1.0);
 static constexpr FNUM_TYPE sg_2 = FNUM_LITERAL(2.0);
 static constexpr FNUM_TYPE sg_half = FNUM_LITERAL(0.5);
 
