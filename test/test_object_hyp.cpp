@@ -1291,7 +1291,7 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
 
     FSG_LOG_VAR(mass_center);
 
-    VECTOR3 major_vector, middle_vector, minor_vector;
+    Eigen::Vector3f major_vector, middle_vector, minor_vector; // Type imposed by pcl::MomentOfInertiaEstimation
 
     feature_extractor.getEigenVectors(major_vector, middle_vector,
                                       minor_vector);
