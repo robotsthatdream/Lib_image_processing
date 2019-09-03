@@ -380,21 +380,21 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
 
             VECTOR3 v_scaled;
             // FIXME radii here are not major middle minor, only x y z or 1 2 3.
-            v_scaled << v_aligned(sg_0) /
+            v_scaled << v_aligned(0) /
                             param(fsg::SuperEllipsoidParameters::idx::rad_a),
-                v_aligned(sg_1) /
+                v_aligned(1) /
                     param(fsg::SuperEllipsoidParameters::idx::rad_b),
-                v_aligned(sg_2) /
+                v_aligned(2) /
                     param(fsg::SuperEllipsoidParameters::idx::rad_c);
             // FSG_LOG_VAR(v_scaled);
 
-            const FNUM_TYPE term = pow_abs(v_scaled(sg_0), two_over_exp_2) +
-                                   pow_abs(v_scaled(sg_1), two_over_exp_2);
+            const FNUM_TYPE term = pow_abs(v_scaled(0), two_over_exp_2) +
+                                   pow_abs(v_scaled(1), two_over_exp_2);
             // FSG_LOG_VAR(term);
 
             const FNUM_TYPE outside_if_over_1 =
                 pow_abs(term, exp_2_over_exp_1) +
-                pow_abs(v_scaled(sg_2), two_over_exp_1);
+                pow_abs(v_scaled(2), two_over_exp_1);
             // FSG_LOG_VAR(outside_if_over_1);
 
             const FNUM_TYPE deviation = outside_if_over_1 - 1;
@@ -1329,19 +1329,19 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     VECTOR3 position(position_OBB.x, position_OBB.y, position_OBB.z);
     Eigen::Quaternionf quat(rotational_matrix_OBB);
 
-    pcl::PointXYZ center(mass_center(sg_0), mass_center(sg_1),
-                         mass_center(sg_2));
+    pcl::PointXYZ center(mass_center(0), mass_center(1),
+                         mass_center(2));
 
     // FIXME clarify/generalize major/z.
-    pcl::PointXYZ maj_axis(sg_2 * major_vector(sg_0) + mass_center(sg_0),
-                           sg_2 * major_vector(sg_1) + mass_center(sg_1),
-                           sg_2 * major_vector(sg_2) + mass_center(sg_2));
-    pcl::PointXYZ mid_axis(sg_2 * middle_vector(sg_0) + mass_center(sg_0),
-                           sg_2 * middle_vector(sg_1) + mass_center(sg_1),
-                           sg_2 * middle_vector(sg_2) + mass_center(sg_2));
-    pcl::PointXYZ min_axis(sg_2 * minor_vector(sg_0) + mass_center(sg_0),
-                           sg_2 * minor_vector(sg_1) + mass_center(sg_1),
-                           sg_2 * minor_vector(sg_2) + mass_center(sg_2));
+    pcl::PointXYZ maj_axis(sg_2 * major_vector(0) + mass_center(0),
+                           sg_2 * major_vector(1) + mass_center(1),
+                           sg_2 * major_vector(2) + mass_center(2));
+    pcl::PointXYZ mid_axis(sg_2 * middle_vector(0) + mass_center(0),
+                           sg_2 * middle_vector(1) + mass_center(1),
+                           sg_2 * middle_vector(2) + mass_center(2));
+    pcl::PointXYZ min_axis(sg_2 * minor_vector(0) + mass_center(0),
+                           sg_2 * minor_vector(1) + mass_center(1),
+                           sg_2 * minor_vector(2) + mass_center(2));
 
     if (viewer != NULL)
     {
@@ -1364,9 +1364,9 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
                         obj_index_i_s + ":minor eigen vector");
     }
 
-    initialEstimate.set_cen_x(mass_center(sg_0));
-    initialEstimate.set_cen_y(mass_center(sg_1));
-    initialEstimate.set_cen_z(mass_center(sg_2));
+    initialEstimate.set_cen_x(mass_center(0));
+    initialEstimate.set_cen_y(mass_center(1));
+    initialEstimate.set_cen_z(mass_center(2));
 
     initialEstimate.set_rad_a(major_vector.norm());
 
