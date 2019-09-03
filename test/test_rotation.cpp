@@ -22,8 +22,8 @@ namespace matrixrotationangles
 
  */
 
-void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) &m, FNUM_TYPE &yaw, FNUM_TYPE &pitch,
-                      FNUM_TYPE &roll)
+void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) & m, FNUM_TYPE &yaw,
+                      FNUM_TYPE &pitch, FNUM_TYPE &roll)
 {
     /* Ok, so how do we compute our angles?
 
@@ -47,7 +47,9 @@ void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) &m, FNUM_TYPE &yaw, F
     yaw = atan2f(m(1, 0), m(0, 0));
 
     const Eigen::WITH_SUFFIX_fd(Matrix3) m_without_yaw =
-        Eigen::WITH_SUFFIX_fd(AngleAxis)(-yaw, Eigen::WITH_SUFFIX_fd(Vector3)::UnitZ()) * m;
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(
+            -yaw, Eigen::WITH_SUFFIX_fd(Vector3)::UnitZ()) *
+        m;
 
     // std::cerr << "m_without_yaw" << std::endl << m_without_yaw << std::endl;
 
@@ -59,10 +61,14 @@ void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) &m, FNUM_TYPE &yaw, F
        of image of X on X).
     */
 
-    pitch = WITH_SUFFIX_xd(atan2)(m_without_yaw(FNUM_LITERAL(2.0), FNUM_LITERAL(0.0)), m_without_yaw(FNUM_LITERAL(0.0), FNUM_LITERAL(0.0)));
+    pitch = WITH_SUFFIX_xd(atan2)(
+        m_without_yaw(FNUM_LITERAL(2.0), FNUM_LITERAL(0.0)),
+        m_without_yaw(FNUM_LITERAL(0.0), FNUM_LITERAL(0.0)));
 
     const Eigen::WITH_SUFFIX_fd(Matrix3) m_without_yaw_nor_pitch =
-        Eigen::WITH_SUFFIX_fd(AngleAxis)(pitch, Eigen::WITH_SUFFIX_fd(Vector3)::UnitY()) * m_without_yaw;
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(
+            pitch, Eigen::WITH_SUFFIX_fd(Vector3)::UnitY()) *
+        m_without_yaw;
 
     // std::cerr << "m_without_yaw_nor_pitch" << std::endl <<
     // m_without_yaw_nor_pitch << std::endl;
@@ -76,17 +82,21 @@ void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) &m, FNUM_TYPE &yaw, F
 
      */
 
-    roll = WITH_SUFFIX_xd(atan2)(m_without_yaw_nor_pitch(2, 1), m_without_yaw_nor_pitch(1, 1));
+    roll = WITH_SUFFIX_xd(atan2)(m_without_yaw_nor_pitch(2, 1),
+                                 m_without_yaw_nor_pitch(1, 1));
 }
 
-void angles_to_matrix(const FNUM_TYPE &yaw, const FNUM_TYPE &pitch, const FNUM_TYPE &roll,
-                      Eigen::WITH_SUFFIX_fd(Matrix3) &m)
+void angles_to_matrix(const FNUM_TYPE &yaw, const FNUM_TYPE &pitch,
+                      const FNUM_TYPE &roll, Eigen::WITH_SUFFIX_fd(Matrix3) & m)
 {
     // std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch
     //           << " roll=" << roll << std::endl;
-    m = Eigen::WITH_SUFFIX_fd(AngleAxis)(yaw, Eigen::WITH_SUFFIX_fd(Vector3)::UnitZ()) *
-        Eigen::WITH_SUFFIX_fd(AngleAxis)(-pitch, Eigen::WITH_SUFFIX_fd(Vector3)::UnitY()) *
-        Eigen::WITH_SUFFIX_fd(AngleAxis)(roll, Eigen::WITH_SUFFIX_fd(Vector3)::UnitX());
+    m = Eigen::WITH_SUFFIX_fd(AngleAxis)(
+            yaw, Eigen::WITH_SUFFIX_fd(Vector3)::UnitZ()) *
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(
+            -pitch, Eigen::WITH_SUFFIX_fd(Vector3)::UnitY()) *
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(
+            roll, Eigen::WITH_SUFFIX_fd(Vector3)::UnitX());
     // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
     // std::endl;
 }
@@ -101,9 +111,9 @@ void angles_to_matrix(const FNUM_TYPE &yaw, const FNUM_TYPE &pitch, const FNUM_T
 
 using namespace fsg::matrixrotationangles;
 
-void expect_identical_3x3_matrices(const Eigen::WITH_SUFFIX_fd(Matrix3) &m1,
-                                   const Eigen::WITH_SUFFIX_fd(Matrix3) &m2,
-                                   const FNUM_TYPE epsilon = FNUM_LITERAL(1e-5) )
+void expect_identical_3x3_matrices(const Eigen::WITH_SUFFIX_fd(Matrix3) & m1,
+                                   const Eigen::WITH_SUFFIX_fd(Matrix3) & m2,
+                                   const FNUM_TYPE epsilon = FNUM_LITERAL(1e-5))
 {
     for (int row = 0; row <= 2; row++)
     {
@@ -115,7 +125,7 @@ void expect_identical_3x3_matrices(const Eigen::WITH_SUFFIX_fd(Matrix3) &m1,
     }
 }
 
-bool check_if_unitary(const Eigen::WITH_SUFFIX_fd(Matrix3) &m)
+bool check_if_unitary(const Eigen::WITH_SUFFIX_fd(Matrix3) & m)
 {
     for (int i = 0; i < 3; ++i)
     {
@@ -198,13 +208,13 @@ TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2)
     model_m.row(1) << 1, 0, 0;
     model_m.row(2) << 0, 0, 1;
 
-    model_yaw = (FNUM_TYPE) M_PI_2;
+    model_yaw = (FNUM_TYPE)M_PI_2;
     model_pitch = model_roll = 0;
 
     CheckTwoWays();
 }
 
-#define M_SQRT2_2 (((FNUM_TYPE) M_SQRT2) / FNUM_LITERAL(2.0) )
+#define M_SQRT2_2 (((FNUM_TYPE)M_SQRT2) / FNUM_LITERAL(2.0))
 
 TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4)
 {
@@ -215,7 +225,7 @@ TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4)
     model_m.row(1) << M_SQRT2_2, M_SQRT2_2, 0;
     model_m.row(2) << 0, 0, 1;
 
-    model_yaw = (FNUM_TYPE) M_PI_4;
+    model_yaw = (FNUM_TYPE)M_PI_4;
     model_pitch = model_roll = 0;
 
     CheckTwoWays();
@@ -231,7 +241,7 @@ TEST_F(TwoWayTest, PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2)
     model_m.row(2) << 1, 0, 0;
 
     model_yaw = model_roll = 0;
-    model_pitch = (FNUM_TYPE) M_PI_2;
+    model_pitch = (FNUM_TYPE)M_PI_2;
 
     CheckTwoWays();
 }
@@ -246,7 +256,7 @@ TEST_F(TwoWayTest, PitchTest_LiftBookPagetopEighthTurnMustYieldPitchPi4)
     model_m.row(2) << M_SQRT2_2, 0, M_SQRT2_2;
 
     model_yaw = model_roll = 0;
-    model_pitch = (FNUM_TYPE) M_PI_4;
+    model_pitch = (FNUM_TYPE)M_PI_4;
 
     CheckTwoWays();
 }
@@ -261,7 +271,7 @@ TEST_F(TwoWayTest, RollTest_OpenBookCoverQuarterTurnMustYieldRollMinusPi2)
     model_m.row(2) << 0, -1, 0;
 
     model_yaw = model_pitch = 0;
-    model_roll = (FNUM_TYPE) (-M_PI_2);
+    model_roll = (FNUM_TYPE)(-M_PI_2);
 
     CheckTwoWays();
 }
@@ -276,7 +286,7 @@ TEST_F(TwoWayTest, RollTest_OpenBookCoverEighthTurnMustYieldRollMinusPi4)
     model_m.row(2) << 0, -M_SQRT2_2, M_SQRT2_2;
 
     model_yaw = model_pitch = 0;
-    model_roll = (FNUM_TYPE) (-M_PI_4);
+    model_roll = (FNUM_TYPE)(-M_PI_4);
 
     CheckTwoWays();
 }
@@ -290,8 +300,8 @@ TEST_F(TwoWayTest, YawAndHalfPitchTest)
     model_m.row(1) << M_SQRT2_2, 0, -M_SQRT2_2;
     model_m.row(2) << M_SQRT2_2, 0, M_SQRT2_2;
 
-    model_yaw = (FNUM_TYPE) M_PI_2;
-    model_pitch = (FNUM_TYPE) M_PI_4;
+    model_yaw = (FNUM_TYPE)M_PI_2;
+    model_pitch = (FNUM_TYPE)M_PI_4;
     model_roll = 0;
 
     CheckTwoWays();
@@ -306,7 +316,7 @@ TEST_F(TwoWayTest, YawAndRollTest)
     model_m.row(1) << 1, 0, 0;
     model_m.row(2) << 0, 1, 0;
 
-    model_yaw = model_roll = (FNUM_TYPE) M_PI_2;
+    model_yaw = model_roll = (FNUM_TYPE)M_PI_2;
     model_pitch = 0;
 
     CheckTwoWays();
@@ -322,8 +332,8 @@ TEST_F(TwoWayTest, HalfPitchAndRollTest)
     model_m.row(2) << M_SQRT2_2, M_SQRT2_2, 0;
 
     model_yaw = 0;
-    model_pitch = (FNUM_TYPE) M_PI_4;
-    model_roll = (FNUM_TYPE) M_PI_2;
+    model_pitch = (FNUM_TYPE)M_PI_4;
+    model_roll = (FNUM_TYPE)M_PI_2;
 
     CheckTwoWays();
 }
@@ -365,15 +375,16 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX)
 TEST_F(TwoWayTest, FullTest_AnyComboMustConvertAndBack)
 {
 
-    const FNUM_TYPE increment = ((FNUM_TYPE) M_PI_2) / (FNUM_LITERAL(10.0));
+    const FNUM_TYPE increment = ((FNUM_TYPE)M_PI_2) / (FNUM_LITERAL(10.0));
 
-    for (model_yaw = ((FNUM_TYPE) (-M_PI)) * (FNUM_LITERAL(0.98)) ; model_yaw < ((FNUM_TYPE) M_PI); model_yaw += increment)
+    for (model_yaw = ((FNUM_TYPE)(-M_PI)) * (FNUM_LITERAL(0.98));
+         model_yaw < ((FNUM_TYPE)M_PI); model_yaw += increment)
     {
-        for (model_pitch = ((FNUM_TYPE) -M_PI_2) * (FNUM_LITERAL(0.98)); model_pitch < ((FNUM_TYPE) M_PI_2) ;
-             model_pitch += increment)
+        for (model_pitch = ((FNUM_TYPE)-M_PI_2) * (FNUM_LITERAL(0.98));
+             model_pitch < ((FNUM_TYPE)M_PI_2); model_pitch += increment)
         {
-            for (model_roll = (FNUM_TYPE) (-M_PI_2) ; model_roll < (FNUM_TYPE) M_PI_2;
-                 model_roll += increment)
+            for (model_roll = (FNUM_TYPE)(-M_PI_2);
+                 model_roll < (FNUM_TYPE)M_PI_2; model_roll += increment)
             {
                 angles_to_matrix(model_yaw, model_pitch, model_roll, model_m);
 

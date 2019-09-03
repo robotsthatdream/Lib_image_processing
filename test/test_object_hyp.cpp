@@ -289,7 +289,8 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
      */
     OptimizationFunctor(const pcl::PointCloud<pcl::PointXYZ> &cloud,
                         const std::vector<int> &indices)
-        : pcl::Functor<FNUM_TYPE>(indices.size()), cloud_(cloud), indices_(indices)
+        : pcl::Functor<FNUM_TYPE>(indices.size()), cloud_(cloud),
+          indices_(indices)
     {
         FSG_LOG_MSG("Created functor with value count: " << values());
     }
@@ -321,9 +322,11 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
 #endif
 
-        const FNUM_TYPE exp_1 = param(fsg::SuperEllipsoidParameters::idx::exp_1);
+        const FNUM_TYPE exp_1 =
+            param(fsg::SuperEllipsoidParameters::idx::exp_1);
         // FSG_LOG_VAR(exp_1);
-        const FNUM_TYPE exp_2 = param(fsg::SuperEllipsoidParameters::idx::exp_2);
+        const FNUM_TYPE exp_2 =
+            param(fsg::SuperEllipsoidParameters::idx::exp_2);
         // FSG_LOG_VAR(exp_2);
 
         // if ((exp_1 > 2.0) || (exp_2 > 2.0)) {
@@ -386,7 +389,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
             // FSG_LOG_VAR(v_scaled);
 
             const FNUM_TYPE term = powf_abs(v_scaled(0), two_over_exp_2) +
-                               powf_abs(v_scaled(1), two_over_exp_2);
+                                   powf_abs(v_scaled(1), two_over_exp_2);
             // FSG_LOG_VAR(term);
 
             const FNUM_TYPE outside_if_over_1 =
@@ -675,7 +678,8 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
 
     OptimizationFunctor functor(*cloud_xyz, indices);
     Eigen::NumericalDiff<OptimizationFunctor> num_diff(functor);
-    Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>, FNUM_TYPE>
+    Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>,
+                              FNUM_TYPE>
         lm(num_diff);
     Eigen::LevenbergMarquardtSpace::Status minimizationResult;
 
@@ -1417,7 +1421,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     FSG_TRACE_THIS_FUNCTION();
     boost::random::uniform_real_distribution<> random_number_m5p5(-1, 1);
     boost::random::uniform_real_distribution<> random_number_cent_one(0.01, 1);
-    boost::random::uniform_real_distribution<> random_number_mpippi(-M_PI, M_PI);
+    boost::random::uniform_real_distribution<> random_number_mpippi(-M_PI,
+                                                                    M_PI);
     // ost::random::uniform_real_distribution<> random_number_cent_two(1, 1);
 
     fsg::SuperEllipsoidParameters sep_groundtruth;
@@ -1450,7 +1455,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
 
     // fsg::SuperEllipsoidParameters initialEstimate =
     //     pointCloudComputeFitComputeInitialEstimate(pointCloud, nullptr, "");
-    
+
     fsg::SuperEllipsoidParameters initialEstimate;
     initialEstimate.set_cen_x(random_number_m5p5(_gen));
     initialEstimate.set_cen_y(random_number_m5p5(_gen));

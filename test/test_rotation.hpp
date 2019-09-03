@@ -3,17 +3,19 @@
 #ifdef USE_DOUBLE
 #define FNUM_TYPE double
 #define FNUM_LITERAL(number) number
-#define WITH_SUFFIX_fd(symbolname) symbolname ## d
-#define WITH_SUFFIX_xd(symbolname) symbolname ## d
+#define WITH_SUFFIX_fd(symbolname) symbolname##d
+#define WITH_SUFFIX_xd(symbolname) symbolname##d
 #else
 #define FNUM_TYPE float
-#define FNUM_LITERAL(number) number ## f
-#define WITH_SUFFIX_fd(symbolname) symbolname ## f
+#define FNUM_LITERAL(number) number##f
+#define WITH_SUFFIX_fd(symbolname) symbolname##f
 #define WITH_SUFFIX_xd(symbolname) symbolname
 #endif
 
-namespace fsg {
-namespace matrixrotationangles {
+namespace fsg
+{
+namespace matrixrotationangles
+{
 
 /*
 
