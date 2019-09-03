@@ -83,9 +83,9 @@ set (regex_backslash "${string_backslash}${string_backslash}")
 set (regex_newline "${string_backslash}${string_newline}")
 set (regex_quote "${string_backslash}${string_quote}")
 
-message( "NEWLINE${string_newline}NEWLINE")
-message( "BACKSLASH${string_backslash}BACKSLASH")
-message( "QUOTE${string_quote}QUOTE")
+#message( "NEWLINE${string_newline}NEWLINE")
+#message( "BACKSLASH${string_backslash}BACKSLASH")
+#message( "QUOTE${string_quote}QUOTE")
 
 set (pattern_for_new_line_in_string "(${regex_newline})" )
 set (replacemement_for_new_line_in_string "\\\\n${string_quote}\\n${string_quote}" )
