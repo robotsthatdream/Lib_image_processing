@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(image_processing)
 
-set(CMAKE_DISABLE_SOURCE_CHANGES ON CACHE BOOL "Refuse to build if uncommitted changes.")
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON CACHE BOOL "Refuse to build in-source.")
+option(CMAKE_DISABLE_SOURCE_CHANGES "Refuse to build if uncommitted changes." ON)
+# option(CMAKE_DISABLE_IN_SOURCE_BUILD "Refuse to build in-source." ON)
 
 # get_cmake_property(_variableNames VARIABLES)
 # list (SORT _variableNames)
@@ -20,7 +20,9 @@ message (STATUS "---------------------------------------------------------------
 message (STATUS "In directory ${CMAKE_CURRENT_LIST_DIR}")
 message (STATUS "-------------------------------------------------------------------")
 
-if( CMAKE_DISABLE_SOURCE_CHANGES EQUAL ON )
+if( ${CMAKE_DISABLE_SOURCE_CHANGES} )
+
+  message( STATUS "Will check if build tree clean in directory ${CMAKE_CURRENT_LIST_DIR}")
 
 # This ensures that what is compiled is something committed and identifiable with a git hash.
 #
