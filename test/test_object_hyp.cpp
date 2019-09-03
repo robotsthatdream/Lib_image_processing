@@ -546,7 +546,12 @@ void FloatTest()
         // FSG_LOG_VAR(epsilon);
         ref_plus_epsilon = ref + epsilon;
         // FSG_LOG_VAR(ref_plus_epsilon);
-    } while (ref_plus_epsilon != ref);
+    } while (
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        ref_plus_epsilon != ref
+#pragma GCC diagnostic pop
+        );
     FSG_LOG_MSG("First epsilon that added to "
                 << ref << " does not change a bit: " << epsilon);
 }
