@@ -244,7 +244,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     // Next rotate the point cloud.
 
-    Eigen::Matrix3f rotmat;
+    Eigen::WITH_SUFFIX_fd(Matrix3) rotmat;
     angles_to_matrix(get_rot_yaw(), get_rot_pitch(), get_rot_roll(), rotmat);
 
     FSG_LOG_VAR(rotmat);
@@ -282,13 +282,13 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
      */
     OptimizationFunctor(const pcl::PointCloud<pcl::PointXYZ> &cloud,
                         const std::vector<int> &indices)
-        : pcl::Functor<FNUM_TYPE>(indices.size()), cloud_(cloud),
+        : pcl::Functor<FNUM_TYPE>((int)indices.size()), cloud_(cloud),
           indices_(indices)
     {
         FSG_LOG_MSG("Created functor with value count: " << values());
     }
 
-#define pow_abs(x, y) WITH_SUFFIX_fx(pow)(WITH_SUFFIX_fx(fabs)(x), y)
+#define pow_abs(x, y) WITH_SUFFIX_fx(pow)(WITH_SUFFIX_fx(fabs)q(x), y)
 // FNUM_TYPE pow_abs(const FNUM_TYPE x, const FNUM_TYPE y) const {
 //     FSG_TRACE_THIS_FUNCTION();
 //     FSG_LOG_VAR(x);
@@ -339,7 +339,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         // FSG_LOG_VAR(cen);
 
         // Compute rotation matrix
-        Eigen::Matrix3f rotmat;
+        Eigen::WITH_SUFFIX_fd(Matrix3) rotmat;
         angles_to_matrix(param(fsg::SuperEllipsoidParameters::idx::rot_yaw),
                          param(fsg::SuperEllipsoidParameters::idx::rot_pitch),
                          param(fsg::SuperEllipsoidParameters::idx::rot_roll),
@@ -1273,7 +1273,7 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     pcl::PointXYZ min_point_OBB;
     pcl::PointXYZ max_point_OBB;
     pcl::PointXYZ position_OBB;
-    Eigen::Matrix3f rotational_matrix_OBB;
+    Eigen::WITH_SUFFIX_fd(Matrix3) rotational_matrix_OBB;
     feature_extractor.getOBB(
         min_point_OBB, max_point_OBB, position_OBB,
         rotational_matrix_OBB); // FIXME should check return value
