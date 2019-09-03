@@ -1680,7 +1680,7 @@ int main(int argc, char **argv)
                 pcl::Supervoxel<ip::PointT>::Ptr current_sv = it_sv->second;
                 FNUM_TYPE c = weights_for_this_modality[it_sv->first][lbl];
 
-                if (c < 0.5)
+                if (c < sg_half)
                 {
                     // FSG_LOG_MSG( " skipping sv of label " << current_sv_label
                     // <<
@@ -1695,9 +1695,9 @@ int main(int argc, char **argv)
                 // different colors, then multiplied by biased relevance.
                 // Hope this allows to easily distinguish supervoxels by
                 // colors.
-                int r = FNUM_TYPE(dist(_gen) * 56) * (c + 0.5);
-                int g = FNUM_TYPE(dist(_gen) * 56) * (c + 0.5);
-                int b = FNUM_TYPE(dist(_gen) * 56) * (c + 0.5);
+                int r = FNUM_TYPE(dist(_gen) * 56) * (c + sg_half);
+                int g = FNUM_TYPE(dist(_gen) * 56) * (c + sg_half);
+                int b = FNUM_TYPE(dist(_gen) * 56) * (c + sg_half);
 
                 pcl::PointXYZRGB pt;
                 for (auto v : *(current_sv->voxels_))
