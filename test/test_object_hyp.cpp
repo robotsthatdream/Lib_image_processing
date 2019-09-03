@@ -307,7 +307,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
      * \param[out] fvec the resultant functions evaluations
      * \return 0
      */
-    int operator()(const Eigen::VectorXd &param, Eigen::VectorXf &fvec) const
+    int operator()(const Eigen::VectorXd &param, VECTORX &fvec) const
     {
 #if FUNCTOR_LOG_INSIDE == 1
         fsg::SuperEllipsoidParameters *sep =
@@ -595,7 +595,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
 
         OptimizationFunctor functor(*pointCloud, indices);
 
-        Eigen::VectorXf deviation(pointCloud->size());
+        VECTORX deviation(pointCloud->size());
 
         functor(superellipsoidparameters.coeff, deviation);
 
@@ -626,7 +626,7 @@ void SuperEllipsoidTestComputeGradient(
 
     OptimizationFunctor functor(*pointCloud, indices);
 
-    Eigen::VectorXf deviation(pointCloud->size());
+    VECTORX deviation(pointCloud->size());
 
     functor(superellipsoidparameters_prototype.coeff, deviation);
 
@@ -685,7 +685,7 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
             "Eigen::LevenbergMarquardt::minimize()");
         Eigen::VectorXd coeff_d = fittingContext.coeff;
-        Eigen::VectorXf coeff_f = coeff_d.cast<FNUM_TYPE>();
+        VECTORX coeff_f = coeff_d.cast<FNUM_TYPE>();
 
         minimizationResult =
             (Eigen::LevenbergMarquardtSpace::Status)0; // lm.minimize(coeff_f);
@@ -751,7 +751,7 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
         // FSG_LOG_VAR(cmaes_eval_params);
 
-        Eigen::VectorXf deviation(cloud_xyz->size());
+        VECTORX deviation(cloud_xyz->size());
 
         functor(cmaes_eval_params.coeff, deviation);
 
@@ -889,7 +889,7 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
 
     {
         /* Check  */
-        Eigen::VectorXf deviation(cloud_xyz->size());
+        VECTORX deviation(cloud_xyz->size());
         functor(fittingContext.coeff, deviation);
         // FSG_LOG_VAR(deviation);
         FSG_LOG_VAR(deviation.norm());
@@ -920,9 +920,9 @@ void SuperEllipsoidComputeGradientAllDimensions(
 
     OptimizationFunctor functor(*pointCloud, indices);
 
-    Eigen::VectorXf deviation(pointCloud->size());
+    VECTORX deviation(pointCloud->size());
 
-    Eigen::VectorXf values(5);
+    VECTORX values(5);
     const FNUM_TYPE epsilon = FNUM_LITERAL(0.001);
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++)
@@ -1071,7 +1071,7 @@ bool pointCloudToFittingContextWithInitialEstimate(
 
         OptimizationFunctor functor(*cloud_xyz, indices);
 
-        Eigen::VectorXf deviation(cloud_xyz->size());
+        VECTORX deviation(cloud_xyz->size());
 
         functor(fittingContext.coeff, deviation);
 
@@ -1107,9 +1107,9 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
 
     OptimizationFunctor functor(*pointCloud, indices);
 
-    Eigen::VectorXf deviation(pointCloud->size());
+    VECTORX deviation(pointCloud->size());
 
-    Eigen::VectorXf values(5);
+    VECTORX values(5);
     const FNUM_TYPE epsilon = FNUM_LITERAL(0.001);
 
     functor(superellipsoidparameters_center.coeff, deviation);
@@ -1400,7 +1400,7 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
 
         OptimizationFunctor functor(*pointCloud, indices);
 
-        Eigen::VectorXf deviation(pointCloud->size());
+        VECTORX deviation(pointCloud->size());
 
         functor(sep_current.coeff, deviation);
 

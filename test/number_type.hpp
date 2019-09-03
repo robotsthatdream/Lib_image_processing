@@ -41,5 +41,6 @@ static constexpr FNUM_TYPE sg_2 = FNUM_LITERAL(2.0);
 #define MATRIX3 Eigen::WITH_SUFFIX_fd(Matrix3)
 #define VECTOR4 Eigen::WITH_SUFFIX_fd(Vector4)
 #define MATRIX4 Eigen::WITH_SUFFIX_fd(Matrix4)
+#define VECTORX Eigen::WITH_SUFFIX_fd(VectorX)
 
 #endif /* NUMBER_TYPE_HPP */
