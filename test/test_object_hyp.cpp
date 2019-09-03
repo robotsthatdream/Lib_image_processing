@@ -96,12 +96,12 @@ struct SuperEllipsoidParameters
     };
 
 #define FSGX(name)                                                             \
-    void set_##name(float f) { coeff(idx::name) = f; };
+    void set_##name(FNUM_TYPE f) { coeff(idx::name) = f; };
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
 
 #define FSGX(name)                                                             \
-    float get_##name() const { return coeff(idx::name); };
+    FNUM_TYPE get_##name() const { return coeff(idx::name); };
     ALL_SuperEllipsoidParameters_FIELDS;
 #undef FSGX
 
@@ -170,6 +170,14 @@ float powf_sym(float x, float y)
         return powf(x, y);
 }
 
+double pow_sym(double x, double y)
+{
+    if (std::signbit(x) != 0)
+        return -pow(-x, y);
+    else
+        return pow(x, y);
+}
+
 /** Provide access to coeff data as C-style array.  Number of
     values is provided in SuperEllipsoidParameters::fieldcount.
  */
@@ -206,25 +214,25 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     //         \|
     //   Y -----O
 
-    float exp_1 = this->get_exp_1();
-    float exp_2 = this->get_exp_2();
+    FNUM_TYPE exp_1 = this->get_exp_1();
+    FNUM_TYPE exp_2 = this->get_exp_2();
 
-    float dilatfactor_x = this->get_rad_a();
-    float dilatfactor_y = this->get_rad_b();
-    float dilatfactor_z = this->get_rad_c();
+    FNUM_TYPE dilatfactor_x = this->get_rad_a();
+    FNUM_TYPE dilatfactor_y = this->get_rad_b();
+    FNUM_TYPE dilatfactor_z = this->get_rad_c();
 
     pcl::PointXYZ pt;
-    const float increment = M_PI_2 / steps;
+    const FNUM_TYPE increment = M_PI_2 / steps;
 
     // Pitch is eta in Biegelbauer et al.
-    for (float pitch = -M_PI_2; pitch < M_PI_2; pitch += increment)
+    for (FNUM_TYPE pitch = -M_PI_2; pitch < M_PI_2; pitch += increment)
     {
 
         pt.z = dilatfactor_z * powf_sym(sin(pitch), exp_1);
-        float cos_pitch_exp_1 = powf_sym(cos(pitch), exp_1);
+        FNUM_TYPE cos_pitch_exp_1 = powf_sym(cos(pitch), exp_1);
 
         // Yaw is omega in Biegelbauer et al.
-        for (float yaw = -M_PI; yaw < M_PI; yaw += increment)
+        for (FNUM_TYPE yaw = -M_PI; yaw < M_PI; yaw += increment)
         {
 
             pt.x = dilatfactor_x * powf_sym(cos(yaw), exp_2) * cos_pitch_exp_1;
@@ -273,7 +281,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     Compare with the forward transformation implemented in
     `SuperEllipsoidParameters::toPointCloud`.
  */
-struct OptimizationFunctor : pcl::Functor<float>
+struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
 {
     /** Functor constructor
      * \param[in] source cloud
@@ -281,19 +289,19 @@ struct OptimizationFunctor : pcl::Functor<float>
      */
     OptimizationFunctor(const pcl::PointCloud<pcl::PointXYZ> &cloud,
                         const std::vector<int> &indices)
-        : pcl::Functor<float>(indices.size()), cloud_(cloud), indices_(indices)
+        : pcl::Functor<FNUM_TYPE>(indices.size()), cloud_(cloud), indices_(indices)
     {
         FSG_LOG_MSG("Created functor with value count: " << values());
     }
 
 #define powf_abs(x, y) powf(fabs(x), y)
-// float powf_abs(const float x, const float y) const {
+// FNUM_TYPE powf_abs(const FNUM_TYPE x, const FNUM_TYPE y) const {
 //     FSG_TRACE_THIS_FUNCTION();
 //     FSG_LOG_VAR(x);
 //     FSG_LOG_VAR(y);
-//     const float absx = fabs(x);
+//     const FNUM_TYPE absx = fabs(x);
 //     FSG_LOG_VAR(absx);
-//     const float result = powf(absx, y);
+//     const FNUM_TYPE result = powf(absx, y);
 //     FSG_LOG_VAR(result);
 //     return result;
 // }
@@ -313,9 +321,9 @@ struct OptimizationFunctor : pcl::Functor<float>
         FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
 #endif
 
-        const float exp_1 = param(fsg::SuperEllipsoidParameters::idx::exp_1);
+        const FNUM_TYPE exp_1 = param(fsg::SuperEllipsoidParameters::idx::exp_1);
         // FSG_LOG_VAR(exp_1);
-        const float exp_2 = param(fsg::SuperEllipsoidParameters::idx::exp_2);
+        const FNUM_TYPE exp_2 = param(fsg::SuperEllipsoidParameters::idx::exp_2);
         // FSG_LOG_VAR(exp_2);
 
         // if ((exp_1 > 2.0) || (exp_2 > 2.0)) {
@@ -344,14 +352,14 @@ struct OptimizationFunctor : pcl::Functor<float>
         rotmat.transposeInPlace();
         // FSG_LOG_VAR(rotmat);
 
-        const float two_over_exp_1 = 2.0 / exp_1;
-        const float two_over_exp_2 = 2.0 / exp_2;
-        const float exp_2_over_exp_1 = exp_2 / exp_1;
+        const FNUM_TYPE two_over_exp_1 = 2.0 / exp_1;
+        const FNUM_TYPE two_over_exp_2 = 2.0 / exp_2;
+        const FNUM_TYPE exp_2_over_exp_1 = exp_2 / exp_1;
         // FSG_LOG_VAR(two_over_exp_2);
         // FSG_LOG_VAR(two_over_exp_1);
         // FSG_LOG_VAR(exp_2_over_exp_1);
 
-        float sum_of_squares = 0;
+        FNUM_TYPE sum_of_squares = 0;
 
         for (signed int i = 0; i < values(); ++i)
         {
@@ -377,16 +385,16 @@ struct OptimizationFunctor : pcl::Functor<float>
                 v_aligned(2) / param(fsg::SuperEllipsoidParameters::idx::rad_c);
             // FSG_LOG_VAR(v_scaled);
 
-            const float term = powf_abs(v_scaled(0), two_over_exp_2) +
+            const FNUM_TYPE term = powf_abs(v_scaled(0), two_over_exp_2) +
                                powf_abs(v_scaled(1), two_over_exp_2);
             // FSG_LOG_VAR(term);
 
-            const float outside_if_over_1 =
+            const FNUM_TYPE outside_if_over_1 =
                 powf_abs(term, exp_2_over_exp_1) +
                 powf_abs(v_scaled(2), two_over_exp_1);
             // FSG_LOG_VAR(outside_if_over_1);
 
-            const float deviation = outside_if_over_1 - 1;
+            const FNUM_TYPE deviation = outside_if_over_1 - 1;
 #if FUNCTOR_LOG_INSIDE == 1
             FSG_LOG_VAR(deviation);
 #endif
@@ -533,9 +541,9 @@ Eigen::ComputationInfo minimizationResultToComputationInfo(
 void FloatTest()
 {
     FSG_TRACE_THIS_FUNCTION();
-    float ref = 1.0;
-    float epsilon = ref;
-    float ref_plus_epsilon = 0;
+    FNUM_TYPE ref = 1.0;
+    FNUM_TYPE epsilon = ref;
+    FNUM_TYPE ref_plus_epsilon = 0;
     do
     {
         epsilon = epsilon / 2.0;
@@ -547,7 +555,7 @@ void FloatTest()
                 << ref << " does not change a bit: " << epsilon);
 }
 
-static const float fit_control_epsilon = 0.01;
+static const FNUM_TYPE fit_control_epsilon = 0.01;
 
 /**
    This method generates a number of varied parameter sets (trying
@@ -621,11 +629,11 @@ void SuperEllipsoidTestComputeGradient(
 
     functor(superellipsoidparameters_prototype.coeff, deviation);
 
-    float center_value = deviation.norm();
+    FNUM_TYPE center_value = deviation.norm();
 
     FSG_LOG_VAR(center_value);
 
-    const float epsilon = 0.05;
+    const FNUM_TYPE epsilon = 0.05;
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++)
     {
@@ -638,12 +646,12 @@ void SuperEllipsoidTestComputeGradient(
         superellipsoidparameters.coeff(dimension_shift) =
             superellipsoidparameters_prototype.coeff(dimension_shift) - epsilon;
         functor(superellipsoidparameters.coeff, deviation);
-        float minus = deviation.norm();
+        FNUM_TYPE minus = deviation.norm();
 
         superellipsoidparameters.coeff(dimension_shift) =
             superellipsoidparameters_prototype.coeff(dimension_shift) + epsilon;
         functor(superellipsoidparameters.coeff, deviation);
-        float plus = deviation.norm();
+        FNUM_TYPE plus = deviation.norm();
 
         FSG_LOG_MSG("dimension " << dimension_shift << " values " << minus << ""
                                  << center_value << "" << plus);
@@ -667,7 +675,7 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
 
     OptimizationFunctor functor(*cloud_xyz, indices);
     Eigen::NumericalDiff<OptimizationFunctor> num_diff(functor);
-    Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>, float>
+    Eigen::LevenbergMarquardt<Eigen::NumericalDiff<OptimizationFunctor>, FNUM_TYPE>
         lm(num_diff);
     Eigen::LevenbergMarquardtSpace::Status minimizationResult;
 
@@ -675,7 +683,7 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
             "Eigen::LevenbergMarquardt::minimize()");
         Eigen::VectorXd coeff_d = fittingContext.coeff;
-        Eigen::VectorXf coeff_f = coeff_d.cast<float>();
+        Eigen::VectorXf coeff_f = coeff_d.cast<FNUM_TYPE>();
 
         minimizationResult =
             (Eigen::LevenbergMarquardtSpace::Status)0; // lm.minimize(coeff_f);
@@ -913,7 +921,7 @@ void SuperEllipsoidComputeGradientAllDimensions(
     Eigen::VectorXf deviation(pointCloud->size());
 
     Eigen::VectorXf values(5);
-    const float epsilon = 0.001;
+    const FNUM_TYPE epsilon = 0.001;
 
     for (int dimension_shift = 0; dimension_shift < 11; dimension_shift++)
     {
@@ -923,7 +931,7 @@ void SuperEllipsoidComputeGradientAllDimensions(
 
         for (int step = -1; step <= 1; step += 1)
         {
-            float stepEpsilon = step * epsilon;
+            FNUM_TYPE stepEpsilon = step * epsilon;
 
             fsg::SuperEllipsoidParameters superellipsoidparameters =
                 superellipsoidparameters_center;
@@ -936,7 +944,7 @@ void SuperEllipsoidComputeGradientAllDimensions(
             functor(superellipsoidparameters.coeff, deviation);
 
             // FSG_LOG_VAR(deviation);
-            float value = deviation.norm();
+            FNUM_TYPE value = deviation.norm();
             FSG_LOG_VAR(value);
 
             values[step + 1] = value;
@@ -1100,10 +1108,10 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
     Eigen::VectorXf deviation(pointCloud->size());
 
     Eigen::VectorXf values(5);
-    const float epsilon = 0.001;
+    const FNUM_TYPE epsilon = 0.001;
 
     functor(superellipsoidparameters_center.coeff, deviation);
-    float centervalue = deviation.norm();
+    FNUM_TYPE centervalue = deviation.norm();
     FSG_LOG_VAR(centervalue);
     values[2] = centervalue;
 
@@ -1120,7 +1128,7 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
             {
                 continue;
             }*/
-            float stepEpsilon = step * epsilon;
+            FNUM_TYPE stepEpsilon = step * epsilon;
 
             fsg::SuperEllipsoidParameters superellipsoidparameters =
                 superellipsoidparameters_center;
@@ -1136,7 +1144,7 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
             functor(superellipsoidparameters.coeff, deviation);
 
             // FSG_LOG_VAR(deviation);
-            float value = deviation.norm();
+            FNUM_TYPE value = deviation.norm();
             FSG_LOG_VAR(value);
 
             values[step + 2] = value;
@@ -1337,7 +1345,7 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
 
     initialEstimate.set_rad_c(minor_vector.norm());
 
-    float yaw, pitch, roll;
+    FNUM_TYPE yaw, pitch, roll;
     matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
 
     FSG_LOG_MSG("yaw=" << yaw << ", pitch=" << pitch << ", roll=" << roll);
@@ -1407,23 +1415,23 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
 {
     FSG_TRACE_THIS_FUNCTION();
-    boost::random::uniform_real_distribution<> random_float_m5p5(-1, 1);
-    boost::random::uniform_real_distribution<> random_float_cent_one(0.01, 1);
-    boost::random::uniform_real_distribution<> random_float_mpippi(-M_PI, M_PI);
-    // ost::random::uniform_real_distribution<> random_float_cent_two(1, 1);
+    boost::random::uniform_real_distribution<> random_number_m5p5(-1, 1);
+    boost::random::uniform_real_distribution<> random_number_cent_one(0.01, 1);
+    boost::random::uniform_real_distribution<> random_number_mpippi(-M_PI, M_PI);
+    // ost::random::uniform_real_distribution<> random_number_cent_two(1, 1);
 
     fsg::SuperEllipsoidParameters sep_groundtruth;
-    sep_groundtruth.set_cen_x(random_float_m5p5(_gen));
-    sep_groundtruth.set_cen_y(random_float_m5p5(_gen));
-    sep_groundtruth.set_cen_z(random_float_m5p5(_gen));
-    sep_groundtruth.set_rad_a(random_float_cent_one(_gen));
-    sep_groundtruth.set_rad_b(random_float_cent_one(_gen));
-    sep_groundtruth.set_rad_c(random_float_cent_one(_gen));
-    sep_groundtruth.set_rot_yaw(random_float_mpippi(_gen));
-    sep_groundtruth.set_rot_pitch(random_float_mpippi(_gen));
-    sep_groundtruth.set_rot_roll(random_float_mpippi(_gen));
-    sep_groundtruth.set_exp_1(1); // random_float_cent_two(_gen));
-    sep_groundtruth.set_exp_2(1); // random_float_cent_two(_gen));
+    sep_groundtruth.set_cen_x(random_number_m5p5(_gen));
+    sep_groundtruth.set_cen_y(random_number_m5p5(_gen));
+    sep_groundtruth.set_cen_z(random_number_m5p5(_gen));
+    sep_groundtruth.set_rad_a(random_number_cent_one(_gen));
+    sep_groundtruth.set_rad_b(random_number_cent_one(_gen));
+    sep_groundtruth.set_rad_c(random_number_cent_one(_gen));
+    sep_groundtruth.set_rot_yaw(random_number_mpippi(_gen));
+    sep_groundtruth.set_rot_pitch(random_number_mpippi(_gen));
+    sep_groundtruth.set_rot_roll(random_number_mpippi(_gen));
+    sep_groundtruth.set_exp_1(1); // random_number_cent_two(_gen));
+    sep_groundtruth.set_exp_2(1); // random_number_cent_two(_gen));
 
     FSG_LOG_VAR(sep_groundtruth);
 
@@ -1444,17 +1452,17 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     //     pointCloudComputeFitComputeInitialEstimate(pointCloud, nullptr, "");
     
     fsg::SuperEllipsoidParameters initialEstimate;
-    initialEstimate.set_cen_x(random_float_m5p5(_gen));
-    initialEstimate.set_cen_y(random_float_m5p5(_gen));
-    initialEstimate.set_cen_z(random_float_m5p5(_gen));
-    initialEstimate.set_rad_a(random_float_cent_one(_gen));
-    initialEstimate.set_rad_b(random_float_cent_one(_gen));
-    initialEstimate.set_rad_c(random_float_cent_one(_gen));
-    initialEstimate.set_rot_yaw(random_float_mpippi(_gen));
-    initialEstimate.set_rot_pitch(random_float_mpippi(_gen));
-    initialEstimate.set_rot_roll(random_float_mpippi(_gen));
-    initialEstimate.set_exp_1(1); // random_float_cent_two(_gen));
-    initialEstimate.set_exp_2(1); // random_float_cent_two(_gen));
+    initialEstimate.set_cen_x(random_number_m5p5(_gen));
+    initialEstimate.set_cen_y(random_number_m5p5(_gen));
+    initialEstimate.set_cen_z(random_number_m5p5(_gen));
+    initialEstimate.set_rad_a(random_number_cent_one(_gen));
+    initialEstimate.set_rad_b(random_number_cent_one(_gen));
+    initialEstimate.set_rad_c(random_number_cent_one(_gen));
+    initialEstimate.set_rot_yaw(random_number_mpippi(_gen));
+    initialEstimate.set_rot_pitch(random_number_mpippi(_gen));
+    initialEstimate.set_rot_roll(random_number_mpippi(_gen));
+    initialEstimate.set_exp_1(1); // random_number_cent_two(_gen));
+    initialEstimate.set_exp_2(1); // random_number_cent_two(_gen));
 
     SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
         pointCloud, initialEstimate, sep_groundtruth);
