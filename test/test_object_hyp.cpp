@@ -348,8 +348,8 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         rotmat.transposeInPlace();
         // FSG_LOG_VAR(rotmat);
 
-        const FNUM_TYPE two_over_exp_1 = 2.0 / exp_1;
-        const FNUM_TYPE two_over_exp_2 = 2.0 / exp_2;
+        const FNUM_TYPE two_over_exp_1 = sg_2 / exp_1;
+        const FNUM_TYPE two_over_exp_2 = sg_2 / exp_2;
         const FNUM_TYPE exp_2_over_exp_1 = exp_2 / exp_1;
         // FSG_LOG_VAR(two_over_exp_2);
         // FSG_LOG_VAR(two_over_exp_1);
@@ -542,7 +542,7 @@ void FloatTest()
     FNUM_TYPE ref_plus_epsilon = 0;
     do
     {
-        epsilon = epsilon / 2.0;
+        epsilon = epsilon / sg_2;
         // FSG_LOG_VAR(epsilon);
         ref_plus_epsilon = ref + epsilon;
         // FSG_LOG_VAR(ref_plus_epsilon);
@@ -1285,9 +1285,9 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     FSG_LOG_VAR(rotational_matrix_OBB);
 
     // FIXME clarify/generalize major/z.
-    major_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0;
-    middle_vector *= (max_point_OBB.y - min_point_OBB.y) / 2.0;
-    minor_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0;
+    major_vector *= (max_point_OBB.z - min_point_OBB.z) / sg_2;
+    middle_vector *= (max_point_OBB.y - min_point_OBB.y) / sg_2;
+    minor_vector *= (max_point_OBB.x - min_point_OBB.x) / sg_2;
     FSG_LOG_VAR(major_vector);
     FSG_LOG_VAR(middle_vector);
     FSG_LOG_VAR(minor_vector);
@@ -1301,15 +1301,15 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     pcl::PointXYZ center(mass_center(0), mass_center(1), mass_center(2));
 
     // FIXME clarify/generalize major/z.
-    pcl::PointXYZ maj_axis(2.0 * major_vector(0) + mass_center(0),
-                           2.0 * major_vector(1) + mass_center(1),
-                           2.0 * major_vector(2) + mass_center(2));
-    pcl::PointXYZ mid_axis(2.0 * middle_vector(0) + mass_center(0),
-                           2.0 * middle_vector(1) + mass_center(1),
-                           2.0 * middle_vector(2) + mass_center(2));
-    pcl::PointXYZ min_axis(2.0 * minor_vector(0) + mass_center(0),
-                           2.0 * minor_vector(1) + mass_center(1),
-                           2.0 * minor_vector(2) + mass_center(2));
+    pcl::PointXYZ maj_axis(sg_2 * major_vector(0) + mass_center(0),
+                           sg_2 * major_vector(1) + mass_center(1),
+                           sg_2 * major_vector(2) + mass_center(2));
+    pcl::PointXYZ mid_axis(sg_2 * middle_vector(0) + mass_center(0),
+                           sg_2 * middle_vector(1) + mass_center(1),
+                           sg_2 * middle_vector(2) + mass_center(2));
+    pcl::PointXYZ min_axis(sg_2 * minor_vector(0) + mass_center(0),
+                           sg_2 * minor_vector(1) + mass_center(1),
+                           sg_2 * minor_vector(2) + mass_center(2));
 
     if (viewer != NULL)
     {
@@ -1847,9 +1847,9 @@ int main(int argc, char **argv)
                     {
                         pcl::PointXYZRGB pt;
 
-                        r = 127.0 + r / 2.0;
-                        g = 127.0 + g / 2.0;
-                        b = 127.0 + b / 2.0;
+                        r = 127.0 + r / sg_2;
+                        g = 127.0 + g / sg_2;
+                        b = 127.0 + b / sg_2;
                         for (auto v : *proj_points)
                         {
                             pt.x = v.x;
