@@ -223,17 +223,17 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     FNUM_TYPE dilatfactor_z = this->get_rad_c();
 
     pcl::PointXYZ pt;
-    const FNUM_TYPE increment = M_PI_2 / steps;
+    const FNUM_TYPE increment = sg_pi_2 / (FNUM_TYPE)steps;
 
     // Pitch is eta in Biegelbauer et al.
-    for (FNUM_TYPE pitch = -M_PI_2; pitch < M_PI_2; pitch += increment)
+    for (FNUM_TYPE pitch = -sg_pi_2; pitch < sg_pi_2; pitch += increment)
     {
 
         pt.z = dilatfactor_z * powf_sym(sin(pitch), exp_1);
         FNUM_TYPE cos_pitch_exp_1 = powf_sym(cos(pitch), exp_1);
 
         // Yaw is omega in Biegelbauer et al.
-        for (FNUM_TYPE yaw = -M_PI; yaw < M_PI; yaw += increment)
+        for (FNUM_TYPE yaw = -sg_pi; yaw < sg_pi; yaw += increment)
         {
 
             pt.x = dilatfactor_x * powf_sym(cos(yaw), exp_2) * cos_pitch_exp_1;
@@ -772,12 +772,12 @@ bool pointCloudToFittingContextWithInitialEstimate_LibCmaes(
     // FSG_LOG_VAR(OptimizationStepSize);
 
     Eigen::VectorXd LowerBounds(fsg::SuperEllipsoidParameters::fieldCount);
-    LowerBounds << -3, -3, -3, 0, 0, 0, -M_PI, -M_PI_2, -M_PI_2, 0.1, 0.1;
+    LowerBounds << -3, -3, -3, 0, 0, 0, -sg_pi, -sg_pi_2, -sg_pi_2, 0.1, 0.1;
 
     // FSG_LOG_VAR(LowerBounds);
 
     Eigen::VectorXd UpperBounds(fsg::SuperEllipsoidParameters::fieldCount);
-    UpperBounds << 3, 3, 3, 1, 1, 1, M_PI, M_PI_2, M_PI_2, 2, 2;
+    UpperBounds << 3, 3, 3, 1, 1, 1, sg_pi, sg_pi_2, sg_pi_2, 2, 2;
 
     // FSG_LOG_VAR(UpperBounds);
 
@@ -1422,8 +1422,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     FSG_TRACE_THIS_FUNCTION();
     boost::random::uniform_real_distribution<> random_number_m5p5(-1, 1);
     boost::random::uniform_real_distribution<> random_number_cent_one(0.01, 1);
-    boost::random::uniform_real_distribution<> random_number_mpippi(-M_PI,
-                                                                    M_PI);
+    boost::random::uniform_real_distribution<> random_number_mpippi(-sg_pi,
+                                                                    sg_pi);
     // ost::random::uniform_real_distribution<> random_number_cent_two(1, 1);
 
     fsg::SuperEllipsoidParameters sep_groundtruth;

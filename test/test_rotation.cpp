@@ -210,7 +210,7 @@ TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseQuarterTurnMustYieldYawPi2)
     model_m.row(1) << 1, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0);
     model_m.row(2) << FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), 1;
 
-    model_yaw = (FNUM_TYPE)M_PI_2;
+    model_yaw = sg_pi_2;
     model_pitch = model_roll = FNUM_LITERAL(0.0);
 
     CheckTwoWays();
@@ -227,7 +227,7 @@ TEST_F(TwoWayTest, YawTest_RotateBookCounterClockwiseEigthTurnMustYieldYawPi4)
     model_m.row(1) << M_SQRT2_2, M_SQRT2_2, FNUM_LITERAL(0.0);
     model_m.row(2) << FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), 1;
 
-    model_yaw = (FNUM_TYPE)M_PI_4;
+    model_yaw = sg_pi_4;
     model_pitch = model_roll = FNUM_LITERAL(0.0);
 
     CheckTwoWays();
@@ -243,7 +243,7 @@ TEST_F(TwoWayTest, PitchTest_LiftBookPagetopQuarterTurnMustYieldPitchPi2)
     model_m.row(2) << 1, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0);
 
     model_yaw = model_roll = FNUM_LITERAL(0.0);
-    model_pitch = (FNUM_TYPE)M_PI_2;
+    model_pitch = sg_pi_2;
 
     CheckTwoWays();
 }
@@ -258,7 +258,7 @@ TEST_F(TwoWayTest, PitchTest_LiftBookPagetopEighthTurnMustYieldPitchPi4)
     model_m.row(2) << M_SQRT2_2, FNUM_LITERAL(0.0), M_SQRT2_2;
 
     model_yaw = model_roll = FNUM_LITERAL(0.0);
-    model_pitch = (FNUM_TYPE)M_PI_4;
+    model_pitch = sg_pi_4;
 
     CheckTwoWays();
 }
@@ -273,7 +273,7 @@ TEST_F(TwoWayTest, RollTest_OpenBookCoverQuarterTurnMustYieldRollMinusPi2)
     model_m.row(2) << FNUM_LITERAL(0.0), -1, FNUM_LITERAL(0.0);
 
     model_yaw = model_pitch = FNUM_LITERAL(0.0);
-    model_roll = (FNUM_TYPE)(-M_PI_2);
+    model_roll = -sg_pi_2;
 
     CheckTwoWays();
 }
@@ -288,7 +288,7 @@ TEST_F(TwoWayTest, RollTest_OpenBookCoverEighthTurnMustYieldRollMinusPi4)
     model_m.row(2) << FNUM_LITERAL(0.0), -M_SQRT2_2, M_SQRT2_2;
 
     model_yaw = model_pitch = FNUM_LITERAL(0.0);
-    model_roll = (FNUM_TYPE)(-M_PI_4);
+    model_roll = sg_pi_4;
 
     CheckTwoWays();
 }
@@ -302,8 +302,8 @@ TEST_F(TwoWayTest, YawAndHalfPitchTest)
     model_m.row(1) << M_SQRT2_2, FNUM_LITERAL(0.0), -M_SQRT2_2;
     model_m.row(2) << M_SQRT2_2, FNUM_LITERAL(0.0), M_SQRT2_2;
 
-    model_yaw = (FNUM_TYPE)M_PI_2;
-    model_pitch = (FNUM_TYPE)M_PI_4;
+    model_yaw = sg_pi_2;
+    model_pitch = sg_pi_4;
     model_roll = FNUM_LITERAL(0.0);
 
     CheckTwoWays();
@@ -318,7 +318,7 @@ TEST_F(TwoWayTest, YawAndRollTest)
     model_m.row(1) << 1, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0);
     model_m.row(2) << FNUM_LITERAL(0.0), 1, FNUM_LITERAL(0.0);
 
-    model_yaw = model_roll = (FNUM_TYPE)M_PI_2;
+    model_yaw = model_roll = sg_pi_2;
     model_pitch = FNUM_LITERAL(0.0);
 
     CheckTwoWays();
@@ -334,8 +334,8 @@ TEST_F(TwoWayTest, HalfPitchAndRollTest)
     model_m.row(2) << M_SQRT2_2, M_SQRT2_2, FNUM_LITERAL(0.0);
 
     model_yaw = FNUM_LITERAL(0.0);
-    model_pitch = (FNUM_TYPE)M_PI_4;
-    model_roll = (FNUM_TYPE)M_PI_2;
+    model_pitch = sg_pi_4;
+    model_roll = sg_pi_2;
 
     CheckTwoWays();
 }
@@ -377,16 +377,16 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX)
 TEST_F(TwoWayTest, FullTest_AnyComboMustConvertAndBack)
 {
 
-    const FNUM_TYPE increment = ((FNUM_TYPE)M_PI_2) / (FNUM_LITERAL(10.0));
+    const FNUM_TYPE increment = (sg_pi_2) / (FNUM_LITERAL(10.0));
 
-    for (model_yaw = ((FNUM_TYPE)(-M_PI)) * (FNUM_LITERAL(0.98));
-         model_yaw < ((FNUM_TYPE)M_PI); model_yaw += increment)
+    for (model_yaw = (-sg_pi) * (FNUM_LITERAL(0.98));
+         model_yaw < sg_pi; model_yaw += increment)
     {
-        for (model_pitch = ((FNUM_TYPE)-M_PI_2) * (FNUM_LITERAL(0.98));
-             model_pitch < ((FNUM_TYPE)M_PI_2); model_pitch += increment)
+        for (model_pitch = (-sg_pi_2) * (FNUM_LITERAL(0.98));
+             model_pitch < sg_pi_2; model_pitch += increment)
         {
-            for (model_roll = (FNUM_TYPE)(-M_PI_2);
-                 model_roll < (FNUM_TYPE)M_PI_2; model_roll += increment)
+            for (model_roll = -sg_pi_2;
+                 model_roll < sg_pi_2; model_roll += increment)
             {
                 angles_to_matrix(model_yaw, model_pitch, model_roll, model_m);
 
