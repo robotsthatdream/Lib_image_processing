@@ -244,14 +244,14 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     // Next rotate the point cloud.
 
-    Eigen::WITH_SUFFIX_fd(Matrix3) rotmat;
+    MATRIX3 rotmat;
     angles_to_matrix(get_rot_yaw(), get_rot_pitch(), get_rot_roll(), rotmat);
 
     FSG_LOG_VAR(rotmat);
 
-    Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
+    MATRIX4 transform = MATRIX4::Identity();
     transform.block(0, 0, 3, 3) << rotmat;
-    // Eigen::WITH_SUFFIX_fd(Vector3) center;
+    // VECTOR3 center;
     // center << this->get_cen_x(), this->get_cen_y(), this->get_cen_z();
     transform.block(0, 3, 3, 1) << this->get_cen_x(), this->get_cen_y(),
         this->get_cen_z();
@@ -339,7 +339,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         // FSG_LOG_VAR(cen);
 
         // Compute rotation matrix
-        Eigen::WITH_SUFFIX_fd(Matrix3) rotmat;
+        MATRIX3 rotmat;
         angles_to_matrix(param(fsg::SuperEllipsoidParameters::idx::rot_yaw),
                          param(fsg::SuperEllipsoidParameters::idx::rot_pitch),
                          param(fsg::SuperEllipsoidParameters::idx::rot_roll),
@@ -364,16 +364,16 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
             // FSG_LOG_VAR(p);
 
             // Compute vector from center.
-            const Eigen::WITH_SUFFIX_fd(Vector3) v_raw(p.x - cen.x, p.y - cen.y, p.z - cen.z);
+            const VECTOR3 v_raw(p.x - cen.x, p.y - cen.y, p.z - cen.z);
             // FSG_LOG_VAR(v_raw);
 
             // Rotate vector
-            const Eigen::WITH_SUFFIX_fd(Vector3) v_aligned = rotmat * v_raw;
+            const VECTOR3 v_aligned = rotmat * v_raw;
             // FSG_LOG_VAR(v_aligned);
 
             // TODO check major/middle/minor vs X,Y,Z...
 
-            Eigen::WITH_SUFFIX_fd(Vector3) v_scaled;
+            VECTOR3 v_scaled;
             // FIXME radii here are not major middle minor, only x y z or 1 2 3.
             v_scaled << v_aligned(0) /
                             param(fsg::SuperEllipsoidParameters::idx::rad_a),
@@ -1256,13 +1256,13 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     feature_extractor.setAngleStep(360);
     feature_extractor.compute();
 
-    Eigen::WITH_SUFFIX_fd(Vector3) mass_center;
+    VECTOR3 mass_center;
     feature_extractor.getMassCenter(
         mass_center); // FIXME should check return value
 
     FSG_LOG_VAR(mass_center);
 
-    Eigen::WITH_SUFFIX_fd(Vector3) major_vector, middle_vector, minor_vector;
+    VECTOR3 major_vector, middle_vector, minor_vector;
 
     feature_extractor.getEigenVectors(major_vector, middle_vector,
                                       minor_vector);
@@ -1273,7 +1273,7 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     pcl::PointXYZ min_point_OBB;
     pcl::PointXYZ max_point_OBB;
     pcl::PointXYZ position_OBB;
-    Eigen::WITH_SUFFIX_fd(Matrix3) rotational_matrix_OBB;
+    MATRIX3 rotational_matrix_OBB;
     feature_extractor.getOBB(
         min_point_OBB, max_point_OBB, position_OBB,
         rotational_matrix_OBB); // FIXME should check return value
@@ -1295,7 +1295,7 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     // From
     // http://pointclouds.org/documentation/tutorials/moment_of_inertia.php
 
-    Eigen::WITH_SUFFIX_fd(Vector3) position(position_OBB.x, position_OBB.y, position_OBB.z);
+    VECTOR3 position(position_OBB.x, position_OBB.y, position_OBB.z);
     Eigen::Quaternionf quat(rotational_matrix_OBB);
 
     pcl::PointXYZ center(mass_center(0), mass_center(1), mass_center(2));

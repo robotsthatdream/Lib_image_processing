@@ -23,7 +23,7 @@ namespace matrixrotationangles
 
  */
 
-void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) & m, FNUM_TYPE &yaw,
+void matrix_to_angles(const MATRIX3 & m, FNUM_TYPE &yaw,
                       FNUM_TYPE &pitch, FNUM_TYPE &roll)
 {
     /* Ok, so how do we compute our angles?
@@ -47,9 +47,9 @@ void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) & m, FNUM_TYPE &yaw,
     */
     yaw = atan2f(m(1, 0), m(0, 0));
 
-    const Eigen::WITH_SUFFIX_fd(Matrix3) m_without_yaw =
+    const MATRIX3 m_without_yaw =
         Eigen::WITH_SUFFIX_fd(AngleAxis)(
-            -yaw, Eigen::WITH_SUFFIX_fd(Vector3)::UnitZ()) *
+            -yaw, VECTOR3::UnitZ()) *
         m;
 
     // std::cerr << "m_without_yaw" << std::endl << m_without_yaw << std::endl;
@@ -66,9 +66,9 @@ void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) & m, FNUM_TYPE &yaw,
         m_without_yaw(FNUM_LITERAL(2.0), FNUM_LITERAL(0.0)),
         m_without_yaw(FNUM_LITERAL(0.0), FNUM_LITERAL(0.0)));
 
-    const Eigen::WITH_SUFFIX_fd(Matrix3) m_without_yaw_nor_pitch =
+    const MATRIX3 m_without_yaw_nor_pitch =
         Eigen::WITH_SUFFIX_fd(AngleAxis)(
-            pitch, Eigen::WITH_SUFFIX_fd(Vector3)::UnitY()) *
+            pitch, VECTOR3::UnitY()) *
         m_without_yaw;
 
     // std::cerr << "m_without_yaw_nor_pitch" << std::endl <<
@@ -89,16 +89,16 @@ void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) & m, FNUM_TYPE &yaw,
 }
 
 void angles_to_matrix(const FNUM_TYPE &yaw, const FNUM_TYPE &pitch,
-                      const FNUM_TYPE &roll, Eigen::WITH_SUFFIX_fd(Matrix3) & m)
+                      const FNUM_TYPE &roll, MATRIX3 & m)
 {
     // std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch
     //           << " roll=" << roll << std::endl;
     m = Eigen::WITH_SUFFIX_fd(AngleAxis)(
-            yaw, Eigen::WITH_SUFFIX_fd(Vector3)::UnitZ()) *
+            yaw, VECTOR3::UnitZ()) *
         Eigen::WITH_SUFFIX_fd(AngleAxis)(
-            -pitch, Eigen::WITH_SUFFIX_fd(Vector3)::UnitY()) *
+            -pitch, VECTOR3::UnitY()) *
         Eigen::WITH_SUFFIX_fd(AngleAxis)(
-            roll, Eigen::WITH_SUFFIX_fd(Vector3)::UnitX());
+            roll, VECTOR3::UnitX());
     // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
     // std::endl;
 }
@@ -113,8 +113,8 @@ void angles_to_matrix(const FNUM_TYPE &yaw, const FNUM_TYPE &pitch,
 
 using namespace fsg::matrixrotationangles;
 
-void expect_identical_3x3_matrices(const Eigen::WITH_SUFFIX_fd(Matrix3) & m1,
-                                   const Eigen::WITH_SUFFIX_fd(Matrix3) & m2,
+void expect_identical_3x3_matrices(const MATRIX3 & m1,
+                                   const MATRIX3 & m2,
                                    const FNUM_TYPE epsilon = FNUM_LITERAL(1e-5))
 {
     for (int row = 0; row <= 2; row++)
@@ -127,7 +127,7 @@ void expect_identical_3x3_matrices(const Eigen::WITH_SUFFIX_fd(Matrix3) & m1,
     }
 }
 
-bool check_if_unitary(const Eigen::WITH_SUFFIX_fd(Matrix3) & m)
+bool check_if_unitary(const MATRIX3 & m)
 {
     for (int i = 0; i < 3; ++i)
     {
@@ -145,7 +145,7 @@ bool check_if_unitary(const Eigen::WITH_SUFFIX_fd(Matrix3) & m)
 class TwoWayTest : public ::testing::Test
 {
   protected:
-    Eigen::WITH_SUFFIX_fd(Matrix3) model_m;
+    MATRIX3 model_m;
     FNUM_TYPE model_yaw, model_pitch, model_roll;
 
     void CheckTwoWays()
@@ -169,7 +169,7 @@ class TwoWayTest : public ::testing::Test
         EXPECT_NEAR(model_pitch, pitch_computed, FNUM_LITERAL(1e-5));
         EXPECT_NEAR(model_roll, roll_computed, FNUM_LITERAL(1e-5));
 
-        Eigen::WITH_SUFFIX_fd(Matrix3) m_computed;
+        MATRIX3 m_computed;
         angles_to_matrix(model_yaw, model_pitch, model_roll, m_computed);
         expect_identical_3x3_matrices(model_m, m_computed);
     }
@@ -177,7 +177,7 @@ class TwoWayTest : public ::testing::Test
 
 TEST(RotMatTest, EigenTest_CoeffAccessIsMRowColumn)
 {
-    Eigen::WITH_SUFFIX_fd(Matrix3) m;
+    MATRIX3 m;
 
     m.row(0) << FNUM_LITERAL(1.0), FNUM_LITERAL(2.0), FNUM_LITERAL(3.0);
     m.row(1) << FNUM_LITERAL(4.0), FNUM_LITERAL(5.0), FNUM_LITERAL(6.0);
@@ -343,18 +343,18 @@ TEST_F(TwoWayTest, HalfPitchAndRollTest)
 TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX)
 {
     FNUM_TYPE yaw = 1, pitch = 1, roll = 1;
-    Eigen::WITH_SUFFIX_fd(Vector3) x = Eigen::WITH_SUFFIX_fd(Vector3)::UnitX();
-    Eigen::WITH_SUFFIX_fd(Vector3) y = Eigen::WITH_SUFFIX_fd(Vector3)::UnitY();
+    VECTOR3 x = VECTOR3::UnitX();
+    VECTOR3 y = VECTOR3::UnitY();
 
-    Eigen::WITH_SUFFIX_fd(Matrix3) m;
+    MATRIX3 m;
 
     angles_to_matrix(yaw, FNUM_LITERAL(0.0), FNUM_LITERAL(0.0), m);
-    // Eigen::WITH_SUFFIX_fd(Vector3) x1 = m * x;
-    Eigen::WITH_SUFFIX_fd(Vector3) y1 = m * y;
+    // VECTOR3 x1 = m * x;
+    VECTOR3 y1 = m * y;
 
     angles_to_matrix(yaw, pitch, FNUM_LITERAL(0.0), m);
-    Eigen::WITH_SUFFIX_fd(Vector3) x2 = m * x;
-    Eigen::WITH_SUFFIX_fd(Vector3) y2 = m * y;
+    VECTOR3 x2 = m * x;
+    VECTOR3 y2 = m * y;
 
     EXPECT_NEAR(y1(FNUM_LITERAL(0.0)), y2(FNUM_LITERAL(0.0)), 1e-5)
         << "Adding pitch must not change image of y.";
@@ -364,7 +364,7 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX)
         << "Adding pitch must not change image of y.";
 
     angles_to_matrix(yaw, pitch, roll, m);
-    Eigen::WITH_SUFFIX_fd(Vector3) x3 = m * x;
+    VECTOR3 x3 = m * x;
 
     EXPECT_NEAR(x2(FNUM_LITERAL(0.0)), x3(FNUM_LITERAL(0.0)), 1e-5)
         << "Adding roll must not change image of x.";

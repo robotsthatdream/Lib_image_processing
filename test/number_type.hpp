@@ -37,5 +37,9 @@ static constexpr FNUM_TYPE sg_pi_2 = (FNUM_TYPE) M_PI_2;
 static constexpr FNUM_TYPE sg_pi_4 = (FNUM_TYPE) M_PI_4;
 static constexpr FNUM_TYPE sg_2 = FNUM_LITERAL(2.0);
 
+#define VECTOR3 Eigen::WITH_SUFFIX_fd(Vector3)
+#define MATRIX3 Eigen::WITH_SUFFIX_fd(Matrix3)
+#define VECTOR4 Eigen::WITH_SUFFIX_fd(Vector4)
+#define MATRIX4 Eigen::WITH_SUFFIX_fd(Matrix4)
 
 #endif /* NUMBER_TYPE_HPP */
