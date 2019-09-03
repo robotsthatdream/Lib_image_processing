@@ -45,7 +45,7 @@ void matrix_to_angles(const MATRIX3 &m, FNUM_TYPE &yaw, FNUM_TYPE &pitch,
        0 is an acceptable value in this case.
 
     */
-    yaw = atan2f(m(1, 0), m(0, 0));
+    yaw = WITH_SUFFIX_fx(atan2)(m(sg_1, sg_0), m(sg_0, sg_0));
 
     const MATRIX3 m_without_yaw =
         Eigen::WITH_SUFFIX_fd(AngleAxis)(-yaw, VECTOR3::UnitZ()) * m;

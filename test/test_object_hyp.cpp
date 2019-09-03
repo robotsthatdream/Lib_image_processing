@@ -382,10 +382,8 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
             // FIXME radii here are not major middle minor, only x y z or 1 2 3.
             v_scaled << v_aligned(0) /
                             param(fsg::SuperEllipsoidParameters::idx::rad_a),
-                v_aligned(1) /
-                    param(fsg::SuperEllipsoidParameters::idx::rad_b),
-                v_aligned(2) /
-                    param(fsg::SuperEllipsoidParameters::idx::rad_c);
+                v_aligned(1) / param(fsg::SuperEllipsoidParameters::idx::rad_b),
+                v_aligned(2) / param(fsg::SuperEllipsoidParameters::idx::rad_c);
             // FSG_LOG_VAR(v_scaled);
 
             const FNUM_TYPE term = pow_abs(v_scaled(0), two_over_exp_2) +
@@ -1329,8 +1327,7 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     VECTOR3 position(position_OBB.x, position_OBB.y, position_OBB.z);
     Eigen::Quaternionf quat(rotational_matrix_OBB);
 
-    pcl::PointXYZ center(mass_center(0), mass_center(1),
-                         mass_center(2));
+    pcl::PointXYZ center(mass_center(0), mass_center(1), mass_center(2));
 
     // FIXME clarify/generalize major/z.
     pcl::PointXYZ maj_axis(sg_2 * major_vector(0) + mass_center(0),
