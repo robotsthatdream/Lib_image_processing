@@ -402,7 +402,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
 #if FUNCTOR_LOG_INSIDE == 1
         FSG_LOG_VAR(sum_of_squares);
 #endif
-        return (sum_of_squares);
+        return (sum_of_squares); // FIXME returns int.
     }
 
     const pcl::PointCloud<pcl::PointXYZ> &cloud_;
@@ -556,7 +556,7 @@ void FloatTest()
                 << ref << " does not change a bit: " << epsilon);
 }
 
-static const FNUM_TYPE fit_control_epsilon = 0.01;
+static const FNUM_TYPE fit_control_epsilon = FNUM_LITERAL(0.01);
 
 /**
    This method generates a number of varied parameter sets (trying
