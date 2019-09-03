@@ -47,7 +47,7 @@ void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) &m, FNUM_TYPE &yaw, F
     yaw = atan2f(m(1, 0), m(0, 0));
 
     const Eigen::WITH_SUFFIX_fd(Matrix3) m_without_yaw =
-        Eigen::AngleAxisf(-yaw, Eigen::Vector3f::UnitZ()) * m;
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(-yaw, Eigen::WITH_SUFFIX_fd(Vector3)::UnitZ()) * m;
 
     // std::cerr << "m_without_yaw" << std::endl << m_without_yaw << std::endl;
 
@@ -59,10 +59,10 @@ void matrix_to_angles(const Eigen::WITH_SUFFIX_fd(Matrix3) &m, FNUM_TYPE &yaw, F
        of image of X on X).
     */
 
-    pitch = WITH_SUFFIX_xd(atan2)(m_without_yaw(2, 0), m_without_yaw(0, 0));
+    pitch = WITH_SUFFIX_xd(atan2)(m_without_yaw(FNUM_LITERAL(2.0), FNUM_LITERAL(0.0)), m_without_yaw(FNUM_LITERAL(0.0), FNUM_LITERAL(0.0)));
 
     const Eigen::WITH_SUFFIX_fd(Matrix3) m_without_yaw_nor_pitch =
-        Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY()) * m_without_yaw;
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(pitch, Eigen::WITH_SUFFIX_fd(Vector3)::UnitY()) * m_without_yaw;
 
     // std::cerr << "m_without_yaw_nor_pitch" << std::endl <<
     // m_without_yaw_nor_pitch << std::endl;
@@ -84,9 +84,9 @@ void angles_to_matrix(const FNUM_TYPE &yaw, const FNUM_TYPE &pitch, const FNUM_T
 {
     // std::cerr << __PRETTY_FUNCTION__ << " yaw=" << yaw << " pitch=" << pitch
     //           << " roll=" << roll << std::endl;
-    m = Eigen::AngleAxisf(yaw, Eigen::Vector3f::UnitZ()) *
-        Eigen::AngleAxisf(-pitch, Eigen::Vector3f::UnitY()) *
-        Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX());
+    m = Eigen::WITH_SUFFIX_fd(AngleAxis)(yaw, Eigen::WITH_SUFFIX_fd(Vector3)::UnitZ()) *
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(-pitch, Eigen::WITH_SUFFIX_fd(Vector3)::UnitY()) *
+        Eigen::WITH_SUFFIX_fd(AngleAxis)(roll, Eigen::WITH_SUFFIX_fd(Vector3)::UnitX());
     // std::cerr << m << std::endl << "is unitary: " << m.isUnitary() <<
     // std::endl;
 }
@@ -331,18 +331,18 @@ TEST_F(TwoWayTest, HalfPitchAndRollTest)
 TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX)
 {
     FNUM_TYPE yaw = 1, pitch = 1, roll = 1;
-    Eigen::Vector3f x = Eigen::Vector3f::UnitX();
-    Eigen::Vector3f y = Eigen::Vector3f::UnitY();
+    Eigen::WITH_SUFFIX_fd(Vector3) x = Eigen::WITH_SUFFIX_fd(Vector3)::UnitX();
+    Eigen::WITH_SUFFIX_fd(Vector3) y = Eigen::WITH_SUFFIX_fd(Vector3)::UnitY();
 
     Eigen::WITH_SUFFIX_fd(Matrix3) m;
 
     angles_to_matrix(yaw, 0, 0, m);
-    // Eigen::Vector3f x1 = m * x;
-    Eigen::Vector3f y1 = m * y;
+    // Eigen::WITH_SUFFIX_fd(Vector3) x1 = m * x;
+    Eigen::WITH_SUFFIX_fd(Vector3) y1 = m * y;
 
     angles_to_matrix(yaw, pitch, 0, m);
-    Eigen::Vector3f x2 = m * x;
-    Eigen::Vector3f y2 = m * y;
+    Eigen::WITH_SUFFIX_fd(Vector3) x2 = m * x;
+    Eigen::WITH_SUFFIX_fd(Vector3) y2 = m * y;
 
     EXPECT_NEAR(y1(0), y2(0), 1e-5)
         << "Adding pitch must not change image of y.";
@@ -352,7 +352,7 @@ TEST(RotMatToAnglesTest, RotMatTest_PitchDoesNotChangeImageOfX)
         << "Adding pitch must not change image of y.";
 
     angles_to_matrix(yaw, pitch, roll, m);
-    Eigen::Vector3f x3 = m * x;
+    Eigen::WITH_SUFFIX_fd(Vector3) x3 = m * x;
 
     EXPECT_NEAR(x2(0), x3(0), 1e-5)
         << "Adding roll must not change image of x.";
