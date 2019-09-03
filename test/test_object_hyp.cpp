@@ -1302,7 +1302,7 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     pcl::PointXYZ min_point_OBB;
     pcl::PointXYZ max_point_OBB;
     pcl::PointXYZ position_OBB;
-    MATRIX3 rotational_matrix_OBB;
+    Eigen::Matrix3f rotational_matrix_OBB; // Type imposed by pcl::MomentOfInertiaEstimation
     feature_extractor.getOBB(
         min_point_OBB, max_point_OBB, position_OBB,
         rotational_matrix_OBB); // FIXME should check return value
@@ -1314,9 +1314,9 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     FSG_LOG_VAR(rotational_matrix_OBB);
 
     // FIXME clarify/generalize major/z.
-    major_vector *= (max_point_OBB.z - min_point_OBB.z) / sg_2;
-    middle_vector *= (max_point_OBB.y - min_point_OBB.y) / sg_2;
-    minor_vector *= (max_point_OBB.x - min_point_OBB.x) / sg_2;
+    major_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0f;
+    middle_vector *= (max_point_OBB.y - min_point_OBB.y) / 2.0f;
+    minor_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0f;
     FSG_LOG_VAR(major_vector);
     FSG_LOG_VAR(middle_vector);
     FSG_LOG_VAR(minor_vector);
@@ -1324,21 +1324,21 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     // From
     // http://pointclouds.org/documentation/tutorials/moment_of_inertia.php
 
-    VECTOR3 position(position_OBB.x, position_OBB.y, position_OBB.z);
-    QUATERNION quat(rotational_matrix_OBB);
+    Eigen::Vector3f position(position_OBB.x, position_OBB.y, position_OBB.z);
+    Eigen::Quaternionf quat(rotational_matrix_OBB);
 
     pcl::PointXYZ center(mass_center(0), mass_center(1), mass_center(2));
 
     // FIXME clarify/generalize major/z.
-    pcl::PointXYZ maj_axis(sg_2 * major_vector(0) + mass_center(0),
-                           sg_2 * major_vector(1) + mass_center(1),
-                           sg_2 * major_vector(2) + mass_center(2));
-    pcl::PointXYZ mid_axis(sg_2 * middle_vector(0) + mass_center(0),
-                           sg_2 * middle_vector(1) + mass_center(1),
-                           sg_2 * middle_vector(2) + mass_center(2));
-    pcl::PointXYZ min_axis(sg_2 * minor_vector(0) + mass_center(0),
-                           sg_2 * minor_vector(1) + mass_center(1),
-                           sg_2 * minor_vector(2) + mass_center(2));
+    pcl::PointXYZ maj_axis(2.0f * major_vector(0) + mass_center(0),
+                           2.0f * major_vector(1) + mass_center(1),
+                           2.0f * major_vector(2) + mass_center(2));
+    pcl::PointXYZ mid_axis(2.0f * middle_vector(0) + mass_center(0),
+                           2.0f * middle_vector(1) + mass_center(1),
+                           2.0f * middle_vector(2) + mass_center(2));
+    pcl::PointXYZ min_axis(2.0f * minor_vector(0) + mass_center(0),
+                           2.0f * minor_vector(1) + mass_center(1),
+                           2.0f * minor_vector(2) + mass_center(2));
 
     if (viewer != NULL)
     {
