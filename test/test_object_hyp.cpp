@@ -1566,6 +1566,10 @@ int main(int argc, char **argv)
     FSG_LOG_VAR(GIT_LOG);
     FSG_TRACE_THIS_FUNCTION();
 
+#define e4b5877050777b693528fb6c74804e96_STR(x) #x
+#define e4b5877050777b693528fb6c74804e96_xSTR(x) e4b5877050777b693528fb6c74804e96_STR(x)
+    FSG_LOG_MSG("Compiled with float type: " e4b5877050777b693528fb6c74804e96_xSTR(FNUM_TYPE));
+    
     if (argc == 2)
     {
         std::string test = "test";

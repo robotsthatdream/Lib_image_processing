@@ -4,6 +4,9 @@
 #define PCL_POINT_COORD_TYPE float
 
 #if WITH_DOUBLE_PRECISION == ON
+
+#pragma message "compiling with double precision"
+
 #define FNUM_TYPE double
 #define FNUM_LITERAL(number) number
 
@@ -16,6 +19,8 @@
 #define WITH_INFIX_xd(prefix, suffix) prefix ## d ## suffix
 
 #else
+
+#pragma message "compiling with float precision"
 
 #define FNUM_TYPE float
 #define FNUM_LITERAL(number) number##f
