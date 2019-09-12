@@ -223,21 +223,23 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     // Pitch is eta in Biegelbauer et al.
     for (FNUM_TYPE pitch = -sg_pi_2; pitch < sg_pi_2; pitch += increment)
     {
-
-        pt.z = dilatfactor_z * sym_pow(WITH_SUFFIX_fx(sin)(pitch), exp_1);
+        FNUM_TYPE z =
+            dilatfactor_z * sym_pow(WITH_SUFFIX_fx(sin)(pitch), exp_1);
         FNUM_TYPE cos_pitch_exp_1 = sym_pow(WITH_SUFFIX_fx(cos)(pitch), exp_1);
 
         // Yaw is omega in Biegelbauer et al.
         for (FNUM_TYPE yaw = -sg_pi; yaw < sg_pi; yaw += increment)
         {
+            auto x = dilatfactor_x * sym_pow(WITH_SUFFIX_fx(cos)(yaw), exp_2) *
+                     cos_pitch_exp_1;
+            auto y = dilatfactor_y * sym_pow(WITH_SUFFIX_fx(sin)(yaw), exp_2) *
+                     cos_pitch_exp_1;
 
-            pt.x = dilatfactor_x * sym_pow(WITH_SUFFIX_fx(cos)(yaw), exp_2) *
-                   cos_pitch_exp_1;
-            pt.y = dilatfactor_y * sym_pow(WITH_SUFFIX_fx(sin)(yaw), exp_2) *
-                   cos_pitch_exp_1;
-
-            if ((pt.x * pt.x + pt.y * pt.y + pt.z * pt.z) < FNUM_LITERAL(20.0))
+            if ((x * x + y * y + z * z) < FNUM_LITERAL(20.0))
             {
+                pt.x = (PCL_POINT_COORD_TYPE)x;
+                pt.y = (PCL_POINT_COORD_TYPE)y;
+                pt.z = (PCL_POINT_COORD_TYPE)z;
                 cloud_step1->push_back(pt);
             }
             else
@@ -337,10 +339,9 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         // }
 
         // Extract center;
-        pcl::PointXYZ cen;
-        cen.x = param(fsg::SuperEllipsoidParameters::idx::cen_x);
-        cen.y = param(fsg::SuperEllipsoidParameters::idx::cen_y);
-        cen.z = param(fsg::SuperEllipsoidParameters::idx::cen_z);
+        VECTOR3 cen(param(fsg::SuperEllipsoidParameters::idx::cen_x),
+                    param(fsg::SuperEllipsoidParameters::idx::cen_y),
+                    param(fsg::SuperEllipsoidParameters::idx::cen_z));
         // FSG_LOG_VAR(cen);
 
         // Compute rotation matrix
@@ -365,11 +366,12 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         for (signed int i = 0; i < values(); ++i)
         {
             // Take current point;
-            const pcl::PointXYZ p = cloud_.points[indices_[i]];
+            const pcl::PointXYZ p_f = cloud_.points[indices_[i]];
+            const VECTOR3 p(p_f.x, p_f.y, p_f.z);
             // FSG_LOG_VAR(p);
 
             // Compute vector from center.
-            const VECTOR3 v_raw(p.x - cen.x, p.y - cen.y, p.z - cen.z);
+            const VECTOR3 v_raw = p - cen;
             // FSG_LOG_VAR(v_raw);
 
             // Rotate vector
@@ -1285,13 +1287,15 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     feature_extractor.setAngleStep(360);
     feature_extractor.compute();
 
-    Eigen::Vector3f mass_center; // Type imposed by pcl::MomentOfInertiaEstimation
+    Eigen::Vector3f
+        mass_center; // Type imposed by pcl::MomentOfInertiaEstimation
     feature_extractor.getMassCenter(
         mass_center); // FIXME should check return value
 
     FSG_LOG_VAR(mass_center);
 
-    Eigen::Vector3f major_vector, middle_vector, minor_vector; // Type imposed by pcl::MomentOfInertiaEstimation
+    Eigen::Vector3f major_vector, middle_vector,
+        minor_vector; // Type imposed by pcl::MomentOfInertiaEstimation
 
     feature_extractor.getEigenVectors(major_vector, middle_vector,
                                       minor_vector);
@@ -1302,7 +1306,8 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     pcl::PointXYZ min_point_OBB;
     pcl::PointXYZ max_point_OBB;
     pcl::PointXYZ position_OBB;
-    Eigen::Matrix3f rotational_matrix_OBB; // Type imposed by pcl::MomentOfInertiaEstimation
+    Eigen::Matrix3f
+        rotational_matrix_OBB; // Type imposed by pcl::MomentOfInertiaEstimation
     feature_extractor.getOBB(
         min_point_OBB, max_point_OBB, position_OBB,
         rotational_matrix_OBB); // FIXME should check return value
@@ -1372,7 +1377,10 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     initialEstimate.set_rad_c(minor_vector.norm());
 
     FNUM_TYPE yaw, pitch, roll;
-    matrix_to_angles(rotational_matrix_OBB, yaw, pitch, roll);
+
+    // https://stackoverflow.com/questions/24764031/cast-eigenmatrixxd-to-eigenmatrixxf
+    MATRIX3 rotational_matrix_OBB_FNUM = rotational_matrix_OBB.cast<FNUM_TYPE>();
+    matrix_to_angles(rotational_matrix_OBB_FNUM, yaw, pitch, roll);
 
     FSG_LOG_MSG("yaw=" << yaw << ", pitch=" << pitch << ", roll=" << roll);
 

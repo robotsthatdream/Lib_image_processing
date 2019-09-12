@@ -1,7 +1,7 @@
 #ifndef NUMBER_TYPE_HPP
 #define NUMBER_TYPE_HPP
 
-//#define USE_DOUBLE 1
+#define PCL_POINT_COORD_TYPE float
 
 #if WITH_DOUBLE_PRECISION == ON
 #define FNUM_TYPE double
