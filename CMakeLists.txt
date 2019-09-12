@@ -6,11 +6,7 @@ option(CMAKE_DISABLE_SOURCE_CHANGES "Refuse to build if uncommitted changes." ON
 
 option(WITH_DOUBLE_PRECISION "Compute with double precision?" ON)
 
-get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
-  message(STATUS "DEBUG ${_variableName}=${${_variableName}}")
-endforeach()
+option(DEBUG_CMAKELIST "Enable detailed build operations?" OFF)
 
 #================================================================
 # Reproducibility: make sure what we compile is a known git commit.
@@ -109,6 +105,19 @@ string(REGEX REPLACE
   GIT_LOG_ESCAPED "${GIT_LOG_ESCAPED2}")
 
 message( "GIT_LOG_ESCAPED=${GIT_LOG_ESCAPED}")
+
+
+#================================================================
+if( ${DEBUG_CMAKELIST} )
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+  message(STATUS "DEBUG ${_variableName}=${${_variableName}}")
+endforeach()
+endif()
+#================================================================
+
+
 
 set (GIT_VERSION_STRING_INCLUDE_DIRECTORY "${PROJECT_BINARY_DIR}/git_version")
 file(MAKE_DIRECTORY ${GIT_VERSION_STRING_INCLUDE_DIRECTORY})
@@ -294,12 +303,6 @@ foreach(SOURCE_FILE IN ITEMS ${SG_SOURCE_FILES})
   #message(STATUS "${RELPATHNAME}")
 endforeach()
 ################################################################
-
-# get_cmake_property(_variableNames VARIABLES)
-# list (SORT _variableNames)
-# foreach (_variableName ${_variableNames})
-#     message(STATUS "${_variableName}=${${_variableName}}")
-# endforeach()
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
