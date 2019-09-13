@@ -1443,6 +1443,12 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
 
     (*slicelog) << sep_initialEstimate << sep_groundtruth << " ";
 
+    std::vector<int> indices(pointCloud->size());
+    for (int i = 0; i < (int)pointCloud->size(); ++i)
+    {
+        indices[i] = i;
+    }
+
     FSG_LOG_VAR(sep_initialEstimate);
     FSG_LOG_VAR(sep_groundtruth);
     fsg::SuperEllipsoidParameters sep_current;
@@ -1454,15 +1460,6 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
         sep_current = (sg_1 - d) * sep_initialEstimate + d * sep_groundtruth;
 
         FSG_LOG_VAR(sep_current);
-    
-        const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
-            sep_current.toPointCloud(10);
-
-        std::vector<int> indices(pointCloud->size());
-        for (int i = 0; i < (int)pointCloud->size(); ++i)
-        {
-            indices[i] = i;
-        }
 
         OptimizationFunctor functor(*pointCloud, indices);
 
