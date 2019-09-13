@@ -1452,6 +1452,8 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
         FSG_LOG_VAR(d);
         sep_current = (sg_1 - d) * sep_initialEstimate + d * sep_groundtruth;
 
+        FSG_LOG_VAR(sep_current);
+    
         const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
             sep_current.toPointCloud(10);
 
