@@ -1553,7 +1553,8 @@ void SuperEllipsoidTest()
 
         VECTORX deviation(unit_sphere_point_cloud->size());
 
-        SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(unit_sphere_point_cloud, side_sphere_m, side_sphere_p);
+        SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
+            unit_sphere_point_cloud, side_sphere_m, side_sphere_p);
     }
 
     {
