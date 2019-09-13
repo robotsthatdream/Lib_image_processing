@@ -723,8 +723,7 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
         VECTORX coeff_d = fittingContext.coeff;
         VECTORX coeff_f = coeff_d.cast<FNUM_TYPE>();
 
-        minimizationResult =
-            (Eigen::LevenbergMarquardtSpace::Status)0; // lm.minimize(coeff_f);
+        minimizationResult = lm.minimize(coeff_f);
     }
 
     Eigen::ComputationInfo ci =
@@ -1112,34 +1111,34 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
     return false;
 }
 
-// bool pointCloudToFittingContextWithInitialEstimate(
-//     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
-//     fsg::SuperEllipsoidParameters &fittingContext)
-// {
+bool pointCloudToFittingContextWithInitialEstimate(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
+    fsg::SuperEllipsoidParameters &fittingContext)
+{
 
-//     {
-//         std::vector<int> indices(cloud_xyz->size());
-//         for (int i = 0; i < (int)cloud_xyz->size(); ++i)
-//         {
-//             indices[i] = i;
-//         }
+    {
+        std::vector<int> indices(cloud_xyz->size());
+        for (int i = 0; i < (int)cloud_xyz->size(); ++i)
+        {
+            indices[i] = i;
+        }
 
-//         OptimizationFunctor functor(*cloud_xyz, indices);
+        OptimizationFunctor functor(*cloud_xyz, indices);
 
-//         VECTORX deviation(cloud_xyz->size());
+        VECTORX deviation(cloud_xyz->size());
 
-//         functor(fittingContext.coeff, deviation);
+        functor(fittingContext.coeff, deviation);
 
-//         // FSG_LOG_VAR(deviation);
-//         FSG_LOG_VAR(deviation.norm());
-//         FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate: initial "
-//                     "estimate has deviation.norm() = "
-//                     << deviation.norm());
-//     }
+        // FSG_LOG_VAR(deviation);
+        FSG_LOG_VAR(deviation.norm());
+        FSG_LOG_MSG("pointCloudToFittingContextWithInitialEstimate: initial "
+                    "estimate has deviation.norm() = "
+                    << deviation.norm());
+    }
 
-//     return pointCloudToFittingContextWithInitialEstimate_LibCmaes(
-//         cloud_xyz, fittingContext);
-// }
+    return pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
+        cloud_xyz, fittingContext);
+}
 
 /**
     Given a parameter set and a point cloud which exactly matches,
@@ -1257,51 +1256,49 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
             }
         }
 
-        // if (0) // check optimizer.
-        // {
-        //     /** Assuming that the gradient is good, we provide to the
-        //      * optimizer the actual point cloud and an estimate which is
-        //      * perfect for all dimensions except the one we just tested
-        //      * the gradient on.  Unless the optimizer is *really* broken,
-        //      * it should easily find the parameters.
-        //      */
+        {
+            /** Assuming that the gradient is good, we provide to the
+             * optimizer the actual point cloud and an estimate which is
+             * perfect for all dimensions except the one we just tested
+             * the gradient on.  Unless the optimizer is *really* broken,
+             * it should easily find the parameters.
+             */
 
-        //     fsg::SuperEllipsoidParameters superellipsoidparameters_fit =
-        //         superellipsoidparameters_center;
+            fsg::SuperEllipsoidParameters superellipsoidparameters_fit =
+                superellipsoidparameters_center;
 
-        //     superellipsoidparameters_fit.coeff(dimension_shift) += epsilon;
+            superellipsoidparameters_fit.coeff(dimension_shift) += epsilon;
 
-        //     /* execute the optimization */
-        //     bool success = pointCloudToFittingContextWithInitialEstimate(
-        //         pointCloud, superellipsoidparameters_fit);
+            /* execute the optimization */
+            bool success = pointCloudToFittingContextWithInitialEstimate(
+                pointCloud, superellipsoidparameters_fit);
 
-        //     if (!success)
-        //     {
-        //         FSG_LOG_MSG(
-        //             "Fit after gradient epsilon failed, thus gradient test "
-        //             "FAIL, on dimension "
-        //             << dimension_shift);
-        //         continue;
-        //     }
+            if (!success)
+            {
+                FSG_LOG_MSG(
+                    "Fit after gradient epsilon failed, thus gradient test "
+                    "FAIL, on dimension "
+                    << dimension_shift);
+                continue;
+            }
 
-        //     FSG_LOG_MSG("Fit after gradient epsilon converges, on dimension "
-        //                 << dimension_shift);
-        //     FSG_LOG_VAR(superellipsoidparameters_fit);
-        //     FSG_LOG_VAR(superellipsoidparameters_center);
+            FSG_LOG_MSG("Fit after gradient epsilon converges, on dimension "
+                        << dimension_shift);
+            FSG_LOG_VAR(superellipsoidparameters_fit);
+            FSG_LOG_VAR(superellipsoidparameters_center);
 
-        //     VECTORX deviation = superellipsoidparameters_fit.coeff -
-        //                                 superellipsoidparameters_center.coeff;
+            VECTORX deviation = superellipsoidparameters_fit.coeff -
+                                        superellipsoidparameters_center.coeff;
 
-        //     FSG_LOG_VAR(deviation.norm());
+            FSG_LOG_VAR(deviation.norm());
 
-        //     if (deviation.norm() > fit_control_epsilon)
-        //     {
-        //         FSG_LOG_MSG("Test FAIL fitting parameter at epsilon deviation
-        //         "
-        //                     "on dimension "
-        //                     << dimension_shift);
-        //     }
-        // }
+            if (deviation.norm() > fit_control_epsilon)
+            {
+                FSG_LOG_MSG("Test FAIL fitting parameter at epsilon deviation"
+                            "on dimension "
+                            << dimension_shift);
+            }
+        }
     }
 }
 
@@ -1536,35 +1533,34 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
         pointCloud, initialEstimate, sep_groundtruth);
 
-    // if (0)
-    // {
-    //     fsg::SuperEllipsoidParameters sep_fit = initialEstimate;
+    {
+        fsg::SuperEllipsoidParameters sep_fit = initialEstimate;
 
-    //     bool success =
-    //         pointCloudToFittingContextWithInitialEstimate(pointCloud,
-    //         sep_fit);
+        bool success =
+            pointCloudToFittingContextWithInitialEstimate(pointCloud,
+            sep_fit);
 
-    //     if (!success)
-    //     {
-    //         FSG_LOG_MSG("Fit failed, thus test FAIL, on parameter: "
-    //                     << sep_groundtruth);
-    //         return false;
-    //     }
+        if (!success)
+        {
+            FSG_LOG_MSG("Fit failed, thus test FAIL, on parameter: "
+                        << sep_groundtruth);
+            return false;
+        }
 
-    //     FSG_LOG_VAR(sep_groundtruth);
-    //     FSG_LOG_VAR(sep_fit);
+        FSG_LOG_VAR(sep_groundtruth);
+        FSG_LOG_VAR(sep_fit);
 
-    //     VECTORX deviation = sep_fit.coeff - sep_groundtruth.coeff;
+        VECTORX deviation = sep_fit.coeff - sep_groundtruth.coeff;
 
-    //     FSG_LOG_VAR(deviation.norm());
+        FSG_LOG_VAR(deviation.norm());
 
-    //     if (deviation.norm() > fit_control_epsilon)
-    //     {
-    //         FSG_LOG_MSG("Test FAIL fitting parameter: " << sep_groundtruth);
-    //         return false;
-    //     }
-    //     FSG_LOG_MSG("Test success fitting parameter: " << sep_groundtruth);
-    // }
+        if (deviation.norm() > fit_control_epsilon)
+        {
+            FSG_LOG_MSG("Test FAIL fitting parameter: " << sep_groundtruth);
+            return false;
+        }
+        FSG_LOG_MSG("Test success fitting parameter: " << sep_groundtruth);
+    }
     return true;
 }
 
@@ -1964,39 +1960,39 @@ int main(int argc, char **argv)
 
                 fsg::SuperEllipsoidParameters fittingContext = initialEstimate;
 
-                // bool success = pointCloudToFittingContextWithInitialEstimate(
-                //     cloud_xyz, fittingContext);
+                bool success = pointCloudToFittingContextWithInitialEstimate(
+                    cloud_xyz, fittingContext);
 
-                // if (success)
-                // {
+                if (success)
+                {
 
-                //     pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
-                //         fittingContext.toPointCloud(100);
+                    pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
+                        fittingContext.toPointCloud(100);
 
-                //     {
-                //         pcl::PointXYZRGB pt;
+                    {
+                        pcl::PointXYZRGB pt;
 
-                //         r = 127.0 + r / sg_2;
-                //         g = 127.0 + g / sg_2;
-                //         b = 127.0 + b / sg_2;
-                //         for (auto v : *proj_points)
-                //         {
-                //             pt.x = v.x;
-                //             pt.y = v.y;
-                //             pt.z = v.z;
+                        r = (uint8_t) (127 + r >> 1);
+                        g = (uint8_t) (127 + g >> 1);
+                        b = (uint8_t) (127 + b >> 1);
+                        for (auto v : *proj_points)
+                        {
+                            pt.x = v.x;
+                            pt.y = v.y;
+                            pt.z = v.z;
 
-                //             pt.r = r;
-                //             pt.g = g;
-                //             pt.b = b;
-                //             superellipsoids_cloud_ptr->push_back(pt);
-                //         }
-                //     }
-                // }
-                // else
-                // {
-                //     FSG_LOG_MSG("Fitting fail on id=" << obj_index_i_s <<
-                //     ".");
-                // }
+                            pt.r = r;
+                            pt.g = g;
+                            pt.b = b;
+                            superellipsoids_cloud_ptr->push_back(pt);
+                        }
+                    }
+                }
+                else
+                {
+                    FSG_LOG_MSG("Fitting fail on id=" << obj_index_i_s <<
+                    ".");
+                }
 
                 FSG_LOG_MSG("End new obj hyp, id=" << obj_index_i_s << ".");
             }
