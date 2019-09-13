@@ -46,6 +46,7 @@ typedef fsg::PointCloudT::Ptr PointCloudTP;
 void pointCloudLogSomeVariables(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud)
 {
+    FSG_TRACE_THIS_FUNCTION();
     pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
     feature_extractor.setInputCloud(point_cloud);
     // Minimize eccentricity computation.
