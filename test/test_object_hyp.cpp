@@ -1579,10 +1579,10 @@ int main(int argc, char **argv)
     FSG_LOG_INIT__CALL_FROM_CPP_MAIN();
     FSG_LOG_MSG("");
     FSG_LOG_MSG("");
-    FSG_LOG_MSG("========================================================================");
+    FSG_LOG_MSG("===========================================================");
     FSG_LOG_VAR(GIT_VERSION);
     FSG_LOG_VAR(GIT_LOG);
-    FSG_LOG_MSG("========================================================================");
+    FSG_LOG_MSG("===========================================================");
     FSG_LOG_MSG("");
     FSG_LOG_MSG("");
     FSG_TRACE_THIS_FUNCTION();
