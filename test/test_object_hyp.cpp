@@ -43,6 +43,36 @@ namespace fsg
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudT;
 typedef fsg::PointCloudT::Ptr PointCloudTP;
 
+void pointCloudLogSomeVariables(
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr point_cloud)
+{
+    pcl::MomentOfInertiaEstimation<pcl::PointXYZ> feature_extractor;
+    feature_extractor.setInputCloud(point_cloud);
+    // Minimize eccentricity computation.
+    feature_extractor.setAngleStep(360);
+    feature_extractor.compute();
+
+    Eigen::Vector3f
+        mass_center; // Type imposed by pcl::MomentOfInertiaEstimation
+    feature_extractor.getMassCenter(
+        mass_center); // FIXME should check return value
+
+    pcl::PointXYZ min_point_OBB;
+    pcl::PointXYZ max_point_OBB;
+    pcl::PointXYZ position_OBB;
+    Eigen::Matrix3f
+        rotational_matrix_OBB; // Type imposed by pcl::MomentOfInertiaEstimation
+    feature_extractor.getOBB(
+        min_point_OBB, max_point_OBB, position_OBB,
+        rotational_matrix_OBB); // FIXME should check return value
+
+    FSG_LOG_VAR(mass_center);
+    FSG_LOG_VAR(min_point_OBB);
+    FSG_LOG_VAR(max_point_OBB);
+    FSG_LOG_VAR(position_OBB);
+    FSG_LOG_VAR(rotational_matrix_OBB);
+}
+
 /**
     center x,y,z,
     rotation angles yaw, pitch, roll,
@@ -1537,11 +1567,17 @@ void SuperEllipsoidTest()
         const pcl::PointCloud<pcl::PointXYZ>::Ptr unit_sphere_point_cloud =
             unit_sphere.toPointCloud(10);
 
+        fsg::pointCloudLogSomeVariables(unit_sphere_point_cloud);
+
         fsg::SuperEllipsoidParameters side_sphere_m = unit_sphere;
         side_sphere_m.set_cen_x(-4);
 
+        fsg::pointCloudLogSomeVariables(side_sphere_m.toPointCloud(10));
+
         fsg::SuperEllipsoidParameters side_sphere_p = unit_sphere;
         side_sphere_p.set_cen_x(4);
+
+        fsg::pointCloudLogSomeVariables(side_sphere_p.toPointCloud(10));
 
         std::vector<int> indices(unit_sphere_point_cloud->size());
         for (int i = 0; i < (int)unit_sphere_point_cloud->size(); ++i)
