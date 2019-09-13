@@ -1553,7 +1553,8 @@ void SuperEllipsoidTest()
         functor(side_sphere.coeff, deviation);
 
         FSG_LOG_VAR(deviation.norm());
-        exit(1);
+
+        SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(unit_sphere_point_cloud, side_sphere, unit_sphere);
     }
 
     {
