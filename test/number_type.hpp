@@ -1,6 +1,8 @@
 #ifndef NUMBER_TYPE_HPP
 #define NUMBER_TYPE_HPP
 
+#include <math.h>
+
 #define PCL_POINT_COORD_TYPE float
 
 #if WITH_DOUBLE_PRECISION == ON
