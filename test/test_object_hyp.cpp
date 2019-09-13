@@ -1526,6 +1526,36 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
 void SuperEllipsoidTest()
 {
     {
+        fsg::SuperEllipsoidParameters unit_sphere =
+            fsg::SuperEllipsoidParameters::Zero();
+        unit_sphere.set_rad_a(1.0);
+        unit_sphere.set_rad_b(1.0);
+        unit_sphere.set_rad_c(1.0);
+        unit_sphere.set_exp_1(1.0);
+        unit_sphere.set_exp_2(1.0);
+        const pcl::PointCloud<pcl::PointXYZ>::Ptr unit_sphere_point_cloud =
+            unit_sphere.toPointCloud(10);
+
+        fsg::SuperEllipsoidParameters side_sphere = unit_sphere;
+        side_sphere.set_cen_x(0.5);
+
+        std::vector<int> indices(unit_sphere_point_cloud->size());
+        for (int i = 0; i < (int)unit_sphere_point_cloud->size(); ++i)
+        {
+            indices[i] = i;
+        }
+
+        OptimizationFunctor functor(*unit_sphere_point_cloud, indices);
+
+        VECTORX deviation(unit_sphere_point_cloud->size());
+
+        functor(side_sphere.coeff, deviation);
+
+        FSG_LOG_VAR(deviation.norm());
+        exit(1);
+    }
+
+    {
         fsg::SuperEllipsoidParameters superellipsoidparameters_prototype =
             fsg::SuperEllipsoidParameters::Default();
         SuperEllipsoidTestEachDimensionForMisbehavior(
