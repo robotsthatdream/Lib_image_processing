@@ -1537,8 +1537,11 @@ void SuperEllipsoidTest()
         const pcl::PointCloud<pcl::PointXYZ>::Ptr unit_sphere_point_cloud =
             unit_sphere.toPointCloud(10);
 
-        fsg::SuperEllipsoidParameters side_sphere = unit_sphere;
-        side_sphere.set_cen_x(0.5);
+        fsg::SuperEllipsoidParameters side_sphere_m = unit_sphere;
+        side_sphere_m.set_cen_x(-4);
+
+        fsg::SuperEllipsoidParameters side_sphere_p = unit_sphere;
+        side_sphere_p.set_cen_x(4);
 
         std::vector<int> indices(unit_sphere_point_cloud->size());
         for (int i = 0; i < (int)unit_sphere_point_cloud->size(); ++i)
@@ -1550,11 +1553,7 @@ void SuperEllipsoidTest()
 
         VECTORX deviation(unit_sphere_point_cloud->size());
 
-        functor(side_sphere.coeff, deviation);
-
-        FSG_LOG_VAR(deviation.norm());
-
-        SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(unit_sphere_point_cloud, side_sphere, unit_sphere);
+        SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(unit_sphere_point_cloud, side_sphere_m, side_sphere_p);
     }
 
     {
