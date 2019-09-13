@@ -1589,6 +1589,11 @@ void SuperEllipsoidTest()
 
         VECTORX deviation(unit_sphere_point_cloud->size());
 
+        functor(side_sphere_m.coeff, deviation);
+        FSG_LOG_VAR(deviation.norm());
+        functor(side_sphere_p.coeff, deviation);
+        FSG_LOG_VAR(deviation.norm());
+
         SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
             unit_sphere_point_cloud, side_sphere_m, side_sphere_p);
     }
