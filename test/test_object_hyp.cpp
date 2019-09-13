@@ -1379,7 +1379,8 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     FNUM_TYPE yaw, pitch, roll;
 
     // https://stackoverflow.com/questions/24764031/cast-eigenmatrixxd-to-eigenmatrixxf
-    MATRIX3 rotational_matrix_OBB_FNUM = rotational_matrix_OBB.cast<FNUM_TYPE>();
+    MATRIX3 rotational_matrix_OBB_FNUM =
+        rotational_matrix_OBB.cast<FNUM_TYPE>();
     matrix_to_angles(rotational_matrix_OBB_FNUM, yaw, pitch, roll);
 
     FSG_LOG_MSG("yaw=" << yaw << ", pitch=" << pitch << ", roll=" << roll);
@@ -1590,7 +1591,7 @@ int main(int argc, char **argv)
 #define e4b5877050777b69_STR(x) #x
 #define e4b5877050777b69_xSTR(x) e4b5877050777b69_STR(x)
     FSG_LOG_MSG("Compiled with float type: " e4b5877050777b69_xSTR(FNUM_TYPE));
-    
+
     if (argc == 2)
     {
         std::string test = "test";
