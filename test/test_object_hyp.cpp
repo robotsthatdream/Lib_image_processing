@@ -1554,49 +1554,54 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     return true;
 }
 
+void SuperEllipsoidTestSlicebetweenPoints(FNUM_TYPE xmin, FNUM_TYPE xmax)
+{
+    fsg::SuperEllipsoidParameters unit_sphere =
+        fsg::SuperEllipsoidParameters::Zero();
+    unit_sphere.set_rad_a(1.0);
+    unit_sphere.set_rad_b(1.0);
+    unit_sphere.set_rad_c(1.0);
+    unit_sphere.set_exp_1(1.0);
+    unit_sphere.set_exp_2(1.0);
+    const pcl::PointCloud<pcl::PointXYZ>::Ptr unit_sphere_point_cloud =
+        unit_sphere.toPointCloud(10);
+
+    fsg::pointCloudLogSomeVariables(unit_sphere_point_cloud);
+
+    fsg::SuperEllipsoidParameters side_sphere_m = unit_sphere;
+    side_sphere_m.set_cen_x(xmin);
+
+    fsg::pointCloudLogSomeVariables(side_sphere_m.toPointCloud(10));
+
+    fsg::SuperEllipsoidParameters side_sphere_p = unit_sphere;
+    side_sphere_p.set_cen_x(xmax);
+
+    fsg::pointCloudLogSomeVariables(side_sphere_p.toPointCloud(10));
+
+    std::vector<int> indices(unit_sphere_point_cloud->size());
+    for (int i = 0; i < (int)unit_sphere_point_cloud->size(); ++i)
+    {
+        indices[i] = i;
+    }
+
+    OptimizationFunctor functor(*unit_sphere_point_cloud, indices);
+
+    VECTORX deviation(unit_sphere_point_cloud->size());
+
+    functor(side_sphere_m.coeff, deviation);
+    FSG_LOG_VAR(deviation.norm());
+    functor(side_sphere_p.coeff, deviation);
+    FSG_LOG_VAR(deviation.norm());
+
+    SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
+        unit_sphere_point_cloud, side_sphere_m, side_sphere_p);
+}
+
 void SuperEllipsoidTest()
 {
-    {
-        fsg::SuperEllipsoidParameters unit_sphere =
-            fsg::SuperEllipsoidParameters::Zero();
-        unit_sphere.set_rad_a(1.0);
-        unit_sphere.set_rad_b(1.0);
-        unit_sphere.set_rad_c(1.0);
-        unit_sphere.set_exp_1(1.0);
-        unit_sphere.set_exp_2(1.0);
-        const pcl::PointCloud<pcl::PointXYZ>::Ptr unit_sphere_point_cloud =
-            unit_sphere.toPointCloud(10);
-
-        fsg::pointCloudLogSomeVariables(unit_sphere_point_cloud);
-
-        fsg::SuperEllipsoidParameters side_sphere_m = unit_sphere;
-        side_sphere_m.set_cen_x(-4);
-
-        fsg::pointCloudLogSomeVariables(side_sphere_m.toPointCloud(10));
-
-        fsg::SuperEllipsoidParameters side_sphere_p = unit_sphere;
-        side_sphere_p.set_cen_x(4);
-
-        fsg::pointCloudLogSomeVariables(side_sphere_p.toPointCloud(10));
-
-        std::vector<int> indices(unit_sphere_point_cloud->size());
-        for (int i = 0; i < (int)unit_sphere_point_cloud->size(); ++i)
-        {
-            indices[i] = i;
-        }
-
-        OptimizationFunctor functor(*unit_sphere_point_cloud, indices);
-
-        VECTORX deviation(unit_sphere_point_cloud->size());
-
-        functor(side_sphere_m.coeff, deviation);
-        FSG_LOG_VAR(deviation.norm());
-        functor(side_sphere_p.coeff, deviation);
-        FSG_LOG_VAR(deviation.norm());
-
-        SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
-            unit_sphere_point_cloud, side_sphere_m, side_sphere_p);
-    }
+    SuperEllipsoidTestSlicebetweenPoints(-10, 10);
+    SuperEllipsoidTestSlicebetweenPoints(-4, 4);
+    SuperEllipsoidTestSlicebetweenPoints(-1, 1);
 
     {
         fsg::SuperEllipsoidParameters superellipsoidparameters_prototype =
