@@ -1497,7 +1497,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     boost::random::uniform_real_distribution<> random_number_tenth_one(0.1, 1);
     boost::random::uniform_real_distribution<> random_number_mpippi(-sg_pi,
                                                                     sg_pi);
-    // ost::random::uniform_real_distribution<> random_number_cent_two(1, 1);
+    boost::random::uniform_real_distribution<> random_number_tenth_two(0.1, 1);
 
     fsg::SuperEllipsoidParameters sep_groundtruth;
     sep_groundtruth.set_cen_x((FNUM_TYPE)random_number_m5p5(_gen));
@@ -1509,10 +1509,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     sep_groundtruth.set_rot_yaw((FNUM_TYPE)random_number_mpippi(_gen));
     sep_groundtruth.set_rot_pitch((FNUM_TYPE)random_number_mpippi(_gen));
     sep_groundtruth.set_rot_roll((FNUM_TYPE)random_number_mpippi(_gen));
-    sep_groundtruth.set_exp_1(
-        sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
-    sep_groundtruth.set_exp_2(
-        sg_1); // (FNUM_TYPE)random_number_cent_two(_gen));
+    sep_groundtruth.set_exp_1((FNUM_TYPE)random_number_tenth_two(_gen));
+    sep_groundtruth.set_exp_2((FNUM_TYPE)random_number_tenth_two(_gen));
 
     FSG_LOG_VAR(sep_groundtruth);
 
