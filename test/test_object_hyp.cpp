@@ -1434,7 +1434,7 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
     if (slicelog == NULL)
     {
         slicelog = new ofstream(
-            "SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions.log");
+            "SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions.data");
         FSG_LOG_VAR(slicelog);
     }
 
