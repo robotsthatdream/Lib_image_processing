@@ -1593,9 +1593,9 @@ void SuperEllipsoidTestSlicebetweenPoints(FNUM_TYPE xmin, FNUM_TYPE xmax)
 
 void SuperEllipsoidTest()
 {
-    SuperEllipsoidTestSlicebetweenPoints(-10, 10);
-    SuperEllipsoidTestSlicebetweenPoints(-4, 4);
-    SuperEllipsoidTestSlicebetweenPoints(-1, 1);
+    // SuperEllipsoidTestSlicebetweenPoints(-10, 10);
+    // SuperEllipsoidTestSlicebetweenPoints(-4, 4);
+    // SuperEllipsoidTestSlicebetweenPoints(-1, 1);
 
     {
         fsg::SuperEllipsoidParameters superellipsoidparameters_prototype =
