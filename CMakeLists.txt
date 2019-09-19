@@ -96,7 +96,7 @@ execute_process(
 # Replace backslash with double-backslash
 string(REGEX REPLACE "(${regex_backslash})" "${regex_backslash}\\1" GIT_LOG_ESCAPED1 "${GIT_LOG}")
 # Replace quote with backslash-quote
-string(REGEX REPLACE "(${regex_quote})" "AA${regex_backslash}${string_quote}BB" GIT_LOG_ESCAPED2 "${GIT_LOG_ESCAPED1}")
+string(REGEX REPLACE "(${regex_quote})" "${regex_backslash}${string_quote}" GIT_LOG_ESCAPED2 "${GIT_LOG_ESCAPED1}")
 #string(REGEX REPLACE "([^a-zA-Z0-9\" ])" "${regex_backslash}\\1" GIT_LOG_ESCAPED1 "${GIT_LOG}")
 # Replace newline with properly escaped newline
 string(REGEX REPLACE
