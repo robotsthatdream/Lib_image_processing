@@ -1956,9 +1956,9 @@ int main(int argc, char **argv)
                     {
                         pcl::PointXYZRGB pt;
 
-                        r = (uint8_t)(127 + r >> 1);
-                        g = (uint8_t)(127 + g >> 1);
-                        b = (uint8_t)(127 + b >> 1);
+                        r = (uint8_t)(127 + (r >> 1));
+                        g = (uint8_t)(127 + (g >> 1));
+                        b = (uint8_t)(127 + (b >> 1));
                         for (auto v : *proj_points)
                         {
                             pt.x = v.x;
