@@ -598,7 +598,8 @@ static const FNUM_TYPE fit_control_epsilon = FNUM_LITERAL(0.01);
 /**
    This method generates a number of varied parameter sets (trying
    first vanilla parameters then changing each dimensions in turn),
-   and checks that each fits precisely the generated point cloud.
+   turns them into point clouds, and checks that the generated point
+   cloud fits precisely the parameter.
  */
 void SuperEllipsoidTestEachDimensionForMisbehavior(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype)
@@ -606,17 +607,6 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
     FSG_TRACE_THIS_FUNCTION();
 
     FSG_LOG_VAR(superellipsoidparameters_prototype);
-
-    const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
-        superellipsoidparameters_prototype.toPointCloud(10);
-
-    std::vector<int> indices(pointCloud->size());
-    for (int i = 0; i < (int)pointCloud->size(); ++i)
-    {
-        indices[i] = i;
-    }
-
-    OptimizationFunctor functor(*pointCloud, indices);
 
     for (int dimension_shift = -1; dimension_shift < 11; dimension_shift++)
     {
@@ -630,6 +620,17 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
         {
             superellipsoidparameters.coeff(dimension_shift) = 1.5;
         }
+
+        const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
+            superellipsoidparameters.toPointCloud(10);
+
+        std::vector<int> indices(pointCloud->size());
+        for (int i = 0; i < (int)pointCloud->size(); ++i)
+        {
+            indices[i] = i;
+        }
+
+        OptimizationFunctor functor(*pointCloud, indices);
 
         VECTORX deviation(pointCloud->size());
 
