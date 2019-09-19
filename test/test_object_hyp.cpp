@@ -725,7 +725,7 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     FSG_LOG_VAR(lm.parameters.gtol);
     FSG_LOG_VAR(lm.parameters.epsfcn);
 
-    lm.parameters.maxfev = 2000;
+    lm.parameters.maxfev = 5000;
 
     FSG_LOG_VAR(lm.parameters.factor);
     FSG_LOG_VAR(lm.parameters.maxfev);
