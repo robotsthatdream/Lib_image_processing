@@ -718,6 +718,22 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
         lm(num_diff);
     Eigen::LevenbergMarquardtSpace::Status minimizationResult;
 
+    FSG_LOG_VAR(lm.parameters.factor);
+    FSG_LOG_VAR(lm.parameters.maxfev);
+    FSG_LOG_VAR(lm.parameters.ftol);
+    FSG_LOG_VAR(lm.parameters.xtol);
+    FSG_LOG_VAR(lm.parameters.gtol);
+    FSG_LOG_VAR(lm.parameters.epsfcn);
+
+    lm.parameters.maxfev = 2000;
+
+    FSG_LOG_VAR(lm.parameters.factor);
+    FSG_LOG_VAR(lm.parameters.maxfev);
+    FSG_LOG_VAR(lm.parameters.ftol);
+    FSG_LOG_VAR(lm.parameters.xtol);
+    FSG_LOG_VAR(lm.parameters.gtol);
+    FSG_LOG_VAR(lm.parameters.epsfcn);
+
     {
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
             "Eigen::LevenbergMarquardt::minimize()");
