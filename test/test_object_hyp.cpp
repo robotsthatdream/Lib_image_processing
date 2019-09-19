@@ -1288,7 +1288,7 @@ void SuperEllipsoidTestEachDimensionForGradientSanity(
             FSG_LOG_VAR(superellipsoidparameters_center);
 
             VECTORX deviation = superellipsoidparameters_fit.coeff -
-                                        superellipsoidparameters_center.coeff;
+                                superellipsoidparameters_center.coeff;
 
             FSG_LOG_VAR(deviation.norm());
 
@@ -1522,8 +1522,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
         fsg::SuperEllipsoidParameters sep_fit = initialEstimate;
 
         bool success =
-            pointCloudToFittingContextWithInitialEstimate(pointCloud,
-            sep_fit);
+            pointCloudToFittingContextWithInitialEstimate(pointCloud, sep_fit);
 
         if (!success)
         {
@@ -1957,9 +1956,9 @@ int main(int argc, char **argv)
                     {
                         pcl::PointXYZRGB pt;
 
-                        r = (uint8_t) (127 + r >> 1);
-                        g = (uint8_t) (127 + g >> 1);
-                        b = (uint8_t) (127 + b >> 1);
+                        r = (uint8_t)(127 + r >> 1);
+                        g = (uint8_t)(127 + g >> 1);
+                        b = (uint8_t)(127 + b >> 1);
                         for (auto v : *proj_points)
                         {
                             pt.x = v.x;
@@ -1975,8 +1974,7 @@ int main(int argc, char **argv)
                 }
                 else
                 {
-                    FSG_LOG_MSG("Fitting fail on id=" << obj_index_i_s <<
-                    ".");
+                    FSG_LOG_MSG("Fitting fail on id=" << obj_index_i_s << ".");
                 }
 
                 FSG_LOG_MSG("End new obj hyp, id=" << obj_index_i_s << ".");
