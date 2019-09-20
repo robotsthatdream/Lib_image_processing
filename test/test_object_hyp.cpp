@@ -1363,9 +1363,9 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     FSG_LOG_VAR(rotational_matrix_OBB);
 
     // FIXME clarify/generalize major/z.
-    major_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0f;
+    major_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0f;
     middle_vector *= (max_point_OBB.y - min_point_OBB.y) / 2.0f;
-    minor_vector *= (max_point_OBB.x - min_point_OBB.x) / 2.0f;
+    minor_vector *= (max_point_OBB.z - min_point_OBB.z) / 2.0f;
     FSG_LOG_VAR(major_vector);
     FSG_LOG_VAR(middle_vector);
     FSG_LOG_VAR(minor_vector);
