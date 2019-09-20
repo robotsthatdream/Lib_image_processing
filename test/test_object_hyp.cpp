@@ -718,12 +718,12 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
         lm(num_diff);
     Eigen::LevenbergMarquardtSpace::Status minimizationResult;
 
-    FSG_LOG_VAR(lm.parameters.factor);
-    FSG_LOG_VAR(lm.parameters.maxfev);
-    FSG_LOG_VAR(lm.parameters.ftol);
-    FSG_LOG_VAR(lm.parameters.xtol);
-    FSG_LOG_VAR(lm.parameters.gtol);
-    FSG_LOG_VAR(lm.parameters.epsfcn);
+    // FSG_LOG_VAR(lm.parameters.factor);
+    // FSG_LOG_VAR(lm.parameters.maxfev);
+    // FSG_LOG_VAR(lm.parameters.ftol);
+    // FSG_LOG_VAR(lm.parameters.xtol);
+    // FSG_LOG_VAR(lm.parameters.gtol);
+    // FSG_LOG_VAR(lm.parameters.epsfcn);
 
     lm.parameters.maxfev = 20000;
 
@@ -750,12 +750,12 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
                 << ci
                 << " LevenbergMarquardtSpace=" << (int)minimizationResult);
 
-    FSG_LOG_VAR(lm.parameters.factor);
-    FSG_LOG_VAR(lm.parameters.maxfev);
-    FSG_LOG_VAR(lm.parameters.ftol);
-    FSG_LOG_VAR(lm.parameters.xtol);
-    FSG_LOG_VAR(lm.parameters.gtol);
-    FSG_LOG_VAR(lm.parameters.epsfcn);
+    // FSG_LOG_VAR(lm.parameters.factor);
+    // FSG_LOG_VAR(lm.parameters.maxfev);
+    // FSG_LOG_VAR(lm.parameters.ftol);
+    // FSG_LOG_VAR(lm.parameters.xtol);
+    // FSG_LOG_VAR(lm.parameters.gtol);
+    // FSG_LOG_VAR(lm.parameters.epsfcn);
     FSG_LOG_VAR(lm.nfev);
     FSG_LOG_VAR(lm.njev);
     FSG_LOG_VAR(lm.iter);
