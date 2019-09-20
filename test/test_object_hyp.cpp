@@ -1490,6 +1490,26 @@ void SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
     slicelog->flush();
 }
 
+// https://codereview.stackexchange.com/questions/64758/sort-three-input-values-by-order/64811#answer-64761
+template <typename T>
+void swap_if_greater(T &a, T &b)
+{
+    if (a > b)
+    {
+        T tmp(a);
+        a = b;
+        b = tmp;
+    }
+}
+
+// template<typename T>
+// void sort(T& a, T& b, T& c)
+// {
+//     swap_if_greater(a, b);
+//     swap_if_greater(a, c);
+//     swap_if_greater(b, c);
+// }
+
 bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
 {
     FSG_TRACE_THIS_FUNCTION();
@@ -1503,9 +1523,20 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     sep_groundtruth.set_cen_x((FNUM_TYPE)random_number_m5p5(_gen));
     sep_groundtruth.set_cen_y((FNUM_TYPE)random_number_m5p5(_gen));
     sep_groundtruth.set_cen_z((FNUM_TYPE)random_number_m5p5(_gen));
-    sep_groundtruth.set_rad_a((FNUM_TYPE)random_number_tenth_one(_gen));
-    sep_groundtruth.set_rad_b((FNUM_TYPE)random_number_tenth_one(_gen));
-    sep_groundtruth.set_rad_c((FNUM_TYPE)random_number_tenth_one(_gen));
+
+    {
+        FNUM_TYPE a = (FNUM_TYPE)random_number_tenth_one(_gen);
+        FNUM_TYPE b = (FNUM_TYPE)random_number_tenth_one(_gen);
+        FNUM_TYPE c = (FNUM_TYPE)random_number_tenth_one(_gen);
+        swap_if_greater(a, b);
+        swap_if_greater(a, c);
+        swap_if_greater(b, c);
+
+        sep_groundtruth.set_rad_a((FNUM_TYPE)random_number_tenth_one(_gen));
+        sep_groundtruth.set_rad_b((FNUM_TYPE)random_number_tenth_one(_gen));
+        sep_groundtruth.set_rad_c((FNUM_TYPE)random_number_tenth_one(_gen));
+    }
+
     sep_groundtruth.set_rot_yaw((FNUM_TYPE)random_number_mpippi(_gen));
     sep_groundtruth.set_rot_pitch((FNUM_TYPE)random_number_mpippi(_gen));
     sep_groundtruth.set_rot_roll((FNUM_TYPE)random_number_mpippi(_gen));
