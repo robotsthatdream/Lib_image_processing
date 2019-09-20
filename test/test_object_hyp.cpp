@@ -1530,9 +1530,9 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
         FNUM_TYPE a = (FNUM_TYPE)random_number_tenth_one(_gen);
         FNUM_TYPE b = (FNUM_TYPE)random_number_tenth_one(_gen);
         FNUM_TYPE c = (FNUM_TYPE)random_number_tenth_one(_gen);
-        swap_if_greater(a, b);
-        swap_if_greater(a, c);
-        swap_if_greater(b, c);
+        swap_if_greater(c, b);
+        swap_if_greater(c, a);
+        swap_if_greater(b, a);
 
         sep_groundtruth.set_rad_a((FNUM_TYPE)random_number_tenth_one(_gen));
         sep_groundtruth.set_rad_b((FNUM_TYPE)random_number_tenth_one(_gen));
