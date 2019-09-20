@@ -750,6 +750,21 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
                 << ci
                 << " LevenbergMarquardtSpace=" << (int)minimizationResult);
 
+    FSG_LOG_VAR(lm.parameters.factor);
+    FSG_LOG_VAR(lm.parameters.maxfev);
+    FSG_LOG_VAR(lm.parameters.ftol);
+    FSG_LOG_VAR(lm.parameters.xtol);
+    FSG_LOG_VAR(lm.parameters.gtol);
+    FSG_LOG_VAR(lm.parameters.epsfcn);
+    FSG_LOG_VAR(lm.nfev);
+    FSG_LOG_VAR(lm.njev);
+    FSG_LOG_VAR(lm.iter);
+    FSG_LOG_VAR(lm.fnorm);
+    FSG_LOG_VAR(lm.gnorm);
+    FSG_LOG_VAR(lm.useExternalScaling);
+    FSG_LOG_VAR(lm.lm_param());
+    // FSG_LOG_VAR(lm.fvec); too long
+
     FSG_LOG_MSG("Initial estimation : " << initialEstimate);
     FSG_LOG_MSG("After minimization : " << fittingContext);
 
