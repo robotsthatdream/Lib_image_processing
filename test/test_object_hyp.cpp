@@ -144,7 +144,7 @@ struct SuperEllipsoidParameters
         ;
 
     // https://stackoverflow.com/questions/11490988/c-compile-time-error-expected-identifier-before-numeric-constant
-    VECTORX coeff = VECTORX(fieldCount);
+    Eigen::Matrix<FNUM_TYPE, fieldCount, 1> coeff; // = VECTORX(fieldCount);
 
     FNUM_TYPE *coeffData();
 
