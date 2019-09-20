@@ -1436,6 +1436,8 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     initialEstimate.set_exp_1(sg_1);
     initialEstimate.set_exp_2(sg_1);
 
+    FSG_LOG_VAR(initialEstimate);
+
     return initialEstimate;
 }
 
