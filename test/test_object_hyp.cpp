@@ -115,8 +115,8 @@ struct SuperEllipsoidParameters
         dv.set_rad_a(1.0);
         dv.set_rad_b(2.0);
         dv.set_rad_c(3.0);
-        dv.set_exp_1(1.0);
-        dv.set_exp_2(1.0);
+        dv.set_exp_1(1.3);
+        dv.set_exp_2(1.7);
         return dv;
     }
 
@@ -1451,8 +1451,8 @@ fsg::SuperEllipsoidParameters pointCloudComputeFitComputeInitialEstimate(
     initialEstimate.set_rot_pitch(pitch);
     initialEstimate.set_rot_roll(roll);
 
-    initialEstimate.set_exp_1(sg_1);
-    initialEstimate.set_exp_2(sg_1);
+    initialEstimate.set_exp_1(1.4);
+    initialEstimate.set_exp_2(1.6);
 
     FSG_LOG_VAR(initialEstimate);
 
