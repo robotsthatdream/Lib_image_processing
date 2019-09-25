@@ -1583,14 +1583,14 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     SuperEllipsoidTestEachDimensionForGradientSanity(sep_groundtruth,
                                                      pointCloud);
 
-    FSG_LOG_MSG("Now testing actual fit.");
-    FSG_LOG_VAR(sep_groundtruth);
-
     fsg::SuperEllipsoidParameters initialEstimate =
         pointCloudComputeFitComputeInitialEstimate(pointCloud, nullptr, "");
 
     SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
         pointCloud, initialEstimate, sep_groundtruth);
+
+    FSG_LOG_MSG("Now testing actual fit.");
+    FSG_LOG_VAR(sep_groundtruth);
 
     {
         fsg::SuperEllipsoidParameters sep_fit = initialEstimate;
