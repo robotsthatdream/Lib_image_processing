@@ -153,6 +153,8 @@ struct SuperEllipsoidParameters
     friend ostream &operator<<(ostream &os,
                                const SuperEllipsoidParameters &sefc);
 
+    void setFromVector(VECTORX vector) { coeff = vector; };
+
     pcl::PointCloud<pcl::PointXYZ>::Ptr toPointCloud(int steps);
 };
 
@@ -743,12 +745,14 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
     FSG_LOG_VAR(lm.parameters.gtol);
     FSG_LOG_VAR(lm.parameters.epsfcn);
 
+    VECTORX vectorAtMinimum = fittingContext.coeff;
     {
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
             "Eigen::LevenbergMarquardt::minimize()");
-        VECTORX coeff_d = fittingContext.coeff;
-        minimizationResult = lm.minimize(coeff_d);
+        minimizationResult = lm.minimize(vectorAtMinimum);
     }
+
+    fittingContext.setFromVector(vectorAtMinimum);
 
     Eigen::ComputationInfo ci =
         minimizationResultToComputationInfo(minimizationResult);
