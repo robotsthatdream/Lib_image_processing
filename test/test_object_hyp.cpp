@@ -445,6 +445,9 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         // FSG_LOG_VAR(sum_of_squares);
         //#endif
         // return (sum_of_squares); // FIXME returns int.
+#if FUNCTOR_LOG_INSIDE == 1
+        FSG_LOG_VAR(fvec.norm());
+#endif
         return 0;
     }
 
