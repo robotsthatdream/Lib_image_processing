@@ -747,9 +747,7 @@ bool pointCloudToFittingContextWithInitialEstimate_EigenLevenbergMarquardt(
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING(
             "Eigen::LevenbergMarquardt::minimize()");
         VECTORX coeff_d = fittingContext.coeff;
-        VECTORX coeff_num_type = coeff_d.cast<FNUM_TYPE>();
-
-        minimizationResult = lm.minimize(coeff_num_type);
+        minimizationResult = lm.minimize(coeff_d);
     }
 
     Eigen::ComputationInfo ci =
