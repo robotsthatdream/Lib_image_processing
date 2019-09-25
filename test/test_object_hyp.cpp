@@ -2015,7 +2015,7 @@ int main(int argc, char **argv)
                 {
 
                     pcl::PointCloud<pcl::PointXYZ>::Ptr proj_points =
-                        fittingContext.toPointCloud(40);
+                        fittingContext.toPointCloud(10);
 
                     {
                         pcl::PointXYZRGB pt;
