@@ -353,7 +353,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
         FSG_TRACE_THIS_FUNCTION();
         // fsg::SuperEllipsoidParameters *sep =
         //     (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
-        //FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
+        // FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
         FSG_LOG_VAR(param);
 #endif
 
@@ -435,18 +435,18 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
             // FSG_LOG_VAR(outside_if_over_1);
 
             const FNUM_TYPE deviation = outside_if_over_1 - 1;
-// #if FUNCTOR_LOG_INSIDE == 1
-//             FSG_LOG_VAR(deviation);
-// #endif
+            // #if FUNCTOR_LOG_INSIDE == 1
+            //             FSG_LOG_VAR(deviation);
+            // #endif
 
             fvec[i] = deviation;
             // sum_of_squares += deviation * deviation;
         }
-        // FSG_LOG_VAR(fvec);
-        //#if FUNCTOR_LOG_INSIDE == 1
-        // FSG_LOG_VAR(sum_of_squares);
-        //#endif
-        // return (sum_of_squares); // FIXME returns int.
+// FSG_LOG_VAR(fvec);
+//#if FUNCTOR_LOG_INSIDE == 1
+// FSG_LOG_VAR(sum_of_squares);
+//#endif
+// return (sum_of_squares); // FIXME returns int.
 #if FUNCTOR_LOG_INSIDE == 1
         FSG_LOG_VAR(fvec.norm());
 #endif
@@ -1628,7 +1628,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
 void SuperEllipsoidTestSlicebetweenPoints(FNUM_TYPE xmin, FNUM_TYPE xmax)
 {
     FSG_TRACE_THIS_FUNCTION();
-    
+
     fsg::SuperEllipsoidParameters unit_sphere =
         fsg::SuperEllipsoidParameters::Zero();
     unit_sphere.set_rad_a(1.0);
