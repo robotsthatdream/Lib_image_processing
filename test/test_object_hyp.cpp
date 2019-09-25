@@ -338,7 +338,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
 //     return result;
 // }
 
-#define FUNCTOR_LOG_INSIDE 0
+#define FUNCTOR_LOG_INSIDE 1
 
     /** Cost function to be minimized
      * \param[in] x the variables array
@@ -355,10 +355,12 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
 
         const FNUM_TYPE exp_1 =
             param(fsg::SuperEllipsoidParameters::idx::exp_1);
-        // FSG_LOG_VAR(exp_1);
         const FNUM_TYPE exp_2 =
             param(fsg::SuperEllipsoidParameters::idx::exp_2);
-        // FSG_LOG_VAR(exp_2);
+#if FUNCTOR_LOG_INSIDE == 1
+        FSG_LOG_VAR(exp_1);
+        FSG_LOG_VAR(exp_2);
+#endif
 
         // if ((exp_1 > 2.0) || (exp_2 > 2.0)) {
         //     FSG_LOG_MSG("Not doing computation because too big exponent: 1:"
@@ -429,9 +431,9 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
             // FSG_LOG_VAR(outside_if_over_1);
 
             const FNUM_TYPE deviation = outside_if_over_1 - 1;
-#if FUNCTOR_LOG_INSIDE == 1
-            FSG_LOG_VAR(deviation);
-#endif
+// #if FUNCTOR_LOG_INSIDE == 1
+//             FSG_LOG_VAR(deviation);
+// #endif
 
             fvec[i] = deviation;
             // sum_of_squares += deviation * deviation;
