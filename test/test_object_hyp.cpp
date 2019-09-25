@@ -348,9 +348,11 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
     int operator()(const VECTORX &param, VECTORX &fvec) const
     {
 #if FUNCTOR_LOG_INSIDE == 1
-        fsg::SuperEllipsoidParameters *sep =
-            (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
+        FSG_TRACE_THIS_FUNCTION();
+        // fsg::SuperEllipsoidParameters *sep =
+        //     (fsg::SuperEllipsoidParameters *)((void *)&param); // Yeww hack.
+        //FSG_TRACE_THIS_SCOPE_WITH_SSTREAM("f(): " << *sep);
+        FSG_LOG_VAR(param);
 #endif
 
         const FNUM_TYPE exp_1 =
