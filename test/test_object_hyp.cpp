@@ -1591,6 +1591,7 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
 
     {
         fsg::SuperEllipsoidParameters sep_fit = initialEstimate;
+        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(sep_fit);
 
         bool success =
             pointCloudToFittingContextWithInitialEstimate(pointCloud, sep_fit);
