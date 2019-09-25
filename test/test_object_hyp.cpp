@@ -660,6 +660,7 @@ void SuperEllipsoidTestComputeGradient(
     fsg::SuperEllipsoidParameters &superellipsoidparameters_prototype,
     pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud)
 {
+    FSG_TRACE_THIS_FUNCTION();
 
     FSG_LOG_VAR(superellipsoidparameters_prototype);
 
@@ -1051,6 +1052,7 @@ bool pointCloudToFittingContextWithInitialEstimate_both(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext)
 {
+    FSG_TRACE_THIS_FUNCTION();
 
     // fsg::SuperEllipsoidParameters gradient_wrt_pointcloud;
     // SuperEllipsoidComputeGradientAllDimensions(fittingContext, cloud_xyz,
@@ -1155,6 +1157,7 @@ bool pointCloudToFittingContextWithInitialEstimate(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz,
     fsg::SuperEllipsoidParameters &fittingContext)
 {
+    FSG_TRACE_THIS_FUNCTION();
 
     {
         std::vector<int> indices(cloud_xyz->size());
@@ -1622,6 +1625,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
 
 void SuperEllipsoidTestSlicebetweenPoints(FNUM_TYPE xmin, FNUM_TYPE xmax)
 {
+    FSG_TRACE_THIS_FUNCTION();
+    
     fsg::SuperEllipsoidParameters unit_sphere =
         fsg::SuperEllipsoidParameters::Zero();
     unit_sphere.set_rad_a(1.0);
