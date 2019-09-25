@@ -1591,17 +1591,15 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
     SuperEllipsoidGraphFitnessLandscapeSliceBetweenPositions(
         pointCloud, initialEstimate, sep_groundtruth);
 
-    FSG_LOG_MSG("Now testing actual fit.");
-    FSG_LOG_VAR(sep_groundtruth);
-
     {
-        fsg::SuperEllipsoidParameters sep_fit = initialEstimate;
-        FSG_TRACE_THIS_SCOPE_WITH_SSTREAM(sep_fit);
+        FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("Now testing actual fit.");
+        fsg::SuperEllipsoidParameters sep_fit________ = initialEstimate;
 
         bool success =
-            pointCloudToFittingContextWithInitialEstimate(pointCloud, sep_fit);
+            pointCloudToFittingContextWithInitialEstimate(pointCloud, sep_fit________);
 
-        FSG_LOG_VAR(sep_fit);
+        FSG_LOG_VAR(sep_groundtruth);
+        FSG_LOG_VAR(sep_fit________);
 
         if (!success)
         {
