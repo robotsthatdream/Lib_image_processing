@@ -591,6 +591,7 @@ void FloatTest()
 #pragma GCC diagnostic pop
     FSG_LOG_MSG("First epsilon that added to "
                 << ref << " does not change a bit: " << epsilon);
+    FSG_LOG_VAR(std::numeric_limits<FNUM_TYPE>::epsilon());
 }
 
 static const FNUM_TYPE fit_control_epsilon = FNUM_LITERAL(0.01);
