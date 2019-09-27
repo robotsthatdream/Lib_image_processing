@@ -253,6 +253,8 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     pcl::PointXYZ pt;
     const FNUM_TYPE increment = sg_pi_2 / (FNUM_TYPE)steps;
 
+    int count_added = 0;
+    
     // Pitch is eta in Biegelbauer et al.
     for (FNUM_TYPE pitch = -sg_pi_2; pitch < sg_pi_2; pitch += increment)
     {
@@ -274,6 +276,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
                 pt.y = (PCL_POINT_COORD_TYPE)y;
                 pt.z = (PCL_POINT_COORD_TYPE)z;
                 cloud_step1->push_back(pt);
+                count_added++;
             }
             else
             {
@@ -281,6 +284,10 @@ SuperEllipsoidParameters::toPointCloud(int steps)
             }
         }
     }
+
+    FSG_LOG_VAR(count_added);
+    
+    FSG_LOG_VAR(cloud_step1->points.size());
 
     // Next rotate the point cloud.
 
@@ -304,6 +311,8 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     // You can either apply transform_1 or transform_2; they are the same
     pcl::transformPointCloud(*cloud_step1, *cloud_final, transform);
 
+    FSG_LOG_VAR(cloud_final->points.size());
+    
     return cloud_final;
 }
 } // namespace fsg
