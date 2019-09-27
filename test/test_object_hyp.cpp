@@ -434,7 +434,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
                 pow_abs(v_scaled(2), two_over_exp_1);
             // FSG_LOG_VAR(outside_if_over_1);
 
-            const FNUM_TYPE deviation = outside_if_over_1 - 1;
+            const FNUM_TYPE deviation = pow_abs( outside_if_over_1, exp_1) - 1;
             // #if FUNCTOR_LOG_INSIDE == 1
             //             FSG_LOG_VAR(deviation);
             // #endif
