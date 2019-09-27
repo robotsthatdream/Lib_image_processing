@@ -275,6 +275,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
                 pt.x = (PCL_POINT_COORD_TYPE)x;
                 pt.y = (PCL_POINT_COORD_TYPE)y;
                 pt.z = (PCL_POINT_COORD_TYPE)z;
+                FSG_LOG_VAR(pt);
                 cloud_step1->push_back(pt);
                 count_added++;
             }
