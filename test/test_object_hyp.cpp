@@ -1928,7 +1928,7 @@ int main(int argc, char **argv)
                 uint8_t g = uint8_t(dist(_gen) * 85);
                 uint8_t b = uint8_t(dist(_gen) * 85);
 
-                FSG_LOG_MSG("Assigned color = " << r << "," << g << "," << b);
+                FSG_LOG_MSG("Assigned color = " << (unsigned int)r << "," << (unsigned int)g << "," << (unsigned int)b);
 
                 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz(
                     new pcl::PointCloud<pcl::PointXYZ>);
