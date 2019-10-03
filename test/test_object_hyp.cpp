@@ -270,12 +270,13 @@ SuperEllipsoidParameters::toPointCloud(int steps)
             auto y = dilatfactor_y * sym_pow(WITH_SUFFIX_fx(sin)(yaw), exp_2) *
                      cos_pitch_exp_1;
 
+            pt.x = (PCL_POINT_COORD_TYPE)x;
+            pt.y = (PCL_POINT_COORD_TYPE)y;
+            pt.z = (PCL_POINT_COORD_TYPE)z;
+            FSG_LOG_VAR(pt);
+
             if ((x * x + y * y + z * z) < FNUM_LITERAL(20.0))
             {
-                pt.x = (PCL_POINT_COORD_TYPE)x;
-                pt.y = (PCL_POINT_COORD_TYPE)y;
-                pt.z = (PCL_POINT_COORD_TYPE)z;
-                FSG_LOG_VAR(pt);
                 cloud_step1->push_back(pt);
                 count_added++;
             }
