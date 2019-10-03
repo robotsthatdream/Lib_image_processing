@@ -254,7 +254,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     const FNUM_TYPE increment = sg_pi_2 / (FNUM_TYPE)steps;
 
     int count_added = 0;
-    
+
     // Pitch is eta in Biegelbauer et al.
     for (FNUM_TYPE pitch = -sg_pi_2; pitch < sg_pi_2; pitch += increment)
     {
@@ -287,7 +287,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     }
 
     FSG_LOG_VAR(count_added);
-    
+
     FSG_LOG_VAR(cloud_step1->points.size());
 
     // Next rotate the point cloud.
@@ -313,7 +313,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     pcl::transformPointCloud(*cloud_step1, *cloud_final, transform);
 
     FSG_LOG_VAR(cloud_final->points.size());
-    
+
     return cloud_final;
 }
 } // namespace fsg
@@ -444,7 +444,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
                 pow_abs(v_scaled(2), two_over_exp_1);
             // FSG_LOG_VAR(outside_if_over_1);
 
-            const FNUM_TYPE deviation = pow_abs( outside_if_over_1, exp_1) - 1;
+            const FNUM_TYPE deviation = pow_abs(outside_if_over_1, exp_1) - 1;
             // #if FUNCTOR_LOG_INSIDE == 1
             //             FSG_LOG_VAR(deviation);
             // #endif
@@ -1605,8 +1605,8 @@ bool SuperEllipsoidFitARandomSQ(boost::random::minstd_rand &_gen)
         FSG_TRACE_THIS_SCOPE_WITH_STATIC_STRING("Now testing actual fit.");
         fsg::SuperEllipsoidParameters sep_fit________ = initialEstimate;
 
-        bool success =
-            pointCloudToFittingContextWithInitialEstimate(pointCloud, sep_fit________);
+        bool success = pointCloudToFittingContextWithInitialEstimate(
+            pointCloud, sep_fit________);
 
         FSG_LOG_VAR(sep_groundtruth);
         FSG_LOG_VAR(sep_fit________);
