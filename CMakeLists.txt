@@ -172,9 +172,7 @@ set_property(TARGET iagmm PROPERTY IMPORTED_LOCATION "${IAGMM_INSTALL_TREE}/lib/
 # # find_library(IAGMM_LIBRARY iagmm)
 # find_package(iagmm)
 
-include(CMake/FindLibCmaes.cmake)
-
-include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS} "${IAGMM_INSTALL_TREE}/include" "${LIBCMAES_INCLUDE_DIR}" ${GIT_VERSION_STRING_INCLUDE_DIRECTORY})
+include_directories(${PCL_INCLUDE_DIRS} /usr/local/include include ${OpenCV_INCLUDE_DIRS} "${IAGMM_INSTALL_TREE}/include" ${GIT_VERSION_STRING_INCLUDE_DIRECTORY})
 link_directories(${PCL_LIBRARY_DIRS} /usr/local/lib)
 add_definitions(${PCL_DEFINITIONS})
 
@@ -233,17 +231,14 @@ install(TARGETS ${PROJECT_NAME}
 #add_executable(color_hist_supervoxel test/color_hist_supervoxel.cpp)
 #target_link_libraries(color_hist_supervoxel  image_processing ${OpenCV_LIBRARIES})
 
-message(STATUS "LIBCMAES_LIBRARIES=${LIBCMAES_LIBRARIES}")
-
 set (SG_SOURCE_FILES
   test/test_object_hyp.cpp
   test/test_rotation.cpp
   )
 
 add_executable(test_object_hyp ${SG_SOURCE_FILES})
-target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb ${LIBCMAES_LIBRARIES})
+target_link_libraries(test_object_hyp  image_processing iagmm ${IAGMM_Lib_LIBRARIES} tbb)
 target_compile_definitions(test_object_hyp PRIVATE WITH_DOUBLE_PRECISION=${WITH_DOUBLE_PRECISION})
-#target_include_directories(test_object_hyp ${LIBCMAES_INCLUDE_DIR})
 
 
 

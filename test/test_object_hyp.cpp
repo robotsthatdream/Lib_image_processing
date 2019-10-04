@@ -19,11 +19,6 @@
 #include "../include/image_processing/SurfaceOfInterest.h"
 #include "git_version.hpp"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#include "cmaes.h"
-#pragma GCC diagnostic pop
-
 #include <boost/archive/text_iarchive.hpp>
 #include <iagmm/gmm.hpp>
 #include <math.h>
