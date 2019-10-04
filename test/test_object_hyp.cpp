@@ -315,6 +315,8 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     FSG_LOG_VAR(cloud_final->points.size());
 
+    FSG_LOG_VAR(*cloud_final);
+
     return cloud_final;
 }
 } // namespace fsg
