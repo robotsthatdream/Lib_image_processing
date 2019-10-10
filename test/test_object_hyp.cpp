@@ -210,12 +210,18 @@ FNUM_TYPE *SuperEllipsoidParameters::coeffData()
 
 void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 {
-    pcl::PointXYZ minPt, maxPt, centerPt;
+    FSG_TRACE_THIS_FUNCTION();
+    pcl::PointXYZ minPt, maxPt;
     pcl::getMinMax3D (*cloud, minPt, maxPt);
 
+    FSG_LOG_VAR(minPt);
+    FSG_LOG_VAR(maxPt);
+    
     float center_x = (minPt.x + maxPt.x) / 2;
     float center_y = (minPt.y + maxPt.y) / 2;
-    //float center_z = (minPt.z + maxPt.z) / 2.0;
+    
+    FSG_LOG_VAR(center_x);
+    FSG_LOG_VAR(center_y);
 
     const int xresol = 1024;
     const int yresol = 1024;
@@ -223,10 +229,15 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
     const float width_x = maxPt.x - minPt.x;
     const float width_y = maxPt.y - minPt.y;
 
+    FSG_LOG_VAR(width_x);
+    FSG_LOG_VAR(width_y);
+
     const float pixelperunit_x = xresol / width_x;
     const float pixelperunit_y = yresol / width_y;
 
     const float pixelperunit = std::max(pixelperunit_x, pixelperunit_y);
+    FSG_LOG_VAR(pixelperunit_x);
+    FSG_LOG_VAR(pixelperunit_y);
 
     cv::Mat myCloudImage = cv::Mat::zeros(xresol, yresol, CV_8UC1);
 
