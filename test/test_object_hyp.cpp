@@ -12,6 +12,7 @@
 #include <pcl/sample_consensus/sac_model_plane.h>
 #include <pcl/sample_consensus/sac_model_sphere.h>
 #include <pcl/visualization/pcl_visualizer.h>
+#include <opencv2/opencv.hpp>
 
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkRenderWindow.h>
@@ -207,6 +208,45 @@ FNUM_TYPE *SuperEllipsoidParameters::coeffData()
     return (this->coeff.data());
 }
 
+void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
+{
+    pcl::PointXYZ minPt, maxPt, centerPt;
+    pcl::getMinMax3D (*cloud, minPt, maxPt);
+
+    float center_x = (minPt.x + maxPt.x) / 2;
+    float center_y = (minPt.y + maxPt.y) / 2;
+    //float center_z = (minPt.z + maxPt.z) / 2.0;
+
+    const int xresol = 1024;
+    const int yresol = 1024;
+
+    const float width_x = maxPt.x - minPt.x;
+    const float width_y = maxPt.y - minPt.y;
+
+    const float pixelperunit_x = xresol / width_x;
+    const float pixelperunit_y = yresol / width_y;
+
+    const float pixelperunit = std::max(pixelperunit_x, pixelperunit_y);
+
+    cv::Mat myCloudImage = cv::Mat::zeros(xresol, yresol, CV_8UC1);
+
+    for (auto pt : *cloud)
+    {
+        int x = int ((pt.x - center_x) * pixelperunit + xresol/2);
+        int y = int ((pt.y - center_y) * pixelperunit + yresol/2);
+        myCloudImage.at<unsigned char>(x,y) = 255;
+    }
+
+    {
+        static int pngcount = 0;
+        auto ss = std::stringstream();
+        ss << "image_" << pngcount << ".png";
+        imwrite( ss.str(), myCloudImage );
+        pngcount++;
+    }
+}
+
+
 /** This method implements the forward transformation from a
     12-dimension model to a point cloud.
 
@@ -314,6 +354,9 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     {
         FSG_LOG_VAR(pt);
     }
+
+    drawPointCloudByHand(cloud_final);
+
     return cloud_final;
 }
 } // namespace fsg
