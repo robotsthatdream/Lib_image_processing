@@ -239,9 +239,12 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 
     {
         static int pngcount = 0;
+        FSG_LOG_VAR(pngcount);
         auto ss = std::stringstream();
         ss << "image_" << pngcount << ".png";
-        imwrite( ss.str(), myCloudImage );
+        auto pngfilename = ss.str();
+        FSG_LOG_VAR(pngfilename);
+        imwrite( pngfilename, myCloudImage );
         pngcount++;
     }
 }
