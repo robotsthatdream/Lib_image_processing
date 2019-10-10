@@ -235,9 +235,10 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
     const float pixelperunit_x = xresol / width_x;
     const float pixelperunit_y = yresol / width_y;
 
-    const float pixelperunit = std::max(pixelperunit_x, pixelperunit_y);
     FSG_LOG_VAR(pixelperunit_x);
     FSG_LOG_VAR(pixelperunit_y);
+
+    const float pixelperunit = std::min(pixelperunit_x, pixelperunit_y);
 
     cv::Mat myCloudImage = cv::Mat::zeros(xresol, yresol, CV_8UC1);
 
