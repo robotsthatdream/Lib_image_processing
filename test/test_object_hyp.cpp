@@ -2,6 +2,7 @@
 #include <boost/range/adaptor/indexed.hpp>
 #include <forward_list>
 #include <iostream>
+#include <opencv2/opencv.hpp>
 #include <pcl/common/transforms.h>
 #include <pcl/console/parse.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
@@ -12,7 +13,6 @@
 #include <pcl/sample_consensus/sac_model_plane.h>
 #include <pcl/sample_consensus/sac_model_sphere.h>
 #include <pcl/visualization/pcl_visualizer.h>
-#include <opencv2/opencv.hpp>
 
 #include <vtkOrientationMarkerWidget.h>
 #include <vtkRenderWindow.h>
@@ -212,14 +212,14 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 {
     FSG_TRACE_THIS_FUNCTION();
     pcl::PointXYZ minPt, maxPt;
-    pcl::getMinMax3D (*cloud, minPt, maxPt);
+    pcl::getMinMax3D(*cloud, minPt, maxPt);
 
     FSG_LOG_VAR(minPt);
     FSG_LOG_VAR(maxPt);
-    
+
     float center_x = (minPt.x + maxPt.x) / 2;
     float center_y = (minPt.y + maxPt.y) / 2;
-    
+
     FSG_LOG_VAR(center_x);
     FSG_LOG_VAR(center_y);
 
@@ -244,9 +244,9 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 
     for (auto pt : *cloud)
     {
-        int x = int ((pt.x - center_x) * pixelperunit + xresol/2);
-        int y = int ((pt.y - center_y) * pixelperunit + yresol/2);
-        myCloudImage.at<unsigned char>(x,y) = 255;
+        int x = int((pt.x - center_x) * pixelperunit + xresol / 2);
+        int y = int((pt.y - center_y) * pixelperunit + yresol / 2);
+        myCloudImage.at<unsigned char>(x, y) = 255;
     }
 
     {
@@ -256,11 +256,10 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
         ss << "image_" << pngcount << ".png";
         auto pngfilename = ss.str();
         FSG_LOG_VAR(pngfilename);
-        imwrite( pngfilename, myCloudImage );
+        imwrite(pngfilename, myCloudImage);
         pngcount++;
     }
 }
-
 
 /** This method implements the forward transformation from a
     12-dimension model to a point cloud.
