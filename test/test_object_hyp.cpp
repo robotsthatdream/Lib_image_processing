@@ -304,9 +304,13 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     int count_added = 0;
 
+    FSG_LOG_VAR(steps);
+    FSG_LOG_VAR(increment);
+
     // Pitch is eta in Biegelbauer et al.
     for (FNUM_TYPE pitch = -sg_pi_2; pitch < sg_pi_2; pitch += increment)
     {
+        FSG_LOG_VAR(pitch);
         FNUM_TYPE z =
             dilatfactor_z * sym_pow(WITH_SUFFIX_fx(sin)(pitch), exp_1);
         FNUM_TYPE cos_pitch_exp_1 = sym_pow(WITH_SUFFIX_fx(cos)(pitch), exp_1);
@@ -314,6 +318,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
         // Yaw is omega in Biegelbauer et al.
         for (FNUM_TYPE yaw = -sg_pi; yaw < sg_pi; yaw += increment)
         {
+            FSG_LOG_VAR(yaw);
             auto x = dilatfactor_x * sym_pow(WITH_SUFFIX_fx(cos)(yaw), exp_2) *
                      cos_pitch_exp_1;
             auto y = dilatfactor_y * sym_pow(WITH_SUFFIX_fx(sin)(yaw), exp_2) *
@@ -335,6 +340,9 @@ SuperEllipsoidParameters::toPointCloud(int steps)
             }
         }
     }
+
+    FSG_LOG_VAR(steps);
+    FSG_LOG_VAR(increment);
 
     FSG_LOG_VAR(count_added);
 
