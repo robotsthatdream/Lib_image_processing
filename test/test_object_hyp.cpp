@@ -261,6 +261,59 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
     }
 }
 
+FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
+                                                 FNUM_TYPE radius_b,
+                                                 FNUM_TYPE exponent,
+                                                 FNUM_TYPE angle, int steps)
+{
+    FSG_LOG_VAR(radius_a);
+    FSG_LOG_VAR(radius_b);
+    FSG_LOG_VAR(exponent);
+    FSG_LOG_VAR(angle);
+    FSG_LOG_VAR(steps);
+    // The ellipse circumference / perimeter can be approximated
+    // 4 * diagonal <= C <= sqrt(2)*pi * diagonal
+    // Knowing that sqrt(2)*pi < 4.443
+
+    // Jameson, G.J.O. (2014). "Inequalities for the perimeter of an
+    // ellipse". Mathematical Gazette. 98 (542):
+    // 227–234. doi:10.1017/S002555720000125X.
+
+    // https://en.wikipedia.org/wiki/Ellipse#Circumference
+    // (ref. https://www.mathsisfun.com/geometry/ellipse-perimeter.html )
+    FNUM_TYPE diagonal = WITH_SUFFIX_fx(hypot)(radius_a, radius_b);
+    FSG_LOG_VAR(diagonal);
+
+    FNUM_TYPE arc_length = diagonal / steps;
+    FSG_LOG_VAR(arc_length);
+
+    FNUM_TYPE cos_ = WITH_SUFFIX_fx(cos)(angle);
+    FSG_LOG_VAR(cos_);
+    FNUM_TYPE sin_ = WITH_SUFFIX_fx(sin)(angle);
+    FSG_LOG_VAR(sin_);
+
+    FNUM_TYPE cos_2 = cos_ * cos_;
+    FSG_LOG_VAR(cos_2);
+    FNUM_TYPE sin_2 = sin_ * sin_;
+    FSG_LOG_VAR(sin_2);
+
+    FNUM_TYPE cos_4 = cos_2 * cos_2;
+    FNUM_TYPE sin_4 = sin_2 * sin_2;
+
+    FNUM_TYPE cos_2e = WITH_SUFFIX_fx(pow)(cos_2, exponent);
+    FSG_LOG_VAR(cos_2e);
+    FNUM_TYPE sin_2e = WITH_SUFFIX_fx(pow)(sin_2, exponent);
+    FSG_LOG_VAR(sin_2e);
+
+    FNUM_TYPE delta_angle =
+        arc_length / exponent *
+        sqrt((cos_2 * sin_2) / (radius_a * radius_a * cos_2e * sin_4 +
+                                radius_b * radius_b * sin_2e * cos_4));
+    FSG_LOG_VAR(delta_angle);
+
+    return delta_angle;
+}
+
 /** This method implements the forward transformation from a
     12-dimension model to a point cloud.
 
@@ -300,15 +353,15 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     FNUM_TYPE dilatfactor_z = this->get_rad_c();
 
     pcl::PointXYZ pt;
-    const FNUM_TYPE increment = sg_pi_2 / (FNUM_TYPE)steps;
 
     int count_added = 0;
 
     FSG_LOG_VAR(steps);
-    FSG_LOG_VAR(increment);
 
     // Pitch is eta in Biegelbauer et al.
-    for (FNUM_TYPE pitch = -sg_pi_2; pitch < sg_pi_2; pitch += increment)
+    for (FNUM_TYPE pitch = 0; pitch < sg_pi_2;
+         pitch += superEllipsoidUniformSamplingIncrement(
+             dilatfactor_x, dilatfactor_y, exp_1, pitch, steps))
     {
         FSG_LOG_VAR(pitch);
         FNUM_TYPE z =
@@ -316,7 +369,9 @@ SuperEllipsoidParameters::toPointCloud(int steps)
         FNUM_TYPE cos_pitch_exp_1 = sym_pow(WITH_SUFFIX_fx(cos)(pitch), exp_1);
 
         // Yaw is omega in Biegelbauer et al.
-        for (FNUM_TYPE yaw = -sg_pi; yaw < sg_pi; yaw += increment)
+        for (FNUM_TYPE yaw = 0; yaw < sg_pi_2;
+             yaw += superEllipsoidUniformSamplingIncrement(1, dilatfactor_z,
+                                                           exp_2, yaw, steps))
         {
             FSG_LOG_VAR(yaw);
             auto x = dilatfactor_x * sym_pow(WITH_SUFFIX_fx(cos)(yaw), exp_2) *
@@ -342,14 +397,13 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     }
 
     FSG_LOG_VAR(steps);
-    FSG_LOG_VAR(increment);
 
     FSG_LOG_VAR(count_added);
 
     FSG_LOG_VAR(cloud_step1->points.size());
 
     drawPointCloudByHand(cloud_step1);
-    
+
     // Next rotate the point cloud.
 
     MATRIX3 rotmat;
