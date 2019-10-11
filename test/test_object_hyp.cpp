@@ -348,6 +348,8 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     FSG_LOG_VAR(cloud_step1->points.size());
 
+    drawPointCloudByHand(cloud_step1);
+    
     // Next rotate the point cloud.
 
     MATRIX3 rotmat;
