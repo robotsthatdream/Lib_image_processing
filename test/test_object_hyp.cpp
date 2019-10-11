@@ -271,6 +271,9 @@ FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
     FSG_LOG_VAR(exponent);
     FSG_LOG_VAR(angle);
     FSG_LOG_VAR(steps);
+
+    /** First compute the desired arc length, since it depends on the radii. */
+
     // The ellipse circumference / perimeter can be approximated
     // 4 * diagonal <= C <= sqrt(2)*pi * diagonal
     // Knowing that sqrt(2)*pi < 4.443
@@ -286,6 +289,37 @@ FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
 
     FNUM_TYPE arc_length = diagonal / steps;
     FSG_LOG_VAR(arc_length);
+
+    /** The rest depends on the value of angle.
+
+        Ref. Robert Fisher  Equal-Distance Sampling of Superellipse Models
+    */
+    if (angle < 0.01) // Constant value is from Fisher's publication.
+    {
+        FSG_LOG_VAR(angle);
+        FNUM_TYPE term =
+            arc_length / radius_b - WITH_SUFFIX_fx(pow)(angle, exponent);
+        FSG_LOG_VAR(term);
+        FNUM_TYPE delta_angle = WITH_SUFFIX_fx(pow)(term, 1 / exponent) - angle;
+        FSG_LOG_VAR(delta_angle);
+        return delta_angle;
+    }
+
+    {
+        FNUM_TYPE pi_2_minus_angle = sg_pi_2 - angle;
+        if (pi_2_minus_angle <
+            0.01) // Constant value is from Fisher's publication.
+        {
+            FSG_LOG_VAR(pi_2_minus_angle);
+            FNUM_TYPE term = arc_length / radius_a -
+                             WITH_SUFFIX_fx(pow)(pi_2_minus_angle, exponent);
+            FSG_LOG_VAR(term);
+            FNUM_TYPE delta_angle =
+                WITH_SUFFIX_fx(pow)(term, 1 / exponent) - pi_2_minus_angle;
+            FSG_LOG_VAR(delta_angle);
+            return delta_angle;
+        }
+    }
 
     FNUM_TYPE cos_ = WITH_SUFFIX_fx(cos)(angle);
     FSG_LOG_VAR(cos_);
