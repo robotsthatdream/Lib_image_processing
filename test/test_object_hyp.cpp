@@ -294,7 +294,7 @@ FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
 
         Ref. Robert Fisher  Equal-Distance Sampling of Superellipse Models
     */
-    if (angle < 0.01) // Constant value is from Fisher's publication.
+    if (angle < 0.001) // Constant value is from Fisher's publication.
     {
         FSG_LOG_VAR(angle);
         FNUM_TYPE term =
@@ -308,7 +308,7 @@ FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
     {
         FNUM_TYPE pi_2_minus_angle = sg_pi_2 - angle;
         if (pi_2_minus_angle <
-            0.01) // Constant value is from Fisher's publication.
+            0.001) // Constant value is from Fisher's publication.
         {
             FSG_LOG_VAR(pi_2_minus_angle);
             FNUM_TYPE term = arc_length / radius_a -
