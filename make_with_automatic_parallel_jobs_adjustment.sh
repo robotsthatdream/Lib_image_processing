@@ -21,7 +21,17 @@ then
    MAX_PARALLEL_JOBS_REQUESTED=$(( $ACCEPTABLE_PARALLEL_JOBS_MEMORY_WISE > $PROCESSOR_COUNT ? $PROCESSOR_COUNT : $ACCEPTABLE_PARALLEL_JOBS_MEMORY_WISE ))
 fi
 
-MY_EXTRA_ARGS="-j$MAX_PARALLEL_JOBS_REQUESTED"
+if [[ "$MAX_PARALLEL_JOBS_REQUESTED" == "0" ]]
+then
+    echo >&2
+    echo >&2 "=========================================================="
+    echo >&2 "WARNING: LOW MEMORY, compilation may be slow or even fail."
+    echo >&2 "=========================================================="
+    echo >&2
+else
+    MY_EXTRA_ARGS="-j$MAX_PARALLEL_JOBS_REQUESTED"
+fi
+
 
 {
     echo "New run"
