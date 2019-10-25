@@ -303,7 +303,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
     FNUM_TYPE angle_increment = sg_pi_2 / (FNUM_TYPE)steps;
     FSG_LOG_VAR(angle_increment);
 
-    while ((angle + angle_increment) < sg_pi_2)
+    while (angle < sg_pi_2)
     {
         FNUM_TYPE angle_candidate = angle + angle_increment;
         FSG_LOG_VAR(angle_candidate);
@@ -383,6 +383,12 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
         point_segmentstart = point_segmentend_candidate;
     }
 
+    /* At this point we have added a last point beyond pi/2.  It's
+       simpler to add it and remove it after, than to complicate the
+       logic above.
+     */
+    points.pop_back();
+    
     FSG_LOG_VAR(angle + angle_increment);
     FSG_LOG_MSG("finishing, added point count: " << points.size());
     return points;
