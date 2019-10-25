@@ -283,28 +283,26 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
 
     // for (int step = 0 ; step <= steps_on_one_eigth ; step++)
     // {
-    //     FNUM_TYPE step_ratio = ((FNUM_TYPE)step) / ((FNUM_TYPE)steps_on_one_eigth);
+    //     FNUM_TYPE step_ratio = ((FNUM_TYPE)step) /
+    //     ((FNUM_TYPE)steps_on_one_eigth);
     //     FNUM_TYPE y_ratio = step_ratio * WITH_SUFFIX_fx(cos)(angle);
 
-
-    for (FNUM_TYPE y=0; y < (radius_b * cos(sg_pi_4)); y += arc_length)
+    for (FNUM_TYPE y = 0; y < (radius_b * cos(sg_pi_4)); y += arc_length)
     {
         FNUM_TYPE yratio = y / radius_b;
-        FNUM_TYPE sin_to_invert = sym_pow(yratio, FNUM_TYPE(1.0)/exponent);
+        FNUM_TYPE sin_to_invert = sym_pow(yratio, FNUM_TYPE(1.0) / exponent);
         FNUM_TYPE theta = asin(sin_to_invert);
 
-        FNUM_TYPE cos_ = cos(sin_to_invert); // Could use sqrt(1 - sin^2) instead.
+        FNUM_TYPE cos_ =
+            cos(sin_to_invert); // Could use sqrt(1 - sin^2) instead.
         FNUM_TYPE cos_power_epsilon = sym_pow(cos_, exponent);
         FNUM_TYPE x = radius_a * cos_power_epsilon;
 
-        std::complex<FNUM_TYPE> point(x,y);
+        std::complex<FNUM_TYPE> point(x, y);
         points.push_back(point);
 
-        FSG_LOG_MSG("yr="<<yratio
-                    <<"\tsin="<<sin_to_invert
-                    <<"\tth="<<theta
-                    <<"\tcos="<<cos_
-                    <<"\t" << point);
+        FSG_LOG_MSG("yr=" << yratio << "\tsin=" << sin_to_invert << "\tth="
+                          << theta << "\tcos=" << cos_ << "\t" << point);
     }
 
     FSG_LOG_MSG("finishing, added point count: " << points.size());
@@ -448,7 +446,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     std::vector<std::complex<FNUM_TYPE>> superEllipseCoordsYaw =
         superEllipseParametersToPointEighth(dilatfactor_x, dilatfactor_y,
-                                             exp_2);
+                                            exp_2);
 
     // Pitch is eta in Biegelbauer et al.
     for (auto iter_pitch = superEllipseCoordsPitch.begin();
