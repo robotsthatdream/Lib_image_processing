@@ -266,7 +266,7 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
     FNUM_TYPE radius_a, FNUM_TYPE radius_b, FNUM_TYPE exponent, int steps = 10,
     FNUM_TYPE angle_limit = FNUM_LITERAL(0.1),
-    FNUM_TYPE increment_adjust_ratio_factor = FNUM_LITERAL(1.001),
+    FNUM_TYPE increment_adjust_ratio_factor_factor = FNUM_LITERAL(1.0001),
     FNUM_TYPE hysteresis_margin_factor = FNUM_LITERAL(1.4))
 {
     FSG_TRACE_THIS_FUNCTION();
@@ -303,6 +303,9 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
 
     FNUM_TYPE increment_adjust_ratio_grow = FNUM_TYPE(1.0);
     FNUM_TYPE increment_adjust_ratio_shrink = FNUM_TYPE(1.0);
+
+    bool was_last_adjust_ratio_adjustment_grow = false;
+    FNUM_TYPE increment_adjust_ratio_factor;
 
     while (angle < sg_pi_2)
     {
@@ -347,8 +350,16 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
 
         if (segment_length > arc_length_max)
         {
+            increment_adjust_ratio_factor =
+                (was_last_adjust_ratio_adjustment_grow)
+                    ? increment_adjust_ratio_factor_factor
+                    : (increment_adjust_ratio_factor *
+                       increment_adjust_ratio_factor_factor);
+
             increment_adjust_ratio_grow = FNUM_TYPE(1.0);
+
             increment_adjust_ratio_shrink /= increment_adjust_ratio_factor;
+
             FNUM_TYPE new_angle_increment =
                 angle_increment * increment_adjust_ratio_shrink;
 
@@ -377,10 +388,19 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
 
         if (segment_length < arc_length_min)
         {
+            increment_adjust_ratio_factor =
+                (was_last_adjust_ratio_adjustment_grow)
+                    ? (increment_adjust_ratio_factor *
+                       increment_adjust_ratio_factor_factor)
+                    : increment_adjust_ratio_factor_factor;
+
             increment_adjust_ratio_shrink = FNUM_TYPE(1.0);
+
             increment_adjust_ratio_grow *= increment_adjust_ratio_factor;
-            FNUM_TYPE new_angle_increment = angle_increment *
-                increment_adjust_ratio_grow;
+
+            FNUM_TYPE new_angle_increment =
+                angle_increment * increment_adjust_ratio_grow;
+
             FSG_LOG_MSG("segment_length = "
                         << segment_length << " < " << arc_length_min
                         << " = arc_length_min. increment_adjust_ratio_grow="
