@@ -312,6 +312,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
         {
             angle_candidate = sg_pi_4;
             FSG_LOG_MSG("Forcing special case pi/4.");
+            FSG_LOG_VAR(angle_candidate);
         }
 
         std::complex<FNUM_TYPE> angle_candidate_i(0, angle_candidate);
@@ -381,6 +382,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
         point_segmentstart = point_segmentend_candidate;
     }
 
+    FSG_LOG_VAR(angle + angle_increment);
     FSG_LOG_MSG("finishing, added point count: " << points.size());
     return points;
 }
