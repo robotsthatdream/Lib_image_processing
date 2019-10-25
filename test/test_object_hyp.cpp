@@ -356,7 +356,8 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
             if (new_angle_increment != 0)
 #pragma GCC diagnostic pop
             {
-                FSG_LOG_MSG("Reducing angle increment to " << new_angle_increment);
+                FSG_LOG_MSG("Reducing angle increment to "
+                            << new_angle_increment);
                 angle_increment = new_angle_increment;
                 continue;
             }
