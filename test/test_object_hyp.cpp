@@ -263,11 +263,8 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 
 /** Transform parameters of a superellipse into a vector of points, covering a
  * quarter of the superellipse. */
-std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
-    FNUM_TYPE radius_a, FNUM_TYPE radius_b, FNUM_TYPE exponent, int steps = 10,
-    FNUM_TYPE angle_limit = FNUM_LITERAL(0.1),
-    FNUM_TYPE increment_adjust_ratio_factor_factor = FNUM_LITERAL(1.00001),
-    FNUM_TYPE hysteresis_margin_factor = FNUM_LITERAL(1.4))
+std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointEighth(
+    FNUM_TYPE radius_a, FNUM_TYPE radius_b, FNUM_TYPE exponent, int steps_on_one_eigth = 10)
 {
     FSG_TRACE_THIS_FUNCTION();
     FSG_LOG_VAR(radius_a);
@@ -276,159 +273,37 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
     FNUM_TYPE diagonal = WITH_SUFFIX_fx(hypot)(radius_a, radius_b);
     FSG_LOG_VAR(diagonal);
 
-    FNUM_TYPE arc_length = diagonal / steps / sg_pi_2;
+    FNUM_TYPE arc_length = diagonal / steps_on_one_eigth / sg_pi_4;
     FSG_LOG_VAR(arc_length);
 
-    FNUM_TYPE arc_length_min = arc_length / (hysteresis_margin_factor);
-    FSG_LOG_VAR(arc_length_min);
+    std::vector<std::complex<FNUM_TYPE>> points(steps_on_one_eigth);
 
-    FNUM_TYPE arc_length_max = arc_length * (hysteresis_margin_factor);
-    FSG_LOG_VAR(arc_length_max);
+    // for (int step = 0 ; step <= steps_on_one_eigth ; step++)
+    // {
+    //     FNUM_TYPE step_ratio = ((FNUM_TYPE)step) / ((FNUM_TYPE)steps_on_one_eigth);
+    //     FNUM_TYPE y_ratio = step_ratio * WITH_SUFFIX_fx(cos)(angle);
 
-    /*
-      We try a new point, increasing or decreasing the angle as needed.
-     */
-    std::vector<std::complex<FNUM_TYPE>> points(steps);
 
-    std::complex<FNUM_TYPE> point_segmentstart =
-        radius_a; // start at rightmost x, no imaginary part
-    FSG_LOG_VAR(point_segmentstart);
-
-    points.push_back(point_segmentstart);
-
-    FNUM_TYPE angle = 0;
-
-    FNUM_TYPE angle_increment = sg_pi_2 / (FNUM_TYPE)steps;
-    FSG_LOG_VAR(angle_increment);
-
-    FNUM_TYPE increment_adjust_ratio_grow = FNUM_TYPE(1.0);
-    FNUM_TYPE increment_adjust_ratio_shrink = FNUM_TYPE(1.0);
-
-    bool was_last_adjust_ratio_adjustment_grow = false;
-    FNUM_TYPE increment_adjust_ratio_factor;
-
-    while (angle < sg_pi_2)
+    for (FNUM_TYPE y=0; y < (radius_b * cos(sg_pi_4)); y += arc_length)
     {
-        FNUM_TYPE angle_candidate = angle + angle_increment;
-        FSG_LOG_VAR(angle_candidate);
+        FNUM_TYPE yratio = y / radius_b;
+        FNUM_TYPE sin_to_invert = sym_pow(yratio, FNUM_TYPE(1.0)/exponent);
+        FNUM_TYPE theta = asin(sin_to_invert);
 
-        if ((angle < sg_pi_4) && (angle_candidate >= sg_pi_4))
-        {
-            angle_candidate = sg_pi_4;
-            FSG_LOG_MSG("Forcing special case pi/4.");
-            FSG_LOG_VAR(angle_candidate);
-        }
+        FNUM_TYPE cos_ = cos(sin_to_invert); // Could use sqrt(1 - sin^2) instead.
+        FNUM_TYPE cos_power_epsilon = sym_pow(cos_, exponent);
+        FNUM_TYPE x = radius_a * cos_power_epsilon;
 
-        std::complex<FNUM_TYPE> angle_candidate_i(0, angle_candidate);
-        std::complex<FNUM_TYPE> cis = std::exp(angle_candidate_i);
-        FSG_LOG_VAR(cis);
+        std::complex<FNUM_TYPE> point(x,y);
+        points.push_back(point);
 
-        FNUM_TYPE x = radius_a * sym_pow(cis.real(), exponent);
-        FNUM_TYPE y = radius_b * sym_pow(cis.imag(), exponent);
-
-        std::complex<FNUM_TYPE> point_segmentend_candidate(x, y);
-        FSG_LOG_VAR(point_segmentend_candidate);
-
-        FNUM_TYPE segment_length =
-            fabs(point_segmentend_candidate - point_segmentstart);
-        FSG_LOG_VAR(segment_length);
-
-// if ((angle < sg_pi_4) && (angle_candidate >= sg_pi_4))
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-        if (angle_candidate == sg_pi_4)
-#pragma GCC diagnostic pop
-        {
-            FSG_LOG_MSG("Experiencing special case pi/4 with point "
-                        << point_segmentend_candidate);
-            points.push_back(point_segmentend_candidate);
-            FSG_LOG_MSG("added point for angle=" << angle_candidate
-                                                 << " coords="
-                                                 << point_segmentend_candidate);
-
-            angle = angle_candidate;
-            point_segmentstart = point_segmentend_candidate;
-            continue;
-        }
-
-        if (segment_length > arc_length_max)
-        {
-            increment_adjust_ratio_factor =
-                (was_last_adjust_ratio_adjustment_grow)
-                    ? increment_adjust_ratio_factor_factor
-                    : (increment_adjust_ratio_factor *
-                       increment_adjust_ratio_factor_factor);
-
-            increment_adjust_ratio_grow = FNUM_TYPE(1.0);
-
-            increment_adjust_ratio_shrink /= increment_adjust_ratio_factor;
-
-            FNUM_TYPE new_angle_increment =
-                angle_increment * increment_adjust_ratio_shrink;
-
-// if (angle_increment < std::numeric_limits<FNUM_TYPE>::epsilon())
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-            if (new_angle_increment != 0)
-#pragma GCC diagnostic pop
-            {
-                FSG_LOG_MSG(
-                    "segment_length = "
-                    << segment_length << " > " << arc_length_max
-                    << " = arc_length_max. increment_adjust_ratio_shrink="
-                    << increment_adjust_ratio_shrink
-                    << " Angle increment too big: " << angle_increment << " -> "
-                    << new_angle_increment);
-
-                angle_increment = new_angle_increment;
-                continue;
-            }
-            else
-            {
-                FSG_LOG_MSG("Refusing to reduce angle_increment further.");
-            }
-        }
-
-        if (segment_length < arc_length_min)
-        {
-            increment_adjust_ratio_factor =
-                (was_last_adjust_ratio_adjustment_grow)
-                    ? (increment_adjust_ratio_factor *
-                       increment_adjust_ratio_factor_factor)
-                    : increment_adjust_ratio_factor_factor;
-
-            increment_adjust_ratio_shrink = FNUM_TYPE(1.0);
-
-            increment_adjust_ratio_grow *= increment_adjust_ratio_factor;
-
-            FNUM_TYPE new_angle_increment =
-                angle_increment * increment_adjust_ratio_grow;
-
-            FSG_LOG_MSG("segment_length = "
-                        << segment_length << " < " << arc_length_min
-                        << " = arc_length_min. increment_adjust_ratio_grow="
-                        << increment_adjust_ratio_grow
-                        << " Angle increment too small: " << angle_increment
-                        << " -> " << new_angle_increment);
-            angle_increment = new_angle_increment;
-            continue;
-        }
-
-        points.push_back(point_segmentend_candidate);
-        FSG_LOG_MSG("added point for angle=" << angle_candidate << " coords="
-                                             << point_segmentend_candidate);
-
-        angle = angle_candidate;
-        point_segmentstart = point_segmentend_candidate;
+        FSG_LOG_MSG("yr="<<yratio
+                    <<"\tsin="<<sin_to_invert
+                    <<"\tth="<<theta
+                    <<"\tcos="<<cos_
+                    <<"\t" << point);
     }
 
-    /* At this point we have added a last point beyond pi/2.  It's
-       simpler to add it and remove it after, than to complicate the
-       logic above.
-     */
-    points.pop_back();
-
-    FSG_LOG_VAR(angle + angle_increment);
     FSG_LOG_MSG("finishing, added point count: " << points.size());
     return points;
 }
@@ -566,10 +441,10 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     FSG_LOG_VAR(steps);
 
     std::vector<std::complex<FNUM_TYPE>> superEllipseCoordsPitch =
-        superEllipseParametersToPointQuarter(1, dilatfactor_z, exp_1);
+        superEllipseParametersToPointEighth(1, dilatfactor_z, exp_1);
 
     std::vector<std::complex<FNUM_TYPE>> superEllipseCoordsYaw =
-        superEllipseParametersToPointQuarter(dilatfactor_x, dilatfactor_y,
+        superEllipseParametersToPointEighth(dilatfactor_x, dilatfactor_y,
                                              exp_2);
 
     // Pitch is eta in Biegelbauer et al.
