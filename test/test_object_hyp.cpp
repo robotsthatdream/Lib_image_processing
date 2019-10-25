@@ -339,7 +339,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
 
         if (segment_length > arc_length_max)
         {
-            FSG_LOG_MSG("angle increment to big: " << angle_increment);
+            FSG_LOG_MSG("angle increment too big: " << angle_increment);
             angle_increment /= increment_adjust_ratio;
             FSG_LOG_MSG("reducing angle increment to " << angle_increment);
 
