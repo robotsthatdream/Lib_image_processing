@@ -266,8 +266,8 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
     FNUM_TYPE radius_a, FNUM_TYPE radius_b, FNUM_TYPE exponent, int steps = 10,
     FNUM_TYPE angle_limit = FNUM_LITERAL(0.1),
-    FNUM_TYPE increment_adjust_ratio = FNUM_LITERAL(2),
-    FNUM_TYPE hysteresis_margin_factor = FNUM_LITERAL(2.1))
+    FNUM_TYPE increment_adjust_ratio_factor = FNUM_LITERAL(1.01),
+    FNUM_TYPE hysteresis_margin_factor = FNUM_LITERAL(2))
 {
     FSG_TRACE_THIS_FUNCTION();
     FSG_LOG_VAR(radius_a);
@@ -279,12 +279,10 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
     FNUM_TYPE arc_length = diagonal / steps / sg_pi_2;
     FSG_LOG_VAR(arc_length);
 
-    FNUM_TYPE arc_length_min =
-        arc_length / (increment_adjust_ratio * hysteresis_margin_factor);
+    FNUM_TYPE arc_length_min = arc_length / (hysteresis_margin_factor);
     FSG_LOG_VAR(arc_length_min);
 
-    FNUM_TYPE arc_length_max =
-        arc_length * (increment_adjust_ratio * hysteresis_margin_factor);
+    FNUM_TYPE arc_length_max = arc_length * (hysteresis_margin_factor);
     FSG_LOG_VAR(arc_length_max);
 
     /*
@@ -302,6 +300,9 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
 
     FNUM_TYPE angle_increment = sg_pi_2 / (FNUM_TYPE)steps;
     FSG_LOG_VAR(angle_increment);
+
+    FNUM_TYPE increment_adjust_ratio_grow = FNUM_TYPE(1.0);
+    FNUM_TYPE increment_adjust_ratio_shrink = FNUM_TYPE(1.0);
 
     while (angle < sg_pi_2)
     {
@@ -347,8 +348,12 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
         if (segment_length > arc_length_max)
         {
             FSG_LOG_MSG("angle increment too big: " << angle_increment);
+            increment_adjust_ratio_grow = FNUM_TYPE(1.0);
+            FSG_LOG_VAR(increment_adjust_ratio_grow);
+            increment_adjust_ratio_shrink /= increment_adjust_ratio_factor;
+            FSG_LOG_VAR(increment_adjust_ratio_shrink);
             FNUM_TYPE new_angle_increment =
-                angle_increment / increment_adjust_ratio;
+                angle_increment * increment_adjust_ratio_shrink;
 
 // if (angle_increment < std::numeric_limits<FNUM_TYPE>::epsilon())
 #pragma GCC diagnostic push
@@ -370,7 +375,11 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
         if (segment_length < arc_length_min)
         {
             FSG_LOG_MSG("angle increment too small: " << angle_increment);
-            angle_increment *= increment_adjust_ratio;
+            increment_adjust_ratio_shrink = FNUM_TYPE(1.0);
+            FSG_LOG_VAR(increment_adjust_ratio_shrink);
+            increment_adjust_ratio_grow *= increment_adjust_ratio_factor;
+            FSG_LOG_VAR(increment_adjust_ratio_grow);
+            angle_increment *= increment_adjust_ratio_grow;
             FSG_LOG_MSG("increasing angle increment to " << angle_increment);
             continue;
         }
