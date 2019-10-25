@@ -321,7 +321,8 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
         std::complex<FNUM_TYPE> point_segmentend_candidate(x, y);
         FSG_LOG_VAR(point_segmentend_candidate);
 
-        FNUM_TYPE segment_length = fabs(point_segmentend_candidate - point_segmentstart);
+        FNUM_TYPE segment_length =
+            fabs(point_segmentend_candidate - point_segmentstart);
         FSG_LOG_VAR(segment_length);
 
         if ((angle < sg_pi_4) && (angle_candidate >= sg_pi_4))
@@ -332,7 +333,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
             points.push_back(point_segmentend_candidate);
 
             angle = angle_candidate;
-            point_segmentstart =  point_segmentend_candidate;
+            point_segmentstart = point_segmentend_candidate;
         }
 
         if (segment_length > arc_length_max)
@@ -359,7 +360,8 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
         }
 
         points.push_back(point_segmentend_candidate);
-        FSG_LOG_MSG("added point for angle=" << angle_candidate << " coords=" << point_segmentend_candidate);
+        FSG_LOG_MSG("added point for angle=" << angle_candidate << " coords="
+                                             << point_segmentend_candidate);
 
         angle = angle_candidate;
         point_segmentstart = point_segmentend_candidate;
