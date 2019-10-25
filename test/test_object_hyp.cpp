@@ -275,7 +275,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
     FNUM_TYPE diagonal = WITH_SUFFIX_fx(hypot)(radius_a, radius_b);
     FSG_LOG_VAR(diagonal);
 
-    FNUM_TYPE arc_length = diagonal / steps;
+    FNUM_TYPE arc_length = diagonal / steps / sg_pi_2;
     FSG_LOG_VAR(arc_length);
 
     FNUM_TYPE arc_length_min =
