@@ -379,7 +379,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
         {
             increment_adjust_ratio_shrink = FNUM_TYPE(1.0);
             increment_adjust_ratio_grow *= increment_adjust_ratio_factor;
-            FNUM_TYPE new_angle_increment = angle_increment *=
+            FNUM_TYPE new_angle_increment = angle_increment *
                 increment_adjust_ratio_grow;
             FSG_LOG_MSG("segment_length = "
                         << segment_length << " < " << arc_length_min
@@ -387,6 +387,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
                         << increment_adjust_ratio_grow
                         << " Angle increment too small: " << angle_increment
                         << " -> " << new_angle_increment);
+            angle_increment = new_angle_increment;
             continue;
         }
 
