@@ -261,6 +261,112 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
     }
 }
 
+/** Transform parameters of a superellipse into a vector of points, covering a
+ * quarter of the superellipse. */
+std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
+    FNUM_TYPE radius_a, FNUM_TYPE radius_b, FNUM_TYPE exponent, int steps = 10,
+    FNUM_TYPE angle_limit = FNUM_LITERAL(0.1),
+    FNUM_TYPE increment_adjust_ratio = FNUM_LITERAL(2),
+    FNUM_TYPE hysteresis_margin_factor = FNUM_LITERAL(2.1))
+{
+    FSG_TRACE_THIS_FUNCTION();
+    FNUM_TYPE diagonal = WITH_SUFFIX_fx(hypot)(radius_a, radius_b);
+    FSG_LOG_VAR(diagonal);
+
+    FNUM_TYPE arc_length = diagonal / steps;
+    FSG_LOG_VAR(arc_length);
+
+    FNUM_TYPE arc_length_min =
+        arc_length / (increment_adjust_ratio * hysteresis_margin_factor);
+    FSG_LOG_VAR(arc_length_min);
+
+    FNUM_TYPE arc_length_max =
+        arc_length * (increment_adjust_ratio * hysteresis_margin_factor);
+    FSG_LOG_VAR(arc_length_max);
+
+    /*
+      We try a new point, increasing or decreasing the angle as needed.
+     */
+    std::vector<std::complex<FNUM_TYPE>> points(steps);
+
+    std::complex<FNUM_TYPE> point_segmentstart =
+        radius_a; // start at rightmost x, no imaginary part
+
+    points.push_back(point_segmentstart);
+
+    FNUM_TYPE angle = 0;
+
+    FNUM_TYPE angle_increment = sg_pi_2 / (FNUM_TYPE)steps;
+    FSG_LOG_VAR(angle_increment);
+
+    while (angle < sg_pi_2)
+    {
+        FNUM_TYPE angle_candidate = angle + angle_increment;
+        FSG_LOG_VAR(angle_candidate);
+
+        if ((angle < sg_pi_4) && (angle_candidate >= sg_pi_4))
+        {
+            angle_candidate = sg_pi_4;
+            FSG_LOG_MSG("Forcing special case pi/4.");
+        }
+
+        std::complex<FNUM_TYPE> angle_candidate_i(0, angle_candidate);
+        std::complex<FNUM_TYPE> cis = std::exp(angle_candidate_i);
+
+        FNUM_TYPE x = radius_a * sym_pow(cis.real(), exponent);
+        FNUM_TYPE y = radius_b * sym_pow(cis.imag(), exponent);
+
+        std::complex<FNUM_TYPE> point_segmentend_candidate(x, y);
+        FSG_LOG_VAR(point_segmentend_candidate);
+
+        FNUM_TYPE segment_length = fabs(point_segmentend_candidate - point_segmentstart);
+        FSG_LOG_VAR(segment_length);
+
+        if ((angle < sg_pi_4) && (angle_candidate >= sg_pi_4))
+        // if (angle_candidate == sg_pi_4)
+        {
+            FSG_LOG_MSG("Experiencing special case pi/4 with point "
+                        << point_segmentend_candidate);
+            points.push_back(point_segmentend_candidate);
+
+            angle = angle_candidate;
+            point_segmentstart =  point_segmentend_candidate;
+        }
+
+        if (segment_length > arc_length_max)
+        {
+            FSG_LOG_MSG("angle increment to big: " << angle_increment);
+            angle_increment /= increment_adjust_ratio;
+            FSG_LOG_MSG("reducing angle increment to " << angle_increment);
+
+            if (angle_increment < std::numeric_limits<FNUM_TYPE>::epsilon())
+            {
+                FSG_LOG_MSG("ERROR: angle_increment too small");
+                exit(1);
+            }
+
+            continue;
+        }
+
+        if (segment_length < arc_length_min)
+        {
+            FSG_LOG_MSG("angle increment too small: " << angle_increment);
+            angle_increment *= increment_adjust_ratio;
+            FSG_LOG_MSG("increasing angle increment to " << angle_increment);
+            continue;
+        }
+
+        points.push_back(point_segmentend_candidate);
+        FSG_LOG_MSG("added point for angle=" << angle_candidate << " coords=" << point_segmentend_candidate);
+
+        angle = angle_candidate;
+        point_segmentstart = point_segmentend_candidate;
+    }
+
+    FSG_LOG_MSG("finishing, added point count: " << points.size());
+    return points;
+}
+
 FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
                                                  FNUM_TYPE radius_b,
                                                  FNUM_TYPE exponent,
@@ -393,26 +499,31 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     FSG_LOG_VAR(steps);
 
+    std::vector<std::complex<FNUM_TYPE>> superEllipseCoordsPitch =
+        superEllipseParametersToPointQuarter(1, dilatfactor_z, exp_1);
+
+    std::vector<std::complex<FNUM_TYPE>> superEllipseCoordsYaw =
+        superEllipseParametersToPointQuarter(dilatfactor_x, dilatfactor_y,
+                                             exp_2);
+
     // Pitch is eta in Biegelbauer et al.
-    for (FNUM_TYPE pitch = 0.01; pitch < sg_pi_2;
-         pitch += superEllipsoidUniformSamplingIncrement(1, dilatfactor_z,
-                                                         exp_1, pitch, steps))
+    for (auto iter_pitch = superEllipseCoordsPitch.begin();
+         iter_pitch != superEllipseCoordsPitch.end(); iter_pitch++)
     {
-        FSG_LOG_VAR(pitch);
-        FNUM_TYPE z =
-            dilatfactor_z * sym_pow(WITH_SUFFIX_fx(sin)(pitch), exp_1);
-        FNUM_TYPE cos_pitch_exp_1 = sym_pow(WITH_SUFFIX_fx(cos)(pitch), exp_1);
+        FSG_LOG_VAR(*iter_pitch);
+        std::complex<FNUM_TYPE> superEllipseCoord = *iter_pitch;
+
+        FNUM_TYPE z = superEllipseCoord.imag();
+        FNUM_TYPE cos_pitch_exp_1 = superEllipseCoord.real();
 
         // Yaw is omega in Biegelbauer et al.
-        for (FNUM_TYPE yaw = 0.01; yaw < sg_pi_2;
-             yaw += superEllipsoidUniformSamplingIncrement(
-                 dilatfactor_x, dilatfactor_y, exp_2, yaw, steps))
+        for (auto iter_yaw = superEllipseCoordsYaw.begin();
+             iter_yaw != superEllipseCoordsYaw.end(); iter_yaw++)
         {
-            FSG_LOG_VAR(yaw);
-            auto x = dilatfactor_x * sym_pow(WITH_SUFFIX_fx(cos)(yaw), exp_2) *
-                     cos_pitch_exp_1;
-            auto y = dilatfactor_y * sym_pow(WITH_SUFFIX_fx(sin)(yaw), exp_2) *
-                     cos_pitch_exp_1;
+            FSG_LOG_VAR(*iter_yaw);
+            auto xy = (*iter_yaw) * cos_pitch_exp_1;
+            auto x = xy.real();
+            auto y = xy.imag();
 
             pt.x = (PCL_POINT_COORD_TYPE)x;
             pt.y = (PCL_POINT_COORD_TYPE)y;
