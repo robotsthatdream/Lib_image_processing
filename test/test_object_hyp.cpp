@@ -327,8 +327,11 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
             fabs(point_segmentend_candidate - point_segmentstart);
         FSG_LOG_VAR(segment_length);
 
-        if ((angle < sg_pi_4) && (angle_candidate >= sg_pi_4))
-        // if (angle_candidate == sg_pi_4)
+// if ((angle < sg_pi_4) && (angle_candidate >= sg_pi_4))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        if (angle_candidate == sg_pi_4)
+#pragma GCC diagnostic pop
         {
             FSG_LOG_MSG("Experiencing special case pi/4 with point "
                         << point_segmentend_candidate);
@@ -341,16 +344,23 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
         if (segment_length > arc_length_max)
         {
             FSG_LOG_MSG("angle increment too big: " << angle_increment);
-            angle_increment /= increment_adjust_ratio;
-            FSG_LOG_MSG("reducing angle increment to " << angle_increment);
+            FNUM_TYPE new_angle_increment =
+                angle_increment / increment_adjust_ratio;
 
-            if (angle_increment < std::numeric_limits<FNUM_TYPE>::epsilon())
+// if (angle_increment < std::numeric_limits<FNUM_TYPE>::epsilon())
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+            if (new_angle_increment != 0)
+#pragma GCC diagnostic pop
             {
-                FSG_LOG_MSG("ERROR: angle_increment too small");
-                exit(1);
+                FSG_LOG_MSG("Reducing angle increment to " << new_angle_increment);
+                angle_increment = new_angle_increment;
+                continue;
             }
-
-            continue;
+            else
+            {
+                FSG_LOG_MSG("Refusing to reduce angle_increment further.");
+            }
         }
 
         if (segment_length < arc_length_min)
