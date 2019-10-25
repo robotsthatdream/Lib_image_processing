@@ -340,6 +340,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
 
             angle = angle_candidate;
             point_segmentstart = point_segmentend_candidate;
+            continue;
         }
 
         if (segment_length > arc_length_max)
