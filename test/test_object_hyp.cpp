@@ -270,6 +270,8 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
     FNUM_TYPE hysteresis_margin_factor = FNUM_LITERAL(2.1))
 {
     FSG_TRACE_THIS_FUNCTION();
+    FSG_LOG_VAR(radius_a);
+    FSG_LOG_VAR(radius_b);
     FNUM_TYPE diagonal = WITH_SUFFIX_fx(hypot)(radius_a, radius_b);
     FSG_LOG_VAR(diagonal);
 
@@ -299,7 +301,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
     FNUM_TYPE angle_increment = sg_pi_2 / (FNUM_TYPE)steps;
     FSG_LOG_VAR(angle_increment);
 
-    while (angle < sg_pi_2)
+    while ((angle + angle_increment) < sg_pi_2)
     {
         FNUM_TYPE angle_candidate = angle + angle_increment;
         FSG_LOG_VAR(angle_candidate);
