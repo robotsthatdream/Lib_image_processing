@@ -293,6 +293,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
 
     std::complex<FNUM_TYPE> point_segmentstart =
         radius_a; // start at rightmost x, no imaginary part
+    FSG_LOG_VAR(point_segmentstart);
 
     points.push_back(point_segmentstart);
 
