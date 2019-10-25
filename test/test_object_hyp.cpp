@@ -316,6 +316,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
 
         std::complex<FNUM_TYPE> angle_candidate_i(0, angle_candidate);
         std::complex<FNUM_TYPE> cis = std::exp(angle_candidate_i);
+        FSG_LOG_VAR(cis);
 
         FNUM_TYPE x = radius_a * sym_pow(cis.real(), exponent);
         FNUM_TYPE y = radius_b * sym_pow(cis.imag(), exponent);
