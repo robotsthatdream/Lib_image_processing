@@ -388,7 +388,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
        logic above.
      */
     points.pop_back();
-    
+
     FSG_LOG_VAR(angle + angle_increment);
     FSG_LOG_MSG("finishing, added point count: " << points.size());
     return points;
