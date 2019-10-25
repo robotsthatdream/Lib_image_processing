@@ -347,11 +347,8 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
 
         if (segment_length > arc_length_max)
         {
-            FSG_LOG_MSG("angle increment too big: " << angle_increment);
             increment_adjust_ratio_grow = FNUM_TYPE(1.0);
-            FSG_LOG_VAR(increment_adjust_ratio_grow);
             increment_adjust_ratio_shrink /= increment_adjust_ratio_factor;
-            FSG_LOG_VAR(increment_adjust_ratio_shrink);
             FNUM_TYPE new_angle_increment =
                 angle_increment * increment_adjust_ratio_shrink;
 
@@ -361,8 +358,14 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
             if (new_angle_increment != 0)
 #pragma GCC diagnostic pop
             {
-                FSG_LOG_MSG("Reducing angle increment to "
-                            << new_angle_increment);
+                FSG_LOG_MSG(
+                    "segment_length = "
+                    << segment_length << " > " << arc_length_max
+                    << " = arc_length_max. increment_adjust_ratio_shrink="
+                    << increment_adjust_ratio_shrink
+                    << " Angle increment too big: " << angle_increment << " -> "
+                    << new_angle_increment);
+
                 angle_increment = new_angle_increment;
                 continue;
             }
@@ -374,13 +377,16 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
 
         if (segment_length < arc_length_min)
         {
-            FSG_LOG_MSG("angle increment too small: " << angle_increment);
             increment_adjust_ratio_shrink = FNUM_TYPE(1.0);
-            FSG_LOG_VAR(increment_adjust_ratio_shrink);
             increment_adjust_ratio_grow *= increment_adjust_ratio_factor;
-            FSG_LOG_VAR(increment_adjust_ratio_grow);
-            angle_increment *= increment_adjust_ratio_grow;
-            FSG_LOG_MSG("increasing angle increment to " << angle_increment);
+            FNUM_TYPE new_angle_increment = angle_increment *=
+                increment_adjust_ratio_grow;
+            FSG_LOG_MSG("segment_length = "
+                        << segment_length << " < " << arc_length_min
+                        << " = arc_length_min. increment_adjust_ratio_grow="
+                        << increment_adjust_ratio_grow
+                        << " Angle increment too small: " << angle_increment
+                        << " -> " << new_angle_increment);
             continue;
         }
 
