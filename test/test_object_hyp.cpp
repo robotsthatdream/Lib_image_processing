@@ -294,7 +294,8 @@ FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
 
         Ref. Robert Fisher  Equal-Distance Sampling of Superellipse Models
     */
-    if (angle < 0.001) // Constant value is from Fisher's publication.
+    if (angle <
+        FNUM_LITERAL(0.001)) // Constant value is from Fisher's publication.
     {
         FSG_LOG_VAR(angle);
         FNUM_TYPE term =
@@ -308,7 +309,7 @@ FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
     {
         FNUM_TYPE pi_2_minus_angle = sg_pi_2 - angle;
         if (pi_2_minus_angle <
-            0.001) // Constant value is from Fisher's publication.
+            FNUM_LITERAL(0.001)) // Constant value is from Fisher's publication.
         {
             FSG_LOG_VAR(pi_2_minus_angle);
             FNUM_TYPE term = arc_length / radius_a -
@@ -750,9 +751,9 @@ Eigen::ComputationInfo minimizationResultToComputationInfo(
 void FloatTest()
 {
     FSG_TRACE_THIS_FUNCTION();
-    FNUM_TYPE ref = 1.0;
+    FNUM_TYPE ref = FNUM_LITERAL(1.0);
     FNUM_TYPE epsilon = ref;
-    FNUM_TYPE ref_plus_epsilon = 0;
+    FNUM_TYPE ref_plus_epsilon = FNUM_LITERAL(0);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
     do
@@ -793,7 +794,7 @@ void SuperEllipsoidTestEachDimensionForMisbehavior(
 
         if (dimension_shift >= 0)
         {
-            superellipsoidparameters.coeff(dimension_shift) = 1.5;
+            superellipsoidparameters.coeff(dimension_shift) = FNUM_LITERAL(1.5);
         }
 
         const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloud =
