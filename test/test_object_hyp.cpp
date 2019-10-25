@@ -272,6 +272,7 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
     FSG_TRACE_THIS_FUNCTION();
     FSG_LOG_VAR(radius_a);
     FSG_LOG_VAR(radius_b);
+    FSG_LOG_VAR(exponent);
     FNUM_TYPE diagonal = WITH_SUFFIX_fx(hypot)(radius_a, radius_b);
     FSG_LOG_VAR(diagonal);
 
