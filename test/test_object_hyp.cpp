@@ -266,7 +266,7 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointQuarter(
     FNUM_TYPE radius_a, FNUM_TYPE radius_b, FNUM_TYPE exponent, int steps = 10,
     FNUM_TYPE angle_limit = FNUM_LITERAL(0.1),
-    FNUM_TYPE increment_adjust_ratio_factor_factor = FNUM_LITERAL(1.0001),
+    FNUM_TYPE increment_adjust_ratio_factor_factor = FNUM_LITERAL(1.00001),
     FNUM_TYPE hysteresis_margin_factor = FNUM_LITERAL(1.4))
 {
     FSG_TRACE_THIS_FUNCTION();
