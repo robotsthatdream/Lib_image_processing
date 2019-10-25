@@ -276,7 +276,8 @@ std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointEighth(
     FNUM_TYPE arc_length = diagonal / steps_on_one_eigth / sg_pi_4;
     FSG_LOG_VAR(arc_length);
 
-    std::vector<std::complex<FNUM_TYPE>> points(steps_on_one_eigth);
+    std::vector<std::complex<FNUM_TYPE>> points(0);
+    points.reserve(steps_on_one_eigth);
 
     // for (int step = 0 ; step <= steps_on_one_eigth ; step++)
     // {
