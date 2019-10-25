@@ -263,8 +263,10 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 
 /** Transform parameters of a superellipse into a vector of points, covering a
  * quarter of the superellipse. */
-std::vector<std::complex<FNUM_TYPE>> superEllipseParametersToPointEighth(
-    FNUM_TYPE radius_a, FNUM_TYPE radius_b, FNUM_TYPE exponent, int steps_on_one_eigth = 10)
+std::vector<std::complex<FNUM_TYPE>>
+superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
+                                    FNUM_TYPE exponent,
+                                    int steps_on_one_eigth = 100)
 {
     FSG_TRACE_THIS_FUNCTION();
     FSG_LOG_VAR(radius_a);
