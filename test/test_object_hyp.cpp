@@ -559,7 +559,7 @@ struct OptimizationFunctor : pcl::Functor<FNUM_TYPE>
 //     return result;
 // }
 
-#define FUNCTOR_LOG_INSIDE 1
+#undef FUNCTOR_LOG_INSIDE
 
     /** Cost function to be minimized
      * \param[in] x the variables array
