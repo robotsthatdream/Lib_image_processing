@@ -762,11 +762,11 @@ void drawComplexVectorToImage(
             cv::Scalar color(255, 255 - idx * 255 / maxidx, 0);
             FSG_LOG_VAR(color);
 
-            cv::drawMarker(myVectorOfComplexImage, point_as_pixels_noff,
-                           cv::Scalar(0, 255, 0));
             cv::arrowedLine(myVectorOfComplexImage, center_cvpoint,
                             point_as_pixels, color, 2, cv::LINE_AA,
                             fractional_bits);
+            cv::drawMarker(myVectorOfComplexImage, point_as_pixels_noff,
+                           cv::Scalar(0, 255, 0));
         }
     }
 
