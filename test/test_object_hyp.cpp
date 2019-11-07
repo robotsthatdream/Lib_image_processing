@@ -610,7 +610,7 @@ void drawComplexVectorToImage(
 
     cv::putText(myVectorOfComplexImage, title, cvPointMine(10, 10),
                 cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 127), 2,
-                cv::LINE_AA, true);
+                cv::LINE_AA);
 
     {
         cvPointMine oldPoint(0, 0);
