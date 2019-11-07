@@ -645,9 +645,15 @@ void drawComplexVectorToImage(
     {
         const int fractional_bits = 4;
         const int fractional_factor = 1 << fractional_bits;
-        cv::Point oldPoint(0, 0);
+        // cv::Point oldPoint(0, 0);
         int walkingY = 0;
         const unsigned int maxidx = int(points.size());
+
+        int center_x =
+            int((bounds.xmax - bounds.xmin) * pixelperunit * fractional_factor);
+        int center_y =
+            int((bounds.ymax - bounds.ymin) * pixelperunit * fractional_factor);
+        cv::Point centerPoint(center_x, center_y);
 
         for (auto pt : points)
         {
@@ -656,20 +662,18 @@ void drawComplexVectorToImage(
             int y = int((pt.imag() - bounds.ymin) * pixelperunit *
                         fractional_factor);
             cv::Point newPoint(x, y);
-            FSG_LOG_VAR(oldPoint);
+            // FSG_LOG_VAR(oldPoint);
             FSG_LOG_VAR(newPoint);
 
             ++walkingY;
-            cv::Point pseudoPoint(10, xresol * walkingY / maxidx);
-            FSG_LOG_VAR(pseudoPoint);
             cv::Scalar color(255, 255 - walkingY * 255 / maxidx, 0);
             FSG_LOG_VAR(color);
 
-            cv::drawMarker(myVectorOfComplexImage, pseudoPoint, cv::Scalar(0,0,255));
-            cv::drawMarker(myVectorOfComplexImage, newPoint, cv::Scalar(0,255,0));
-            cv::arrowedLine(myVectorOfComplexImage, pseudoPoint, newPoint, color, 2,
-                        cv::LINE_AA, fractional_bits, 0.2);
-            oldPoint = newPoint;
+            cv::drawMarker(myVectorOfComplexImage, newPoint / fractional_factor,
+                           cv::Scalar(0, 255, 0));
+            cv::arrowedLine(myVectorOfComplexImage, centerPoint, newPoint,
+                            color, 2, cv::LINE_AA, fractional_bits);
+            // oldPoint = newPoint;
         }
     }
 
