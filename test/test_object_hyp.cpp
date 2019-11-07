@@ -413,7 +413,7 @@ superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
                  point != canonical_eighth_1.end(); ++point)
             {
                 points.push_back(
-                    std::complex<FNUM_TYPE>(-point->imag(), point->real()));
+                    std::complex<FNUM_TYPE>(point->imag(), -point->real()));
             }
             break;
         case 7:
