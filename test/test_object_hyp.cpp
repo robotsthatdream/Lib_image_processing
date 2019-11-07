@@ -754,6 +754,7 @@ void drawComplexVectorToImage(
         int idx = 0;
         for (auto pt : points)
         {
+            FSG_LOG_VAR(pt);
             cv::Point point_as_pixels = fctpc.fnum_to_pixel(pt);
             cv::Point point_as_pixels_noff = fctpc.fnum_to_pixel_noff(pt);
             FSG_LOG_VAR(point_as_pixels);
