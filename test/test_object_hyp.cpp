@@ -542,9 +542,23 @@ ostream &operator<<(ostream &os, const NumBounds &nb)
     return os;
 }
 
+template <class T>
+ostream &operator<<(ostream &os, const std::vector<T> &v)
+{
+    os << "[vector of size " << v.size() << ": ";
+    for (auto &t : v)
+    {
+        os << t << " ";
+    }
+    os << "]";
+    return os;
+}
+
 NumBounds vector_of_complex_bounding_box(
     const std::vector<std::complex<FNUM_TYPE>> &points)
 {
+    FSG_TRACE_THIS_FUNCTION();
+
     auto myReduceFunction = [](NumBounds bounds, std::complex<FNUM_TYPE> c) {
         NumBounds newBounds = bounds;
         FNUM_TYPE real = c.real();
@@ -565,6 +579,8 @@ NumBounds vector_of_complex_bounding_box(
         {
             bounds.ymax = imag;
         };
+        FSG_LOG_VAR(bounds);
+        FSG_LOG_VAR(newBounds);
         return newBounds;
     };
 
@@ -572,6 +588,11 @@ NumBounds vector_of_complex_bounding_box(
 
     NumBounds bounds = std::accumulate(points.rbegin(), points.rend(),
                                        zeroBounds, myReduceFunction);
+
+    FSG_LOG_MSG("Bounds of vector of size " << points.size() << " yield "
+                                            << bounds);
+    FSG_LOG_VAR(points);
+
     return bounds;
 }
 
