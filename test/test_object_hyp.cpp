@@ -262,11 +262,11 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 }
 
 /** Transform parameters of a superellipse into a vector of points, covering a
- * quarter of the superellipse. */
+ * eighth of the superellipse. */
 std::vector<std::complex<FNUM_TYPE>>
 superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
                                     FNUM_TYPE exponent,
-                                    int steps_on_one_eigth = 100)
+                                    int steps_on_one_eighth = 100)
 {
     FSG_TRACE_THIS_FUNCTION();
     FSG_LOG_VAR(radius_a);
@@ -275,16 +275,16 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     FNUM_TYPE diagonal = WITH_SUFFIX_fx(hypot)(radius_a, radius_b);
     FSG_LOG_VAR(diagonal);
 
-    FNUM_TYPE arc_length = diagonal / steps_on_one_eigth / sg_pi_4;
+    FNUM_TYPE arc_length = diagonal / steps_on_one_eighth / sg_pi_4;
     FSG_LOG_VAR(arc_length);
 
     std::vector<std::complex<FNUM_TYPE>> points(0);
-    points.reserve(steps_on_one_eigth);
+    points.reserve(steps_on_one_eighth);
 
-    // for (int step = 0 ; step <= steps_on_one_eigth ; step++)
+    // for (int step = 0 ; step <= steps_on_one_eighth ; step++)
     // {
     //     FNUM_TYPE step_ratio = ((FNUM_TYPE)step) /
-    //     ((FNUM_TYPE)steps_on_one_eigth);
+    //     ((FNUM_TYPE)steps_on_one_eighth);
     //     FNUM_TYPE y_ratio = step_ratio * WITH_SUFFIX_fx(cos)(angle);
 
     for (FNUM_TYPE y = 0; y < (radius_b * cos(sg_pi_4)); y += arc_length)
