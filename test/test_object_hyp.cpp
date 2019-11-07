@@ -595,7 +595,7 @@ void drawComplexVectorToImage(
     cv::Mat myVectorOfComplexImage = cv::Mat::zeros(xresol, yresol, CV_8UC1);
 
     cv::putText(myVectorOfComplexImage, title, cvPointMine(10, 10),
-                cv::FONT_HERSHEY_SIMPLEX, 5, cv::Scalar(255, 255, 127), 3,
+                cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 127), 2,
                 cv::LINE_AA, true);
 
     {
