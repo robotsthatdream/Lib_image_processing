@@ -632,10 +632,10 @@ void drawComplexVectorToImage(
     const FNUM_TYPE pixelperunit = std::min(pixelperunit_x, pixelperunit_y);
     FSG_LOG_VAR(pixelperunit);
 
-    cv::Mat myVectorOfComplexImage = cv::Mat::zeros(xresol, yresol, CV_8UC1);
+    cv::Mat myVectorOfComplexImage = cv::Mat::zeros(xresol, yresol, CV_8UC3);
 
     cv::putText(myVectorOfComplexImage, title, cvPointMine(10, 10),
-                cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 127), 2,
+                cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(127, 255, 255), 2,
                 cv::LINE_AA);
 
     {
@@ -650,7 +650,7 @@ void drawComplexVectorToImage(
             FSG_LOG_VAR(oldPoint);
             FSG_LOG_VAR(newPoint);
             arrowedLine(myVectorOfComplexImage, oldPoint, newPoint,
-                        cv::Scalar(255, 255, 0), 2, cv::LINE_AA, fractional_factor, 0.2);
+                        cv::Scalar(0, 127, 255), 2, cv::LINE_AA, fractional_factor, 0.2);
             oldPoint = newPoint;
         }
     }
