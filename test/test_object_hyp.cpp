@@ -654,6 +654,7 @@ void drawComplexVectorToImage(
         int center_y =
             int((bounds.ymax - bounds.ymin) * pixelperunit * fractional_factor);
         cv::Point centerPoint(center_x, center_y);
+        FSG_LOG_VAR(centerPoint);
 
         for (auto pt : points)
         {
