@@ -309,6 +309,125 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     return points;
 }
 
+std::vector<std::complex<FNUM_TYPE>>
+superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
+                              FNUM_TYPE exponent, int eighthmin, int eighthmax,
+                              int steps_on_one_eighth = 100)
+{
+    std::vector<std::complex<FNUM_TYPE>> points(0);
+
+    // Graphical representation of eighths, in trigonometric coordinates (0 on
+    // right, counter-clockwise).
+
+    // ..2.1..
+    // .3...0.
+    // -4..-1.
+    // .-3-2.
+
+    // ..2.1..
+    // .3...0.
+    // .4...7.
+    // ..5.6.
+
+    std::vector<std::complex<FNUM_TYPE>> canonical_eighth =
+        superEllipseParametersToPointEighth(radius_a, radius_b, exponent,
+                                            steps_on_one_eighth);
+
+    // Range is [eighthmin, eighthmax[ inclusive on eighthmin side, exclusive on
+    // eighthmax side.
+
+    int number_of_eighths = eighthmax - eighthmin;
+    int total_points = number_of_eighths * steps_on_one_eighth;
+    points.reserve(total_points);
+
+    FSG_LOG_MSG("Reserving space for " << total_points << " points.");
+
+    for (int eighth = eighthmin; eighth < eighthmax; eighth++)
+    {
+        switch (eighth)
+        {
+        case 0:
+            // Just copy: (x,y)
+            points.insert(std::end(points), std::begin(canonical_eighth),
+                          std::end(canonical_eighth));
+            break;
+        case 1:
+            // (y,x), backwards
+            for (auto point = canonical_eighth.rbegin();
+                 point != canonical_eighth.rend(); ++point)
+            {
+                points.push_back(
+                    std::complex<FNUM_TYPE>(point->imag(), point->real()));
+            }
+            break;
+        case 2:
+            // (-y,x)
+            for (auto point = canonical_eighth.begin();
+                 point != canonical_eighth.end(); ++point)
+            {
+                points.push_back(
+                    std::complex<FNUM_TYPE>(-point->imag(), point->real()));
+            }
+            break;
+        case 3:
+            // (-x, y), backwards
+            for (auto point = canonical_eighth.rbegin();
+                 point != canonical_eighth.rend(); ++point)
+            {
+                points.push_back(
+                    std::complex<FNUM_TYPE>(-point->real(), point->imag()));
+            }
+            break;
+        case 4:
+        case -4:
+            // (-x, -y)
+            for (auto point = canonical_eighth.begin();
+                 point != canonical_eighth.end(); ++point)
+            {
+                points.push_back(
+                    std::complex<FNUM_TYPE>(-point->real(), -point->imag()));
+            }
+            break;
+        case 5:
+        case -3:
+            // (-y, -x), backwards
+            for (auto point = canonical_eighth.rbegin();
+                 point != canonical_eighth.rend(); ++point)
+            {
+                points.push_back(
+                    std::complex<FNUM_TYPE>(-point->imag(), -point->real()));
+            }
+            break;
+        case 6:
+        case -2:
+            // (y, -x)
+            for (auto point = canonical_eighth.begin();
+                 point != canonical_eighth.end(); ++point)
+            {
+                points.push_back(
+                    std::complex<FNUM_TYPE>(-point->imag(), point->real()));
+            }
+            break;
+        case 7:
+        case -1:
+            // (x, -y), backwards
+            for (auto point = canonical_eighth.rbegin();
+                 point != canonical_eighth.rend(); ++point)
+            {
+                points.push_back(
+                    std::complex<FNUM_TYPE>(point->real(), -point->imag()));
+            }
+            break;
+        default:
+            FSG_LOG_MSG("ERROR: unknown eighth " << eighth);
+        }
+    }
+
+    FSG_LOG_MSG("Now containing " << points.size() << " points.");
+
+    return points;
+}
+
 FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
                                                  FNUM_TYPE radius_b,
                                                  FNUM_TYPE exponent,
@@ -397,6 +516,105 @@ FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
     return delta_angle;
 }
 
+typedef struct
+{
+    FNUM_TYPE xmin;
+    FNUM_TYPE ymin;
+    FNUM_TYPE xmax;
+    FNUM_TYPE ymax;
+} NumBounds;
+
+NumBounds vector_of_complex_bounding_box(
+    const std::vector<std::complex<FNUM_TYPE>> &points)
+{
+    auto myReduceFunction = [](NumBounds bounds, std::complex<FNUM_TYPE> c) {
+        NumBounds newBounds = bounds;
+        FNUM_TYPE real = c.real();
+        if (real < bounds.xmin)
+        {
+            bounds.xmin = real;
+        };
+        if (real > bounds.xmax)
+        {
+            bounds.xmax = real;
+        };
+        FNUM_TYPE imag = c.imag();
+        if (imag < bounds.ymin)
+        {
+            bounds.ymin = imag;
+        };
+        if (imag > bounds.ymax)
+        {
+            bounds.ymax = imag;
+        };
+        return newBounds;
+    };
+
+    NumBounds zeroBounds{0, 0, 0, 0};
+
+    NumBounds bounds = std::accumulate(points.rbegin(), points.rend(),
+                                       zeroBounds, myReduceFunction);
+    return bounds;
+}
+
+typedef cv::Point_<FNUM_TYPE> cvPointMine;
+
+void drawComplexVectorToImage(
+    const std::vector<std::complex<FNUM_TYPE>> &points,
+    const std::string &title)
+{
+    FSG_TRACE_THIS_FUNCTION();
+
+    const int xresol = 1024;
+    const int yresol = 1024;
+
+    NumBounds bounds = vector_of_complex_bounding_box(points);
+
+    const FNUM_TYPE width_x = (bounds.xmax - bounds.xmin);
+    const FNUM_TYPE width_y = (bounds.ymax - bounds.ymin);
+
+    FSG_LOG_VAR(width_x);
+    FSG_LOG_VAR(width_y);
+
+    const FNUM_TYPE pixelperunit_x = xresol / width_x;
+    const FNUM_TYPE pixelperunit_y = yresol / width_y;
+
+    FSG_LOG_VAR(pixelperunit_x);
+    FSG_LOG_VAR(pixelperunit_y);
+
+    const FNUM_TYPE pixelperunit = std::min(pixelperunit_x, pixelperunit_y);
+
+    cv::Mat myVectorOfComplexImage = cv::Mat::zeros(xresol, yresol, CV_8UC1);
+
+    cv::putText(myVectorOfComplexImage, title, cvPointMine(10, 10),
+                cv::FONT_HERSHEY_SIMPLEX, 5, cv::Scalar(255, 255, 127), 3,
+                cv::LINE_AA, true);
+
+    {
+        cvPointMine oldPoint(0, 0);
+        for (auto pt : points)
+        {
+            int x = int((pt.real() - bounds.xmin) * pixelperunit);
+            int y = int((pt.imag() - bounds.ymin) * pixelperunit);
+            cvPointMine newPoint(x, y);
+            arrowedLine(myVectorOfComplexImage, oldPoint, newPoint,
+                        cv::Scalar(255, 255, 0), 2, cv::LINE_AA, 4, 0.2);
+            oldPoint = newPoint;
+        }
+    }
+
+    {
+        static int pngcount = 0;
+        FSG_LOG_VAR(pngcount);
+        auto ss = std::stringstream();
+        ss << "superellipse_" << pngcount << "_" << title << ".png";
+        auto pngfilename = ss.str();
+        FSG_LOG_VAR(pngfilename);
+        imwrite(pngfilename, myVectorOfComplexImage);
+        pngcount++;
+    }
+}
+
 /** This method implements the forward transformation from a
     12-dimension model to a point cloud.
 
@@ -442,11 +660,15 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     FSG_LOG_VAR(steps);
 
     std::vector<std::complex<FNUM_TYPE>> superEllipseCoordsPitch =
-        superEllipseParametersToPointEighth(1, dilatfactor_z, exp_1);
+        superEllipseParametersToPoint(1, dilatfactor_z, exp_1, -1, 1);
+
+    drawComplexVectorToImage(superEllipseCoordsPitch, "pitch");
 
     std::vector<std::complex<FNUM_TYPE>> superEllipseCoordsYaw =
-        superEllipseParametersToPointEighth(dilatfactor_x, dilatfactor_y,
-                                            exp_2);
+        superEllipseParametersToPoint(dilatfactor_x, dilatfactor_y, exp_2, 0,
+                                      8);
+
+    drawComplexVectorToImage(superEllipseCoordsYaw, "yaw");
 
     // Pitch is eta in Biegelbauer et al.
     for (auto iter_pitch = superEllipseCoordsPitch.begin();
