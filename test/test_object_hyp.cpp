@@ -538,7 +538,7 @@ ostream &operator<<(ostream &os, const NumBounds &nb)
 {
     os << "[numbounds " << FSG_OSTREAM_FIELD(nb, xmin)
        << FSG_OSTREAM_FIELD(nb, xmax) << FSG_OSTREAM_FIELD(nb, ymin)
-       << FSG_OSTREAM_FIELD(nb, xmax) << "]";
+       << FSG_OSTREAM_FIELD(nb, ymax) << "]";
     return os;
 }
 
