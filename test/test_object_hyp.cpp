@@ -329,50 +329,58 @@ superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     // .4...7.
     // ..5.6.
 
-    std::vector<std::complex<FNUM_TYPE>> canonical_eighth =
+    std::vector<std::complex<FNUM_TYPE>> canonical_eighth_0 =
         superEllipseParametersToPointEighth(radius_a, radius_b, exponent,
                                             steps_on_one_eighth);
+    FSG_LOG_VAR(canonical_eighth_0.size());
+
+    std::vector<std::complex<FNUM_TYPE>> canonical_eighth_1 =
+        superEllipseParametersToPointEighth(radius_b, radius_a, exponent,
+                                            steps_on_one_eighth);
+    FSG_LOG_VAR(canonical_eighth_1.size());
 
     // Range is [eighthmin, eighthmax[ inclusive on eighthmin side, exclusive on
     // eighthmax side.
 
-    int number_of_eighths = eighthmax - eighthmin;
-    int total_points = number_of_eighths * steps_on_one_eighth;
-    points.reserve(total_points);
+    // int number_of_eighths = eighthmax - eighthmin;
+    // FSG_LOG_VAR(number_of_eighths);
+    // int total_points = number_of_eighths * canonical_eighth.size();
 
-    FSG_LOG_MSG("Reserving space for " << total_points << " points.");
+    // FSG_LOG_MSG("Reserving space for " << total_points << " points.");
+    // points.reserve(total_points);
 
     for (int eighth = eighthmin; eighth < eighthmax; eighth++)
     {
+        FSG_LOG_VAR(eighth);
         switch (eighth)
         {
         case 0:
-            // Just copy: (x,y)
-            points.insert(std::end(points), std::begin(canonical_eighth),
-                          std::end(canonical_eighth));
+            // Just copy from 0: (x,y)
+            points.insert(std::end(points), std::begin(canonical_eighth_0),
+                          std::end(canonical_eighth_0));
             break;
         case 1:
-            // (y,x), backwards
-            for (auto point = canonical_eighth.rbegin();
-                 point != canonical_eighth.rend(); ++point)
+            // Copy from 1 (y,x), backwards
+            for (auto point = canonical_eighth_1.rbegin();
+                 point != canonical_eighth_1.rend(); ++point)
             {
                 points.push_back(
                     std::complex<FNUM_TYPE>(point->imag(), point->real()));
             }
             break;
         case 2:
-            // (-y,x)
-            for (auto point = canonical_eighth.begin();
-                 point != canonical_eighth.end(); ++point)
+            // Copy from 1 (-y,x)
+            for (auto point = canonical_eighth_1.begin();
+                 point != canonical_eighth_1.end(); ++point)
             {
                 points.push_back(
                     std::complex<FNUM_TYPE>(-point->imag(), point->real()));
             }
             break;
         case 3:
-            // (-x, y), backwards
-            for (auto point = canonical_eighth.rbegin();
-                 point != canonical_eighth.rend(); ++point)
+            // Copy from 0 (-x, y), backwards
+            for (auto point = canonical_eighth_0.rbegin();
+                 point != canonical_eighth_0.rend(); ++point)
             {
                 points.push_back(
                     std::complex<FNUM_TYPE>(-point->real(), point->imag()));
@@ -380,9 +388,9 @@ superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
             break;
         case 4:
         case -4:
-            // (-x, -y)
-            for (auto point = canonical_eighth.begin();
-                 point != canonical_eighth.end(); ++point)
+            // Copy from 0 (-x, -y)
+            for (auto point = canonical_eighth_0.begin();
+                 point != canonical_eighth_0.end(); ++point)
             {
                 points.push_back(
                     std::complex<FNUM_TYPE>(-point->real(), -point->imag()));
@@ -390,9 +398,9 @@ superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
             break;
         case 5:
         case -3:
-            // (-y, -x), backwards
-            for (auto point = canonical_eighth.rbegin();
-                 point != canonical_eighth.rend(); ++point)
+            // Copy from 1 (-y, -x), backwards
+            for (auto point = canonical_eighth_1.rbegin();
+                 point != canonical_eighth_1.rend(); ++point)
             {
                 points.push_back(
                     std::complex<FNUM_TYPE>(-point->imag(), -point->real()));
@@ -400,9 +408,9 @@ superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
             break;
         case 6:
         case -2:
-            // (y, -x)
-            for (auto point = canonical_eighth.begin();
-                 point != canonical_eighth.end(); ++point)
+            // Copy from 1 (y, -x)
+            for (auto point = canonical_eighth_1.begin();
+                 point != canonical_eighth_1.end(); ++point)
             {
                 points.push_back(
                     std::complex<FNUM_TYPE>(-point->imag(), point->real()));
@@ -410,9 +418,9 @@ superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
             break;
         case 7:
         case -1:
-            // (x, -y), backwards
-            for (auto point = canonical_eighth.rbegin();
-                 point != canonical_eighth.rend(); ++point)
+            // Copy from 0 (x, -y), backwards
+            for (auto point = canonical_eighth_0.rbegin();
+                 point != canonical_eighth_0.rend(); ++point)
             {
                 points.push_back(
                     std::complex<FNUM_TYPE>(point->real(), -point->imag()));
