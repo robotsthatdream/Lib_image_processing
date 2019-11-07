@@ -601,6 +601,12 @@ NumBounds vector_of_complex_bounding_box(
     return bounds;
 }
 
+ostream &operator<<(ostream &os, const cv::Scalar &s)
+{
+    os << "( " << s[0] << ", " << s[1] << ", " << s[2] << ", " << s[3] << ")";
+    return os;
+}
+
 void drawComplexVectorToImage(
     const std::vector<std::complex<FNUM_TYPE>> &points,
     const std::string &title)
@@ -652,13 +658,14 @@ void drawComplexVectorToImage(
             FSG_LOG_VAR(oldPoint);
             FSG_LOG_VAR(newPoint);
 
-            walkingY += 10;
-            cv::Point pseudoPoint(10, walkingY);
+            ++walkingY;
+            cv::Point pseudoPoint(10, walkingY * 10 * fractional_factor);
             FSG_LOG_VAR(pseudoPoint);
+            cv::Scalar color(255, 255 - walkingY * 255 / int(points.size()), 0);
+            FSG_LOG_VAR(color);
 
-            arrowedLine(myVectorOfComplexImage, pseudoPoint, newPoint,
-                        cv::Scalar(0, 127, 255), 2, cv::LINE_AA,
-                        fractional_factor, 0.2);
+            arrowedLine(myVectorOfComplexImage, pseudoPoint, newPoint, color, 2,
+                        cv::LINE_AA, fractional_factor, 0.2);
             oldPoint = newPoint;
         }
     }
