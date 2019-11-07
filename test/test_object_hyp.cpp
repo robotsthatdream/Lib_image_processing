@@ -640,6 +640,8 @@ void drawComplexVectorToImage(
         const int fractional_bits = 4;
         const int fractional_factor = 1 << fractional_bits;
         cv::Point oldPoint(0, 0);
+        int walkingY = 0;
+
         for (auto pt : points)
         {
             int x = int((pt.real() - bounds.xmin) * pixelperunit *
@@ -649,8 +651,14 @@ void drawComplexVectorToImage(
             cv::Point newPoint(x, y);
             FSG_LOG_VAR(oldPoint);
             FSG_LOG_VAR(newPoint);
-            arrowedLine(myVectorOfComplexImage, oldPoint, newPoint,
-                        cv::Scalar(0, 127, 255), 2, cv::LINE_AA, fractional_factor, 0.2);
+
+            walkingY += 10;
+            cv::Point pseudoPoint(10, walkingY);
+            FSG_LOG_VAR(pseudoPoint);
+
+            arrowedLine(myVectorOfComplexImage, pseudoPoint, newPoint,
+                        cv::Scalar(0, 127, 255), 2, cv::LINE_AA,
+                        fractional_factor, 0.2);
             oldPoint = newPoint;
         }
     }
