@@ -607,14 +607,81 @@ ostream &operator<<(ostream &os, const cv::Scalar &s)
     return os;
 }
 
+struct fnum_to_pixel_ctx_t
+{
+    const FNUM_TYPE center;
+    const FNUM_TYPE pixelperunit;
+    const int pixel_at_center;
+    const unsigned int fractional_factor;
+
+    fnum_to_pixel_ctx_t(const FNUM_TYPE _center, const FNUM_TYPE _pixelperunit,
+                        const int _pixel_at_center,
+                        const unsigned int _fractional_factor)
+        : center(_center), pixelperunit(_pixelperunit),
+          pixel_at_center(_pixel_at_center),
+          fractional_factor(_fractional_factor)
+    {
+    }
+
+    int fnum_to_pixel(const FNUM_TYPE fnum) const
+    {
+        return int(((fnum - center) * pixelperunit * fractional_factor) +
+                   pixel_at_center * fractional_factor);
+    }
+
+    int fnum_to_pixel_noff(const FNUM_TYPE fnum) const
+    {
+        return int(((fnum - center) * pixelperunit) + pixel_at_center);
+    }
+};
+
+struct fnum_complex_to_pixel_ctx_t
+{
+    const fnum_to_pixel_ctx_t ctx_x;
+    const fnum_to_pixel_ctx_t ctx_y;
+
+    fnum_complex_to_pixel_ctx_t(const std::complex<FNUM_TYPE> _center,
+                                const FNUM_TYPE _pixelperunit,
+                                const std::complex<int> _pixel_at_center,
+                                const unsigned int _fractional_factor)
+        : ctx_x(_center.real(), _pixelperunit, _pixel_at_center.real(),
+                _fractional_factor),
+          ctx_y(_center.imag(), _pixelperunit, _pixel_at_center.imag(),
+                _fractional_factor)
+    {
+    }
+
+    cv::Point fnum_to_pixel(const std::complex<FNUM_TYPE> fnum) const
+    {
+        return {ctx_x.fnum_to_pixel(fnum.real()),
+                ctx_y.fnum_to_pixel(fnum.imag())};
+    }
+
+    cv::Point fnum_to_pixel_noff(const std::complex<FNUM_TYPE> fnum) const
+    {
+        return {ctx_x.fnum_to_pixel_noff(fnum.real()),
+                ctx_y.fnum_to_pixel_noff(fnum.imag())};
+    }
+
+    cv::Point fnum_to_pixel(const FNUM_TYPE x, const FNUM_TYPE y) const
+    {
+        return {ctx_x.fnum_to_pixel(x), ctx_y.fnum_to_pixel(y)};
+    }
+
+    cv::Point fnum_to_pixel_noff(const FNUM_TYPE x, const FNUM_TYPE y) const
+    {
+        return {ctx_x.fnum_to_pixel_noff(x), ctx_y.fnum_to_pixel_noff(y)};
+    }
+};
+
 void drawComplexVectorToImage(
     const std::vector<std::complex<FNUM_TYPE>> &points,
     const std::string &title)
 {
     FSG_TRACE_THIS_FUNCTION();
 
-    const int xresol = 1024;
-    const int yresol = 1024;
+    int xresol_max = 1024;
+    int yresol_max = 1024;
 
     FSG_LOG_VAR(points.size());
 
@@ -624,17 +691,31 @@ void drawComplexVectorToImage(
     const FNUM_TYPE width_x = (bounds.xmax - bounds.xmin);
     const FNUM_TYPE width_y = (bounds.ymax - bounds.ymin);
 
+    const FNUM_TYPE center_x = (bounds.xmax + bounds.xmin) / FNUM_LITERAL(2.0);
+    const FNUM_TYPE center_y = (bounds.ymax + bounds.ymin) / FNUM_LITERAL(2.0);
+    const std::complex<FNUM_TYPE> center(center_x, center_y);
+
     FSG_LOG_VAR(width_x);
     FSG_LOG_VAR(width_y);
 
-    const FNUM_TYPE pixelperunit_x = xresol / width_x;
-    const FNUM_TYPE pixelperunit_y = yresol / width_y;
+    const FNUM_TYPE pixelperunit_x = xresol_max / width_x;
+    const FNUM_TYPE pixelperunit_y = yresol_max / width_y;
 
     FSG_LOG_VAR(pixelperunit_x);
     FSG_LOG_VAR(pixelperunit_y);
 
     const FNUM_TYPE pixelperunit = std::min(pixelperunit_x, pixelperunit_y);
     FSG_LOG_VAR(pixelperunit);
+
+    const int mini_resol_x = 256;
+    const int mini_resol_y = 256;
+
+    const int xresol = std::max(mini_resol_x, int(pixelperunit * width_x));
+    const int yresol = std::max(mini_resol_y, int(pixelperunit * width_y));
+
+    const int center_x_pixel = xresol >> 1;
+    const int center_y_pixel = yresol >> 1;
+    const std::complex<int> center_pixel(center_x_pixel, center_y_pixel);
 
     cv::Mat myVectorOfComplexImage = cv::Mat::zeros(xresol, yresol, CV_8UC3);
 
@@ -645,36 +726,40 @@ void drawComplexVectorToImage(
     {
         const int fractional_bits = 4;
         const int fractional_factor = 1 << fractional_bits;
-        // cv::Point oldPoint(0, 0);
-        int walkingY = 0;
+
+        fnum_complex_to_pixel_ctx_t fctpc(center, pixelperunit, center_pixel,
+                                          fractional_factor);
+
+        const cv::Point center_cvpoint =
+            fctpc.fnum_to_pixel(center_x, center_y);
+
+        {
+            cv::Point bottom_left =
+                fctpc.fnum_to_pixel_noff(bounds.xmin, bounds.ymin);
+            cv::Point top_right =
+                fctpc.fnum_to_pixel_noff(bounds.xmax, bounds.ymax);
+
+            cv::rectangle(myVectorOfComplexImage, bottom_left, top_right,
+                          cv::Scalar(64, 64, 64), cv::FILLED);
+        }
+
         const unsigned int maxidx = int(points.size());
-
-        int center_x =
-            int((bounds.xmax - bounds.xmin) * pixelperunit * fractional_factor);
-        int center_y =
-            int((bounds.ymax - bounds.ymin) * pixelperunit * fractional_factor);
-        cv::Point centerPoint(center_x, center_y);
-        FSG_LOG_VAR(centerPoint);
-
+        int idx = 0;
         for (auto pt : points)
         {
-            int x = int((pt.real() - bounds.xmin) * pixelperunit *
-                        fractional_factor);
-            int y = int((pt.imag() - bounds.ymin) * pixelperunit *
-                        fractional_factor);
-            cv::Point newPoint(x, y);
-            // FSG_LOG_VAR(oldPoint);
-            FSG_LOG_VAR(newPoint);
+            cv::Point point_as_pixels = fctpc.fnum_to_pixel(pt);
+            cv::Point point_as_pixels_noff = fctpc.fnum_to_pixel_noff(pt);
+            FSG_LOG_VAR(point_as_pixels);
 
-            ++walkingY;
-            cv::Scalar color(255, 255 - walkingY * 255 / maxidx, 0);
+            ++idx;
+            cv::Scalar color(255, 255 - idx * 255 / maxidx, 0);
             FSG_LOG_VAR(color);
 
-            cv::drawMarker(myVectorOfComplexImage, newPoint / fractional_factor,
+            cv::drawMarker(myVectorOfComplexImage, point_as_pixels_noff,
                            cv::Scalar(0, 255, 0));
-            cv::arrowedLine(myVectorOfComplexImage, centerPoint, newPoint,
-                            color, 2, cv::LINE_AA, fractional_bits);
-            // oldPoint = newPoint;
+            cv::arrowedLine(myVectorOfComplexImage, center_cvpoint,
+                            point_as_pixels, color, 2, cv::LINE_AA,
+                            fractional_bits);
         }
     }
 
