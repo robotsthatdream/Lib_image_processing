@@ -913,7 +913,7 @@ struct cloud_reg
     const char *const name;
     bool active; // code smell: tied to a specific viewer
 
-    friend ostream &operator<<(ostream &os, const cloud_reg &sefc);
+    friend ostream &operator<<(ostream &os, const cloud_reg &cr);
 };
 
 ostream &operator<<(ostream &os, const cloud_reg &cr)
