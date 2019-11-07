@@ -594,8 +594,8 @@ NumBounds vector_of_complex_bounding_box(
     NumBounds bounds = std::accumulate(points.begin(), points.end(), zeroBounds,
                                        myReduceFunction);
 
-    // FSG_LOG_MSG("Bounds of vector of size " << points.size() << " yield "
-                                            << bounds);
+    // FSG_LOG_MSG("Bounds of vector of size " << points.size() << " yield " <<
+    // bounds);
     // FSG_LOG_VAR(points);
 
     return bounds;
@@ -690,13 +690,13 @@ void drawComplexVectorToImage(
 
     const FNUM_TYPE width_x = (bounds.xmax - bounds.xmin);
     const FNUM_TYPE width_y = (bounds.ymax - bounds.ymin);
+    FSG_LOG_VAR(width_x);
+    FSG_LOG_VAR(width_y);
 
     const FNUM_TYPE center_x = (bounds.xmax + bounds.xmin) / FNUM_LITERAL(2.0);
     const FNUM_TYPE center_y = (bounds.ymax + bounds.ymin) / FNUM_LITERAL(2.0);
     const std::complex<FNUM_TYPE> center(center_x, center_y);
-
-    FSG_LOG_VAR(width_x);
-    FSG_LOG_VAR(width_y);
+    FSG_LOG_VAR(center);
 
     const FNUM_TYPE pixelperunit_x = xresol_max / width_x;
     const FNUM_TYPE pixelperunit_y = yresol_max / width_y;
@@ -712,10 +712,13 @@ void drawComplexVectorToImage(
 
     const int xresol = std::max(mini_resol_x, int(pixelperunit * width_x));
     const int yresol = std::max(mini_resol_y, int(pixelperunit * width_y));
+    FSG_LOG_VAR(xresol);
+    FSG_LOG_VAR(yresol);
 
     const int center_x_pixel = xresol >> 1;
     const int center_y_pixel = yresol >> 1;
     const std::complex<int> center_pixel(center_x_pixel, center_y_pixel);
+    FSG_LOG_VAR(center_pixel);
 
     cv::Mat myVectorOfComplexImage = cv::Mat::zeros(xresol, yresol, CV_8UC3);
 
@@ -732,12 +735,16 @@ void drawComplexVectorToImage(
 
         const cv::Point center_cvpoint =
             fctpc.fnum_to_pixel(center_x, center_y);
+        FSG_LOG_VAR(center_cvpoint);
 
         {
             cv::Point bottom_left =
                 fctpc.fnum_to_pixel_noff(bounds.xmin, bounds.ymin);
             cv::Point top_right =
                 fctpc.fnum_to_pixel_noff(bounds.xmax, bounds.ymax);
+
+            FSG_LOG_VAR(bottom_left);
+            FSG_LOG_VAR(top_right);
 
             cv::rectangle(myVectorOfComplexImage, bottom_left, top_right,
                           cv::Scalar(64, 64, 64), cv::FILLED);
