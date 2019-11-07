@@ -643,7 +643,7 @@ void drawComplexVectorToImage(
                 cv::LINE_AA);
 
     {
-        const int fractional_bits = 0;
+        const int fractional_bits = 4;
         const int fractional_factor = 1 << fractional_bits;
         cv::Point oldPoint(0, 0);
         int walkingY = 0;
@@ -668,7 +668,7 @@ void drawComplexVectorToImage(
             cv::drawMarker(myVectorOfComplexImage, pseudoPoint, cv::Scalar(0,0,255));
             cv::drawMarker(myVectorOfComplexImage, newPoint, cv::Scalar(0,255,0));
             cv::arrowedLine(myVectorOfComplexImage, pseudoPoint, newPoint, color, 2,
-                        cv::LINE_AA, fractional_factor, 0.2);
+                        cv::LINE_AA, fractional_bits, 0.2);
             oldPoint = newPoint;
         }
     }
