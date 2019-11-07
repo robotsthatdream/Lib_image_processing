@@ -524,13 +524,23 @@ FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
     return delta_angle;
 }
 
-typedef struct
+typedef struct NumBounds
 {
     FNUM_TYPE xmin;
     FNUM_TYPE ymin;
     FNUM_TYPE xmax;
     FNUM_TYPE ymax;
+
+    friend ostream &operator<<(ostream &os, const NumBounds &nb);
 } NumBounds;
+
+ostream &operator<<(ostream &os, const NumBounds &nb)
+{
+    os << "[numbounds " << FSG_OSTREAM_FIELD(nb, xmin)
+       << FSG_OSTREAM_FIELD(nb, xmax) << FSG_OSTREAM_FIELD(nb, ymin)
+       << FSG_OSTREAM_FIELD(nb, xmax) << "]";
+    return os;
+}
 
 NumBounds vector_of_complex_bounding_box(
     const std::vector<std::complex<FNUM_TYPE>> &points)
@@ -576,7 +586,10 @@ void drawComplexVectorToImage(
     const int xresol = 1024;
     const int yresol = 1024;
 
+    FSG_LOG_VAR(points.size());
+
     NumBounds bounds = vector_of_complex_bounding_box(points);
+    FSG_LOG_VAR(bounds);
 
     const FNUM_TYPE width_x = (bounds.xmax - bounds.xmin);
     const FNUM_TYPE width_y = (bounds.ymax - bounds.ymin);
@@ -591,6 +604,7 @@ void drawComplexVectorToImage(
     FSG_LOG_VAR(pixelperunit_y);
 
     const FNUM_TYPE pixelperunit = std::min(pixelperunit_x, pixelperunit_y);
+    FSG_LOG_VAR(pixelperunit);
 
     cv::Mat myVectorOfComplexImage = cv::Mat::zeros(xresol, yresol, CV_8UC1);
 
@@ -605,6 +619,8 @@ void drawComplexVectorToImage(
             int x = int((pt.real() - bounds.xmin) * pixelperunit);
             int y = int((pt.imag() - bounds.ymin) * pixelperunit);
             cvPointMine newPoint(x, y);
+            FSG_LOG_VAR(oldPoint);
+            FSG_LOG_VAR(newPoint);
             arrowedLine(myVectorOfComplexImage, oldPoint, newPoint,
                         cv::Scalar(255, 255, 0), 2, cv::LINE_AA, 4, 0.2);
             oldPoint = newPoint;
