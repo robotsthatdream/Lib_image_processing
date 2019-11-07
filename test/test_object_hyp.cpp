@@ -643,7 +643,7 @@ void drawComplexVectorToImage(
                 cv::LINE_AA);
 
     {
-        const int fractional_bits = 4;
+        const int fractional_bits = 0;
         const int fractional_factor = 1 << fractional_bits;
         cv::Point oldPoint(0, 0);
         int walkingY = 0;
