@@ -720,7 +720,7 @@ void drawComplexVectorToImage(
     const std::complex<int> center_pixel(center_x_pixel, center_y_pixel);
     FSG_LOG_VAR(center_pixel);
 
-    cv::Mat myVectorOfComplexImage = cv::Mat::zeros(xresol, yresol, CV_8UC3);
+    cv::Mat myVectorOfComplexImage = cv::Mat::zeros(yresol, xresol, CV_8UC3);
 
     cv::putText(myVectorOfComplexImage, title, cv::Point(100, 100),
                 cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(127, 255, 255), 2,
