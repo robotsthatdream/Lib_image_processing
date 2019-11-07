@@ -601,8 +601,6 @@ NumBounds vector_of_complex_bounding_box(
     return bounds;
 }
 
-typedef cv::Point_<FNUM_TYPE> cvPointMine;
-
 void drawComplexVectorToImage(
     const std::vector<std::complex<FNUM_TYPE>> &points,
     const std::string &title)
@@ -634,19 +632,21 @@ void drawComplexVectorToImage(
 
     cv::Mat myVectorOfComplexImage = cv::Mat::zeros(xresol, yresol, CV_8UC3);
 
-    cv::putText(myVectorOfComplexImage, title, cvPointMine(10, 10),
+    cv::putText(myVectorOfComplexImage, title, cv::Point(10, 10),
                 cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(127, 255, 255), 2,
                 cv::LINE_AA);
 
     {
         const int fractional_bits = 4;
         const int fractional_factor = 1 << fractional_bits;
-        cvPointMine oldPoint(0, 0);
+        cv::Point oldPoint(0, 0);
         for (auto pt : points)
         {
-            int x = int((pt.real() - bounds.xmin) * pixelperunit * fractional_factor);
-            int y = int((pt.imag() - bounds.ymin) * pixelperunit * fractional_factor);
-            cvPointMine newPoint(x, y);
+            int x = int((pt.real() - bounds.xmin) * pixelperunit *
+                        fractional_factor);
+            int y = int((pt.imag() - bounds.ymin) * pixelperunit *
+                        fractional_factor);
+            cv::Point newPoint(x, y);
             FSG_LOG_VAR(oldPoint);
             FSG_LOG_VAR(newPoint);
             arrowedLine(myVectorOfComplexImage, oldPoint, newPoint,
