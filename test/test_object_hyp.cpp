@@ -560,34 +560,38 @@ NumBounds vector_of_complex_bounding_box(
     FSG_TRACE_THIS_FUNCTION();
 
     auto myReduceFunction = [](NumBounds bounds, std::complex<FNUM_TYPE> c) {
+        FSG_LOG_VAR(bounds);
         NumBounds newBounds = bounds;
+
         FNUM_TYPE real = c.real();
         if (real < bounds.xmin)
         {
-            bounds.xmin = real;
+            newBounds.xmin = real;
         };
         if (real > bounds.xmax)
         {
-            bounds.xmax = real;
+            newBounds.xmax = real;
         };
+
         FNUM_TYPE imag = c.imag();
         if (imag < bounds.ymin)
         {
-            bounds.ymin = imag;
+            newBounds.ymin = imag;
         };
         if (imag > bounds.ymax)
         {
-            bounds.ymax = imag;
+            newBounds.ymax = imag;
         };
-        FSG_LOG_VAR(bounds);
+
         FSG_LOG_VAR(newBounds);
+
         return newBounds;
     };
 
     NumBounds zeroBounds{0, 0, 0, 0};
 
-    NumBounds bounds = std::accumulate(points.rbegin(), points.rend(),
-                                       zeroBounds, myReduceFunction);
+    NumBounds bounds = std::accumulate(points.begin(), points.end(), zeroBounds,
+                                       myReduceFunction);
 
     FSG_LOG_MSG("Bounds of vector of size " << points.size() << " yield "
                                             << bounds);
