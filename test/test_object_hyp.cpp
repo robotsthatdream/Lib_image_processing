@@ -660,7 +660,7 @@ void drawComplexVectorToImage(
             FSG_LOG_VAR(newPoint);
 
             ++walkingY;
-            cv::Point pseudoPoint(10, walkingY * 10 * fractional_factor);
+            cv::Point pseudoPoint(10, xresol * walkingY / maxidx);
             FSG_LOG_VAR(pseudoPoint);
             cv::Scalar color(255, 255 - walkingY * 255 / maxidx, 0);
             FSG_LOG_VAR(color);
