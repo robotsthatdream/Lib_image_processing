@@ -647,6 +647,7 @@ void drawComplexVectorToImage(
         const int fractional_factor = 1 << fractional_bits;
         cv::Point oldPoint(0, 0);
         int walkingY = 0;
+        const unsigned int maxidx = int(points.size());
 
         for (auto pt : points)
         {
@@ -661,7 +662,7 @@ void drawComplexVectorToImage(
             ++walkingY;
             cv::Point pseudoPoint(10, walkingY * 10 * fractional_factor);
             FSG_LOG_VAR(pseudoPoint);
-            cv::Scalar color(255, 255 - walkingY * 255 / int(points.size()), 0);
+            cv::Scalar color(255, 255 - walkingY * 255 / maxidx, 0);
             FSG_LOG_VAR(color);
 
             cv::drawMarker(myVectorOfComplexImage, pseudoPoint, cv::Scalar(0,0,255));
