@@ -559,7 +559,8 @@ NumBounds vector_of_complex_bounding_box(
 {
     FSG_TRACE_THIS_FUNCTION();
 
-    auto myReduceFunction = [](NumBounds bounds, std::complex<FNUM_TYPE> c) {
+    auto myReduceFunction = [](const NumBounds &bounds,
+                               const std::complex<FNUM_TYPE> &c) {
         FSG_LOG_VAR(bounds);
         NumBounds newBounds = bounds;
 
