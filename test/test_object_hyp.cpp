@@ -664,7 +664,9 @@ void drawComplexVectorToImage(
             cv::Scalar color(255, 255 - walkingY * 255 / int(points.size()), 0);
             FSG_LOG_VAR(color);
 
-            arrowedLine(myVectorOfComplexImage, pseudoPoint, newPoint, color, 2,
+            cv::drawMarker(myVectorOfComplexImage, pseudoPoint, cv::Scalar(0,0,255));
+            cv::drawMarker(myVectorOfComplexImage, newPoint, cv::Scalar(0,255,0));
+            cv::arrowedLine(myVectorOfComplexImage, pseudoPoint, newPoint, color, 2,
                         cv::LINE_AA, fractional_factor, 0.2);
             oldPoint = newPoint;
         }
