@@ -2322,9 +2322,21 @@ void SuperEllipsoidTest()
         pcl::PointCloud<pcl::PointXYZ>::Ptr sphere_points =
             just_a_sphere.toPointCloud(10);
 
-        FSG_LOG_VAR(sphere_points);
+        fsg::SuperEllipsoidParameters octahedron =
+            fsg::SuperEllipsoidParameters::Zero();
+        octahedron.set_rad_a(1.0);
+        octahedron.set_rad_b(1.0);
+        octahedron.set_rad_c(1.0);
+        octahedron.set_exp_1(2.0);
+        octahedron.set_exp_2(2.0);
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr diamond_points =
+            octahedron.toPointCloud(10);
+
+        // FSG_LOG_VAR(sphere_points);
 
         SuperEllipsoidTestEachDimensionForMisbehavior(just_a_sphere);
+        SuperEllipsoidTestEachDimensionForMisbehavior(octahedron);
 
         exit(0);
     }
