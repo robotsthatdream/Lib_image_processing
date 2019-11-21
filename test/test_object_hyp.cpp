@@ -289,7 +289,7 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     // x^2e / a + y^2e / b = 1
 
     static const FNUM_TYPE sin_cutoffpoint =
-        WITH_SUFFIX_fx(sqrt)(FNUM_TYPE(1.0) / FNUM_TYPE(2.0));
+        WITH_SUFFIX_fx(sqrt)(FNUM_TYPE(1.0) / sg_2);
     static const FNUM_TYPE sin_power_epsilon__cutoffpoint =
         sym_pow(sin_cutoffpoint, exponent);
 
@@ -300,11 +300,11 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     // We're sure that we never get close to the cutoff point.
 
     const FNUM_TYPE sin_power_epsilon__halfsegment =
-        sin_power_epsilon__cutoffpoint / (steps_on_one_eighth * FNUM_TYPE(2.0));
+        sin_power_epsilon__cutoffpoint / (steps_on_one_eighth * sg_2);
     const FNUM_TYPE sin_power_epsilon__initialValue =
         sin_power_epsilon__halfsegment;
     const FNUM_TYPE sin_power_epsilon__step =
-        FNUM_TYPE(2.0) * sin_power_epsilon__halfsegment;
+        sg_2 * sin_power_epsilon__halfsegment;
 
     for (FNUM_TYPE sin_power_epsilon = sin_power_epsilon__initialValue;
          sin_power_epsilon < sin_power_epsilon__cutoffpoint;
