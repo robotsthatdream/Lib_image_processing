@@ -917,13 +917,13 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     FSG_LOG_VAR(steps);
 
     std::vector<std::complex<FNUM_TYPE>> superEllipseCoordsPitch =
-        superEllipseParametersToPoint(1, dilatfactor_z, exp_1, -2, 2);
+        superEllipseParametersToPoint(1, dilatfactor_z, exp_1, -2, 2, steps);
 
     drawComplexVectorToImage(superEllipseCoordsPitch, "pitch");
 
     std::vector<std::complex<FNUM_TYPE>> superEllipseCoordsYaw =
         superEllipseParametersToPoint(dilatfactor_x, dilatfactor_y, exp_2, 0,
-                                      8);
+                                      8, steps);
 
     drawComplexVectorToImage(superEllipseCoordsYaw, "yaw");
 
