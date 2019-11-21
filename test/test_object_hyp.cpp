@@ -297,7 +297,7 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
         WITH_SUFFIX_fx(sqrt)(FNUM_TYPE(1.0) / sg_2);
     FSG_LOG_VAR(sin_cutoffpoint);
     static const FNUM_TYPE sin_power_one_over_epsilon__cutoffpoint =
-        sym_pow(sin_cutoffpoint, one_over_epsilon);
+        WITH_SUFFIX_fx(pow)(sin_cutoffpoint, one_over_epsilon);
     FSG_LOG_VAR(sin_power_one_over_epsilon__cutoffpoint);
 
     // How to compute steps?
@@ -320,14 +320,14 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
          sin_power_one_over_epsilon += sin_power_one_over_epsilon__step)
     {
         FNUM_TYPE sin_squared =
-            sym_pow(sin_power_one_over_epsilon, sg_2 * epsilon);
+            WITH_SUFFIX_fx(pow)(sin_power_one_over_epsilon, sg_2 * epsilon);
 
         // cos = sqrt(1 - sin^2)
 
         FNUM_TYPE cos_squared = (sg_1 - sin_squared);
 
         FNUM_TYPE cos_power_one_over_epsilon =
-            sym_pow(cos_squared, one_over_epsilon / sg_2);
+            WITH_SUFFIX_fx(pow)(cos_squared, one_over_epsilon / sg_2);
         FNUM_TYPE x = radius_a * cos_power_one_over_epsilon;
         FNUM_TYPE y = radius_b * sin_power_one_over_epsilon;
 
