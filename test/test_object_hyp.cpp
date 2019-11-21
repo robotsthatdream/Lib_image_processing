@@ -266,13 +266,13 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
  * eighth of the superellipse. */
 std::vector<std::complex<FNUM_TYPE>>
 superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
-                                    FNUM_TYPE exponent,
+                                    FNUM_TYPE epsilon,
                                     int steps_on_one_eighth = 10)
 {
     FSG_TRACE_THIS_FUNCTION();
     FSG_LOG_VAR(radius_a);
     FSG_LOG_VAR(radius_b);
-    FSG_LOG_VAR(exponent);
+    FSG_LOG_VAR(epsilon);
     FSG_LOG_VAR(steps_on_one_eighth);
 
     std::vector<std::complex<FNUM_TYPE>> points(0);
@@ -286,7 +286,7 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     static const FNUM_TYPE sin_cutoffpoint =
         WITH_SUFFIX_fx(sqrt)(FNUM_TYPE(1.0) / sg_2);
     static const FNUM_TYPE sin_power_epsilon__cutoffpoint =
-        sym_pow(sin_cutoffpoint, exponent);
+        sym_pow(sin_cutoffpoint, epsilon);
 
     // Example : we want 3 points. Let's define them as the middle of segments.
     // Thus we define a halfsegment as total_range / ( 2 * 3).
@@ -305,13 +305,13 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
          sin_power_epsilon < sin_power_epsilon__cutoffpoint;
          sin_power_epsilon += sin_power_epsilon__step)
     {
-        FNUM_TYPE sin_ = sym_pow(sin_power_epsilon, FNUM_TYPE(1.0) / exponent);
+        FNUM_TYPE sin_ = sym_pow(sin_power_epsilon, FNUM_TYPE(1.0) / epsilon);
 
         // cos = sqrt(1 - sin^2)
 
         FNUM_TYPE cos_ = WITH_SUFFIX_fx(sqrt)(sg_1 - (sin_ * sin_));
 
-        FNUM_TYPE cos_power_epsilon = sym_pow(cos_, exponent);
+        FNUM_TYPE cos_power_epsilon = sym_pow(cos_, epsilon);
         FNUM_TYPE x = radius_a * cos_power_epsilon;
         FNUM_TYPE y = radius_b * sin_power_epsilon;
 
