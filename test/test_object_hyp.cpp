@@ -798,18 +798,23 @@ void drawComplexVectorToImage(
                           cv::Scalar(64, 64, 64), cv::FILLED);
         }
 
+        static const int extremely_heavy_log = false;
+
         const unsigned int maxidx = int(points.size());
         int idx = 0;
         for (auto pt : points)
         {
-            FSG_LOG_VAR(pt);
             cv::Point point_as_pixels = fctpc.fnum_to_pixel(pt);
             cv::Point point_as_pixels_noff = fctpc.fnum_to_pixel_noff(pt);
-            FSG_LOG_VAR(point_as_pixels);
 
             ++idx;
             cv::Scalar color(255, 255 - idx * 255 / maxidx, 0);
-            FSG_LOG_VAR(color);
+            if (extremely_heavy_log)
+            {
+                FSG_LOG_VAR(pt);
+                FSG_LOG_VAR(point_as_pixels);
+                FSG_LOG_VAR(color);
+            }
 
             cv::arrowedLine(myVectorOfComplexImage, center_cvpoint,
                             point_as_pixels, color, 2, cv::LINE_AA,
