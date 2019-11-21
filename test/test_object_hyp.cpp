@@ -521,8 +521,9 @@ FNUM_TYPE superEllipsoidUniformSamplingIncrement(FNUM_TYPE radius_a,
 
     FNUM_TYPE delta_angle =
         arc_length / exponent *
-        sqrt((cos_2 * sin_2) / (radius_a * radius_a * cos_2e * sin_4 +
-                                radius_b * radius_b * sin_2e * cos_4));
+        WITH_SUFFIX_fx(sqrt)((cos_2 * sin_2) /
+                             (radius_a * radius_a * cos_2e * sin_4 +
+                              radius_b * radius_b * sin_2e * cos_4));
     FSG_LOG_VAR(delta_angle);
 
     return delta_angle;
