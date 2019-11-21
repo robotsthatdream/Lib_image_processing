@@ -363,11 +363,16 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
         std::complex<FNUM_TYPE> point(x, y);
         points.push_back(point);
 
-        FSG_LOG_MSG(FSG_OSTREAM_VAR(sin_squared)
-                    << "\t" << FSG_OSTREAM_VAR(cos_squared) << "\t"
-                    << FSG_OSTREAM_VAR(sin_power_epsilon) << "\t"
-                    << FSG_OSTREAM_VAR(cos_power_epsilon) << "\t"
-                    << FSG_OSTREAM_VAR(y) << "\t" << FSG_OSTREAM_VAR(x));
+        static const int extremely_heavy_log = false;
+
+        if (extremely_heavy_log)
+        {
+            FSG_LOG_MSG(FSG_OSTREAM_VAR(sin_squared)
+                        << "\t" << FSG_OSTREAM_VAR(cos_squared) << "\t"
+                        << FSG_OSTREAM_VAR(sin_power_epsilon) << "\t"
+                        << FSG_OSTREAM_VAR(cos_power_epsilon) << "\t"
+                        << FSG_OSTREAM_VAR(y) << "\t" << FSG_OSTREAM_VAR(x));
+        }
     }
 
     FSG_LOG_MSG("finishing, added point count: " << points.size());
@@ -931,7 +936,12 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     for (auto iter_pitch = superEllipseCoordsPitch.begin();
          iter_pitch != superEllipseCoordsPitch.end(); iter_pitch++)
     {
-        FSG_LOG_VAR(*iter_pitch);
+        static const int extremely_heavy_log = false;
+
+        if (extremely_heavy_log)
+        {
+            FSG_LOG_VAR(*iter_pitch);
+        }
         std::complex<FNUM_TYPE> superEllipseCoord = *iter_pitch;
 
         FNUM_TYPE z = superEllipseCoord.imag();
