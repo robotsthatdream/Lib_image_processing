@@ -208,7 +208,8 @@ FNUM_TYPE *SuperEllipsoidParameters::coeffData()
     return (this->coeff.data());
 }
 
-void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
+void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+                          std::string label)
 {
     FSG_TRACE_THIS_FUNCTION();
     pcl::PointXYZ minPt, maxPt;
@@ -253,7 +254,7 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
         static int pngcount = 0;
         FSG_LOG_VAR(pngcount);
         auto ss = std::stringstream();
-        ss << "image_" << pngcount << ".png";
+        ss << "image_" << label << "_" << pngcount << ".png";
         auto pngfilename = ss.str();
         FSG_LOG_VAR(pngfilename);
         imwrite(pngfilename, myCloudImage);
@@ -913,7 +914,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     FSG_LOG_VAR(cloud_step1->points.size());
 
-    drawPointCloudByHand(cloud_step1);
+    drawPointCloudByHand(cloud_step1, "axisaligned");
 
     // Next rotate the point cloud.
 
@@ -947,7 +948,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
         }
     }
 
-    drawPointCloudByHand(cloud_final);
+    drawPointCloudByHand(cloud_final, "rotated");
 
     return cloud_final;
 }
