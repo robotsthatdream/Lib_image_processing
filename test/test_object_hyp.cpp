@@ -2277,6 +2277,23 @@ void SuperEllipsoidTest()
     // SuperEllipsoidTestSlicebetweenPoints(-1, 1);
 
     {
+        fsg::SuperEllipsoidParameters just_a_sphere =
+            fsg::SuperEllipsoidParameters::Zero();
+        just_a_sphere.set_rad_a(1.0);
+        just_a_sphere.set_rad_b(1.0);
+        just_a_sphere.set_rad_c(1.0);
+        just_a_sphere.set_exp_1(1.0);
+        just_a_sphere.set_exp_2(1.0);
+
+        FSG_LOG_VAR(just_a_sphere);
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr sphere_points =
+            just_a_sphere.toPointCloud(10);
+
+        FSG_LOG_VAR(sphere_points);
+    }
+
+    {
         fsg::SuperEllipsoidParameters superellipsoidparameters_prototype =
             fsg::SuperEllipsoidParameters::Default();
         SuperEllipsoidTestEachDimensionForMisbehavior(
