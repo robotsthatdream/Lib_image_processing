@@ -927,8 +927,8 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     drawComplexVectorToImage(superEllipseCoordsPitch, "pitch");
 
     std::vector<std::complex<FNUM_TYPE>> superEllipseCoordsYaw =
-        superEllipseParametersToPoint(dilatfactor_x, dilatfactor_y, exp_2, 0,
-                                      8, steps);
+        superEllipseParametersToPoint(dilatfactor_x, dilatfactor_y, exp_2, 0, 8,
+                                      steps);
 
     drawComplexVectorToImage(superEllipseCoordsYaw, "yaw");
 
