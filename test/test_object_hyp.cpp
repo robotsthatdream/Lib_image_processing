@@ -152,6 +152,8 @@ struct SuperEllipsoidParameters
     void setFromVector(VECTORX vector) { coeff = vector; };
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr toPointCloud(int steps);
+
+    std::string name;
 };
 
 constexpr int SuperEllipsoidParameters::fieldCount;
@@ -943,7 +945,11 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     FSG_LOG_VAR(cloud_axisaligned->points.size());
 
-    drawPointCloudByHand(cloud_axisaligned, "axisaligned");
+    {
+        std::stringstream ss;
+        ss << this->name << "_axisaligned";
+        drawPointCloudByHand(cloud_axisaligned, ss.str());
+    }
 
     // Next rotate the point cloud.
 
@@ -977,7 +983,11 @@ SuperEllipsoidParameters::toPointCloud(int steps)
         }
     }
 
-    drawPointCloudByHand(cloud_final, "rotated");
+    {
+        std::stringstream ss;
+        ss << this->name << "_rotated";
+        drawPointCloudByHand(cloud_final, ss.str());
+    }
 
     return cloud_final;
 }
