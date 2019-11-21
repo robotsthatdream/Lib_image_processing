@@ -2352,7 +2352,7 @@ void SuperEllipsoidTest()
 
     {
 
-        std::vector<FNUM_TYPE> stops = { 1 }; // 0.1, 0.5, 1, 2, 3};
+        std::vector<FNUM_TYPE> stops = { 0.1, 0.5, 1, 2, 3};
 
         for (const auto &exp_1 : stops)
         {
