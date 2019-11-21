@@ -338,9 +338,22 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     return points;
 }
 
+/* Warning: epsilon is not an exponent. It's not 2 for a
+ * circle. Epsilon here is defined per the
+ * superellipsoids/superquadrics context:
+ *
+ * 1 for a circle / sphere / ellipse
+ *
+ * 2 for a diamond
+ *
+ * ->0 to tend to fill the square.
+ *
+ * You can think of epsilon like an "external pressure", where
+ * internal pressure it 2.
+ */
 std::vector<std::complex<FNUM_TYPE>>
 superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
-                              FNUM_TYPE exponent, int eighthmin, int eighthmax,
+                              FNUM_TYPE epsilon, int eighthmin, int eighthmax,
                               int steps_on_one_eighth = 10)
 {
     FSG_TRACE_THIS_FUNCTION();
@@ -362,12 +375,12 @@ superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     // ..5.6.
 
     std::vector<std::complex<FNUM_TYPE>> canonical_eighth_0 =
-        superEllipseParametersToPointEighth(radius_a, radius_b, exponent,
+        superEllipseParametersToPointEighth(radius_a, radius_b, epsilon,
                                             steps_on_one_eighth);
     FSG_LOG_VAR(canonical_eighth_0.size());
 
     std::vector<std::complex<FNUM_TYPE>> canonical_eighth_1 =
-        superEllipseParametersToPointEighth(radius_b, radius_a, exponent,
+        superEllipseParametersToPointEighth(radius_b, radius_a, epsilon,
                                             steps_on_one_eighth);
     FSG_LOG_VAR(canonical_eighth_1.size());
 
