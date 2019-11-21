@@ -274,11 +274,6 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     FSG_LOG_VAR(radius_b);
     FSG_LOG_VAR(exponent);
     FSG_LOG_VAR(steps_on_one_eighth);
-    FNUM_TYPE diagonal = WITH_SUFFIX_fx(hypot)(radius_a, radius_b);
-    FSG_LOG_VAR(diagonal);
-
-    FNUM_TYPE arc_length = diagonal / steps_on_one_eighth / sg_pi_4;
-    FSG_LOG_VAR(arc_length);
 
     std::vector<std::complex<FNUM_TYPE>> points(0);
     points.reserve(steps_on_one_eighth);
