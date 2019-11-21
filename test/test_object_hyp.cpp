@@ -2352,13 +2352,12 @@ void SuperEllipsoidTest()
 
     {
 
-        std::array<FNUM_TYPE, 5> stops = { 1 }; // 0.1, 0.5, 1, 2, 3};
+        std::vector<FNUM_TYPE> stops = { 1 }; // 0.1, 0.5, 1, 2, 3};
 
-        for (auto &exp_1 : stops)
+        for (const auto &exp_1 : stops)
         {
-            for (auto &exp_2 : stops)
+            for (const auto &exp_2 : stops)
             {
-
                 fsg::SuperEllipsoidParameters my_super_quadric =
                     fsg::SuperEllipsoidParameters::Zero();
                 my_super_quadric.set_rad_a(1.0);
