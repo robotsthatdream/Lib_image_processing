@@ -291,6 +291,7 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     // y/b = sin
 
     FNUM_TYPE one_over_epsilon = sg_1 / epsilon;
+    FSG_LOG_VAR(one_over_epsilon);
 
     static const FNUM_TYPE sin_cutoffpoint =
         WITH_SUFFIX_fx(sqrt)(FNUM_TYPE(1.0) / sg_2);
