@@ -2324,6 +2324,11 @@ void SuperEllipsoidTest()
             just_a_sphere.toPointCloud(10);
 
         FSG_LOG_VAR(sphere_points);
+        
+        SuperEllipsoidTestEachDimensionForMisbehavior(
+            just_a_sphere);
+
+        exit (0);
     }
 
     {
