@@ -235,8 +235,8 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
     FSG_LOG_VAR(width_x);
     FSG_LOG_VAR(width_y);
 
-    const float pixelperunit_x = xresol / width_x;
-    const float pixelperunit_y = yresol / width_y;
+    const float pixelperunit_x = (xresol-1) / width_x;
+    const float pixelperunit_y = (yresol-1) / width_y;
 
     FSG_LOG_VAR(pixelperunit_x);
     FSG_LOG_VAR(pixelperunit_y);
