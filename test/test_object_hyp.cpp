@@ -288,7 +288,7 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     //     ((FNUM_TYPE)steps_on_one_eighth);
     //     FNUM_TYPE y_ratio = step_ratio * WITH_SUFFIX_fx(cos)(angle);
 
-    for (FNUM_TYPE y = 0; y < (radius_b * cos(sg_pi_4)); y += arc_length)
+    for (FNUM_TYPE y = 0; y <= (radius_b * cos(sg_pi_4)); y += arc_length)
     {
         FNUM_TYPE yratio = y / radius_b;
         FNUM_TYPE sin_to_invert = sym_pow(yratio, FNUM_TYPE(1.0) / exponent);
