@@ -390,7 +390,7 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
 std::vector<std::complex<FNUM_TYPE>>
 superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
                               FNUM_TYPE epsilon, int eighthmin, int eighthmax,
-                              int steps_on_one_eighth = 10)
+                              int steps_on_one_eighth = 5)
 {
     FSG_TRACE_THIS_FUNCTION();
     std::vector<std::complex<FNUM_TYPE>> points(0);
