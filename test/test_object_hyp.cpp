@@ -308,8 +308,7 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
 
         // cos = sqrt(1 - sin^2)
 
-        FNUM_TYPE cos_ =
-            WITH_SUFFIX_fx(sqrt)(sg_1 - (sin_ * sin_));
+        FNUM_TYPE cos_ = WITH_SUFFIX_fx(sqrt)(sg_1 - (sin_ * sin_));
 
         FNUM_TYPE cos_power_epsilon = sym_pow(cos_, exponent);
         FNUM_TYPE x = radius_a * cos_power_epsilon;
@@ -318,13 +317,10 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
         std::complex<FNUM_TYPE> point(x, y);
         points.push_back(point);
 
-        FSG_LOG_MSG(
-            FSG_OSTREAM_VAR(iy) << "\t" <<
-            FSG_OSTREAM_VAR(sin_) << "\t" <<
-            FSG_OSTREAM_VAR(cos_) << "\t" <<
-            FSG_OSTREAM_VAR(y) << "\t" <<
-            FSG_OSTREAM_VAR(x)
-            );
+        FSG_LOG_MSG(FSG_OSTREAM_VAR(iy) << "\t" << FSG_OSTREAM_VAR(sin_) << "\t"
+                                        << FSG_OSTREAM_VAR(cos_) << "\t"
+                                        << FSG_OSTREAM_VAR(y) << "\t"
+                                        << FSG_OSTREAM_VAR(x));
     }
 
     FSG_LOG_MSG("finishing, added point count: " << points.size());
@@ -2325,11 +2321,10 @@ void SuperEllipsoidTest()
             just_a_sphere.toPointCloud(10);
 
         FSG_LOG_VAR(sphere_points);
-        
-        SuperEllipsoidTestEachDimensionForMisbehavior(
-            just_a_sphere);
 
-        exit (0);
+        SuperEllipsoidTestEachDimensionForMisbehavior(just_a_sphere);
+
+        exit(0);
     }
 
     {
