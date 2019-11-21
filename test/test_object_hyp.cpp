@@ -2394,6 +2394,9 @@ void SuperEllipsoidTest()
                 my_super_quadric.set_rad_c(1.0);
                 my_super_quadric.set_exp_1(exp_1);
                 my_super_quadric.set_exp_2(exp_2);
+                my_super_quadric.set_rot_yaw(sg_pi_two / 12);
+                my_super_quadric.set_rot_pitch(sg_pi_two / 6);
+                //my_super_quadric.set_rot_roll(sg_pi_two / 6);
 
                 {
                     std::stringstream ss;
