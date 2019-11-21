@@ -279,49 +279,58 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     points.reserve(steps_on_one_eighth);
 
     // ellipse equation:
-    // x^2e / a + y^2e / b = 1
+    // (x/a)^2 + (y/b)^2 / b = 1
+    // x/a = cos
+    // y/b = sin
 
-    // x^2e / a + y^2e / b = 1
+    // superellipse equation
+    // (x/a)^(2/epsilon) + (y/b)^(2/epsilon) = 1
+    // x/a = cos
+    // y/b = sin
+
+    FNUM_TYPE two_over_epsilon = sg_2 / epsilon;
 
     static const FNUM_TYPE sin_cutoffpoint =
         WITH_SUFFIX_fx(sqrt)(FNUM_TYPE(1.0) / sg_2);
-    static const FNUM_TYPE sin_power_epsilon__cutoffpoint =
-        sym_pow(sin_cutoffpoint, epsilon);
+    static const FNUM_TYPE sin_power_two_over_epsilon__cutoffpoint =
+        sym_pow(sin_cutoffpoint, two_over_epsilon);
 
+    // How to compute steps?
     // Example : we want 3 points. Let's define them as the middle of segments.
     // Thus we define a halfsegment as total_range / ( 2 * 3).
     // We start at the middle of a segment, thus a halfsegment.
     // Each time we advance one step = 2 halfsegment.
     // We're sure that we never get close to the cutoff point.
 
-    const FNUM_TYPE sin_power_epsilon__halfsegment =
-        sin_power_epsilon__cutoffpoint / (steps_on_one_eighth * sg_2);
-    const FNUM_TYPE sin_power_epsilon__initialValue =
-        sin_power_epsilon__halfsegment;
-    const FNUM_TYPE sin_power_epsilon__step =
-        sg_2 * sin_power_epsilon__halfsegment;
+    const FNUM_TYPE sin_power_two_over_epsilon__halfsegment =
+        sin_power_two_over_epsilon__cutoffpoint / (steps_on_one_eighth * sg_2);
+    const FNUM_TYPE sin_power_two_over_epsilon__initialValue =
+        sin_power_two_over_epsilon__halfsegment;
+    const FNUM_TYPE sin_power_two_over_epsilon__step =
+        sg_2 * sin_power_two_over_epsilon__halfsegment;
 
-    for (FNUM_TYPE sin_power_epsilon = sin_power_epsilon__initialValue;
-         sin_power_epsilon < sin_power_epsilon__cutoffpoint;
-         sin_power_epsilon += sin_power_epsilon__step)
+    for (FNUM_TYPE sin_power_two_over_epsilon =
+             sin_power_two_over_epsilon__initialValue;
+         sin_power_two_over_epsilon < sin_power_two_over_epsilon__cutoffpoint;
+         sin_power_two_over_epsilon += sin_power_two_over_epsilon__step)
     {
-        FNUM_TYPE sin_ = sym_pow(sin_power_epsilon, FNUM_TYPE(1.0) / epsilon);
+        FNUM_TYPE sin_ = sym_pow(sin_power_two_over_epsilon, epsilon / sg_2);
 
         // cos = sqrt(1 - sin^2)
 
         FNUM_TYPE cos_ = WITH_SUFFIX_fx(sqrt)(sg_1 - (sin_ * sin_));
 
-        FNUM_TYPE cos_power_epsilon = sym_pow(cos_, epsilon);
-        FNUM_TYPE x = radius_a * cos_power_epsilon;
-        FNUM_TYPE y = radius_b * sin_power_epsilon;
+        FNUM_TYPE cos_power_two_over_epsilon = sym_pow(cos_, two_over_epsilon);
+        FNUM_TYPE x = radius_a * cos_power_two_over_epsilon;
+        FNUM_TYPE y = radius_b * sin_power_two_over_epsilon;
 
         std::complex<FNUM_TYPE> point(x, y);
         points.push_back(point);
 
         FSG_LOG_MSG(FSG_OSTREAM_VAR(sin_)
                     << "\t" << FSG_OSTREAM_VAR(cos_) << "\t"
-                    << FSG_OSTREAM_VAR(sin_power_epsilon) << "\t"
-                    << FSG_OSTREAM_VAR(cos_power_epsilon) << "\t"
+                    << FSG_OSTREAM_VAR(sin_power_two_over_epsilon) << "\t"
+                    << FSG_OSTREAM_VAR(cos_power_two_over_epsilon) << "\t"
                     << FSG_OSTREAM_VAR(y) << "\t" << FSG_OSTREAM_VAR(x));
     }
 
