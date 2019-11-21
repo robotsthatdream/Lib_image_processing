@@ -801,6 +801,8 @@ SuperEllipsoidParameters::toPointCloud(int steps)
     FSG_LOG_MSG("Creating a point cloud with " << steps << " steps for "
                                                << *this);
 
+    static const int extremely_heavy_log = false;
+    
     // We start by creating a superquadric at world center, not rotated.
 
     // Same conventions as in fsg::matrixrotationangles, which in
@@ -855,7 +857,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
         for (auto iter_yaw = superEllipseCoordsYaw.begin();
              iter_yaw != superEllipseCoordsYaw.end(); iter_yaw++)
         {
-            FSG_LOG_VAR(*iter_yaw);
+            if (extremely_heavy_log) { FSG_LOG_VAR(*iter_yaw); }
             auto xy = (*iter_yaw) * cos_pitch_exp_1;
             auto x = xy.real();
             auto y = xy.imag();
@@ -863,7 +865,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
             pt.x = (PCL_POINT_COORD_TYPE)x;
             pt.y = (PCL_POINT_COORD_TYPE)y;
             pt.z = (PCL_POINT_COORD_TYPE)z;
-            FSG_LOG_VAR(pt);
+            if (extremely_heavy_log) { FSG_LOG_VAR(pt); }
 
             if ((x * x + y * y + z * z) < FNUM_LITERAL(20.0))
             {
@@ -909,9 +911,11 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     FSG_LOG_VAR(cloud_final->points.size());
 
-    for (auto pt : *cloud_final)
-    {
-        FSG_LOG_VAR(pt);
+    if (extremely_heavy_log) { 
+        for (auto pt : *cloud_final)
+        {
+            FSG_LOG_VAR(pt);
+        }
     }
 
     drawPointCloudByHand(cloud_final);
