@@ -292,8 +292,10 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
 
     static const FNUM_TYPE sin_cutoffpoint =
         WITH_SUFFIX_fx(sqrt)(FNUM_TYPE(1.0) / sg_2);
+    FSG_LOG_VAR(sin_cutoffpoint);
     static const FNUM_TYPE sin_power_two_over_epsilon__cutoffpoint =
         sym_pow(sin_cutoffpoint, two_over_epsilon);
+    FSG_LOG_VAR(sin_power_two_over_epsilon__cutoffpoint);
 
     // How to compute steps?
     // Example : we want 3 points. Let's define them as the middle of segments.
