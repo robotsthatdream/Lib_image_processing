@@ -257,7 +257,7 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
                 FSG_LOG_VAR(x);
                 error_count++;
             }
-            if (x > xresol)
+            if (x >= xresol)
             {
                 FSG_LOG_VAR(x);
                 error_count++;
@@ -267,7 +267,7 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
                 FSG_LOG_VAR(y);
                 error_count++;
             }
-            if (y > yresol)
+            if (y >= yresol)
             {
                 FSG_LOG_VAR(y);
                 error_count++;
