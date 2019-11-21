@@ -266,7 +266,7 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
 std::vector<std::complex<FNUM_TYPE>>
 superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
                                     FNUM_TYPE exponent,
-                                    int steps_on_one_eighth = 100)
+                                    int steps_on_one_eighth = 10)
 {
     FSG_TRACE_THIS_FUNCTION();
     FSG_LOG_VAR(radius_a);
@@ -313,7 +313,7 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
 std::vector<std::complex<FNUM_TYPE>>
 superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
                               FNUM_TYPE exponent, int eighthmin, int eighthmax,
-                              int steps_on_one_eighth = 100)
+                              int steps_on_one_eighth = 10)
 {
     FSG_TRACE_THIS_FUNCTION();
     std::vector<std::complex<FNUM_TYPE>> points(0);
