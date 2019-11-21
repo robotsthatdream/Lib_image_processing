@@ -2350,34 +2350,32 @@ void SuperEllipsoidTest()
     // SuperEllipsoidTestSlicebetweenPoints(-1, 1);
 
     {
-        fsg::SuperEllipsoidParameters just_a_sphere =
-            fsg::SuperEllipsoidParameters::Zero();
-        just_a_sphere.set_rad_a(1.0);
-        just_a_sphere.set_rad_b(1.0);
-        just_a_sphere.set_rad_c(1.0);
-        just_a_sphere.set_exp_1(1.0);
-        just_a_sphere.set_exp_2(1.0);
 
-        FSG_LOG_VAR(just_a_sphere);
+        std::array<FNUM_TYPE, 5> stops = {0.1, 0.5, 1, 2, 3};
 
-        pcl::PointCloud<pcl::PointXYZ>::Ptr sphere_points =
-            just_a_sphere.toPointCloud(10);
+        for (auto &exp_1 : stops)
+        {
+            for (auto &exp_2 : stops)
+            {
 
-        fsg::SuperEllipsoidParameters octahedron =
-            fsg::SuperEllipsoidParameters::Zero();
-        octahedron.set_rad_a(1.0);
-        octahedron.set_rad_b(1.0);
-        octahedron.set_rad_c(1.0);
-        octahedron.set_exp_1(2.0);
-        octahedron.set_exp_2(2.0);
+                fsg::SuperEllipsoidParameters my_super_quadric =
+                    fsg::SuperEllipsoidParameters::Zero();
+                my_super_quadric.set_rad_a(1.0);
+                my_super_quadric.set_rad_b(1.0);
+                my_super_quadric.set_rad_c(1.0);
+                my_super_quadric.set_exp_1(exp_1);
+                my_super_quadric.set_exp_2(exp_2);
 
-        pcl::PointCloud<pcl::PointXYZ>::Ptr diamond_points =
-            octahedron.toPointCloud(10);
+                {
+                    std::stringstream ss;
+                    ss << "sample_e1_" << exp_1 << "_e2_" << exp_2;
+                    my_super_quadric.name = ss.str();
+                }
 
-        // FSG_LOG_VAR(sphere_points);
-
-        SuperEllipsoidTestEachDimensionForMisbehavior(just_a_sphere);
-        SuperEllipsoidTestEachDimensionForMisbehavior(octahedron);
+                pcl::PointCloud<pcl::PointXYZ>::Ptr my_super_quadric_points =
+                    my_super_quadric.toPointCloud(10);
+            }
+        }
 
         exit(0);
     }
