@@ -249,6 +249,36 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
     {
         int x = int((pt.x - center_x) * pixelperunit + xresol / 2);
         int y = int((pt.y - center_y) * pixelperunit + yresol / 2);
+
+        {
+            int error_count = 0;
+            if (x < 0)
+            {
+                FSG_LOG_VAR(x);
+                error_count++;
+            }
+            if (x > xresol)
+            {
+                FSG_LOG_VAR(x);
+                error_count++;
+            }
+            if (y < 0)
+            {
+                FSG_LOG_VAR(y);
+                error_count++;
+            }
+            if (y > yresol)
+            {
+                FSG_LOG_VAR(y);
+                error_count++;
+            }
+            if (error_count)
+            {
+                FSG_LOG_VAR(error_count);
+                continue;
+            }
+        }
+
         myCloudImage.at<unsigned char>(x, y) = 255;
     }
 
