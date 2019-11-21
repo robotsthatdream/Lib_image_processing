@@ -282,28 +282,48 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     std::vector<std::complex<FNUM_TYPE>> points(0);
     points.reserve(steps_on_one_eighth);
 
-    // for (int step = 0 ; step <= steps_on_one_eighth ; step++)
-    // {
-    //     FNUM_TYPE step_ratio = ((FNUM_TYPE)step) /
-    //     ((FNUM_TYPE)steps_on_one_eighth);
-    //     FNUM_TYPE y_ratio = step_ratio * WITH_SUFFIX_fx(cos)(angle);
+    // ellipse equation:
+    // x^2e / a + y^2e / b = 1
 
-    for (FNUM_TYPE y = 0; y <= (radius_b * cos(sg_pi_4)); y += arc_length)
+    // x^2e / a + y^2e / b = 1
+
+    static const FNUM_TYPE iy_cutoffpoint =
+        WITH_SUFFIX_fx(sqrt)(FNUM_TYPE(1.0) / FNUM_TYPE(2.0));
+
+    // Example : we want 3 points. Let's define them as the middle of segments.
+    // Thus we define a halfsegment as total_range / ( 2 * 3).
+    // We start at the middle of a segment, thus a halfsegment.
+    // Each time we advance one step = 2 halfsegment.
+    // We're sure that we never get close to the cutoff point.
+
+    const FNUM_TYPE iy_halfsegment =
+        iy_cutoffpoint / (steps_on_one_eighth * FNUM_TYPE(2.0));
+    const FNUM_TYPE iy_initialValue = iy_halfsegment;
+    const FNUM_TYPE iy_step = FNUM_TYPE(2.0) * iy_halfsegment;
+
+    for (FNUM_TYPE iy = iy_initialValue; iy < iy_cutoffpoint; iy += iy_step)
     {
-        FNUM_TYPE yratio = y / radius_b;
-        FNUM_TYPE sin_to_invert = sym_pow(yratio, FNUM_TYPE(1.0) / exponent);
-        FNUM_TYPE theta = asin(sin_to_invert);
+        FNUM_TYPE sin_ = sym_pow(iy, FNUM_TYPE(1.0) / exponent);
+
+        // cos = sqrt(1 - sin^2)
 
         FNUM_TYPE cos_ =
-            cos(sin_to_invert); // Could use sqrt(1 - sin^2) instead.
+            WITH_SUFFIX_fx(sqrt)(sg_1 - (sin_ * sin_));
+
         FNUM_TYPE cos_power_epsilon = sym_pow(cos_, exponent);
         FNUM_TYPE x = radius_a * cos_power_epsilon;
+        FNUM_TYPE y = radius_b * iy;
 
         std::complex<FNUM_TYPE> point(x, y);
         points.push_back(point);
 
-        FSG_LOG_MSG("yr=" << yratio << "\tsin=" << sin_to_invert << "\tth="
-                          << theta << "\tcos=" << cos_ << "\t" << point);
+        FSG_LOG_MSG(
+            FSG_OSTREAM_VAR(iy) << "\t" <<
+            FSG_OSTREAM_VAR(sin_) << "\t" <<
+            FSG_OSTREAM_VAR(cos_) << "\t" <<
+            FSG_OSTREAM_VAR(y) << "\t" <<
+            FSG_OSTREAM_VAR(x)
+            );
     }
 
     FSG_LOG_MSG("finishing, added point count: " << points.size());
