@@ -2352,7 +2352,7 @@ void SuperEllipsoidTest()
 
     {
 
-        std::array<FNUM_TYPE, 5> stops = {0.1, 0.5, 1, 2, 3};
+        std::array<FNUM_TYPE, 5> stops = { 1 }; // 0.1, 0.5, 1, 2, 3};
 
         for (auto &exp_1 : stops)
         {
