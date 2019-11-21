@@ -235,8 +235,8 @@ void drawPointCloudByHand(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
     FSG_LOG_VAR(width_x);
     FSG_LOG_VAR(width_y);
 
-    const float pixelperunit_x = (xresol-1) / width_x;
-    const float pixelperunit_y = (yresol-1) / width_y;
+    const float pixelperunit_x = (xresol - 1) / width_x;
+    const float pixelperunit_y = (yresol - 1) / width_y;
 
     FSG_LOG_VAR(pixelperunit_x);
     FSG_LOG_VAR(pixelperunit_y);
@@ -2382,7 +2382,7 @@ void SuperEllipsoidTest()
 
     {
 
-        std::vector<FNUM_TYPE> stops = { 0.1, 0.5, 1, 2, 3};
+        std::vector<FNUM_TYPE> stops = {0.1, 0.5, 1, 2, 3};
 
         for (const auto &exp_1 : stops)
         {
