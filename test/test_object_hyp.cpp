@@ -290,6 +290,8 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
 
     static const FNUM_TYPE sin_cutoffpoint =
         WITH_SUFFIX_fx(sqrt)(FNUM_TYPE(1.0) / FNUM_TYPE(2.0));
+    static const FNUM_TYPE sin_power_epsilon__cutoffpoint =
+        sym_pow(sin_cutoffpoint, exponent);
 
     // Example : we want 3 points. Let's define them as the middle of segments.
     // Thus we define a halfsegment as total_range / ( 2 * 3).
@@ -297,20 +299,24 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     // Each time we advance one step = 2 halfsegment.
     // We're sure that we never get close to the cutoff point.
 
-    const FNUM_TYPE sin_halfsegment =
-        sin_cutoffpoint / (steps_on_one_eighth * FNUM_TYPE(2.0));
-    const FNUM_TYPE sin_initialValue = sin_halfsegment;
-    const FNUM_TYPE sin_step = FNUM_TYPE(2.0) * sin_halfsegment;
+    const FNUM_TYPE sin_power_epsilon__halfsegment =
+        sin_power_epsilon__cutoffpoint / (steps_on_one_eighth * FNUM_TYPE(2.0));
+    const FNUM_TYPE sin_power_epsilon__initialValue =
+        sin_power_epsilon__halfsegment;
+    const FNUM_TYPE sin_power_epsilon__step =
+        FNUM_TYPE(2.0) * sin_power_epsilon__halfsegment;
 
-    for (FNUM_TYPE sin_ = sin_initialValue; sin_ < sin_cutoffpoint;
-         sin_ += sin_step)
+    for (FNUM_TYPE sin_power_epsilon = sin_power_epsilon__initialValue;
+         sin_power_epsilon < sin_power_epsilon__cutoffpoint;
+         sin_power_epsilon += sin_power_epsilon__step)
     {
+        FNUM_TYPE sin_ = sym_pow(sin_power_epsilon, FNUM_TYPE(1.0) / exponent);
+
         // cos = sqrt(1 - sin^2)
 
         FNUM_TYPE cos_ = WITH_SUFFIX_fx(sqrt)(sg_1 - (sin_ * sin_));
 
         FNUM_TYPE cos_power_epsilon = sym_pow(cos_, exponent);
-        FNUM_TYPE sin_power_epsilon = sym_pow(sin_, exponent);
         FNUM_TYPE x = radius_a * cos_power_epsilon;
         FNUM_TYPE y = radius_b * sin_power_epsilon;
 
