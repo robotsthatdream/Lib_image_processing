@@ -314,7 +314,10 @@ superEllipseParametersToPoint(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
                               FNUM_TYPE exponent, int eighthmin, int eighthmax,
                               int steps_on_one_eighth = 100)
 {
+    FSG_TRACE_THIS_FUNCTION();
     std::vector<std::complex<FNUM_TYPE>> points(0);
+    FSG_LOG_VAR(eighthmin);
+    FSG_LOG_VAR(eighthmax);
 
     // Graphical representation of eighths, in trigonometric coordinates (0 on
     // right, counter-clockwise).
