@@ -818,7 +818,7 @@ void drawComplexVectorToImage(
 pcl::PointCloud<pcl::PointXYZ>::Ptr
 SuperEllipsoidParameters::toPointCloud(int steps)
 {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_step1(
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_axisaligned(
         new pcl::PointCloud<pcl::PointXYZ>);
     FSG_TRACE_THIS_FUNCTION();
     FSG_LOG_MSG("Creating a point cloud with " << steps << " steps for "
@@ -898,7 +898,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
             if ((x * x + y * y + z * z) < FNUM_LITERAL(20.0))
             {
-                cloud_step1->push_back(pt);
+                cloud_axisaligned->push_back(pt);
                 count_added++;
             }
             else
@@ -912,9 +912,9 @@ SuperEllipsoidParameters::toPointCloud(int steps)
 
     FSG_LOG_VAR(count_added);
 
-    FSG_LOG_VAR(cloud_step1->points.size());
+    FSG_LOG_VAR(cloud_axisaligned->points.size());
 
-    drawPointCloudByHand(cloud_step1, "axisaligned");
+    drawPointCloudByHand(cloud_axisaligned, "axisaligned");
 
     // Next rotate the point cloud.
 
@@ -936,7 +936,7 @@ SuperEllipsoidParameters::toPointCloud(int steps)
         new pcl::PointCloud<pcl::PointXYZ>);
 
     // You can either apply transform_1 or transform_2; they are the same
-    pcl::transformPointCloud(*cloud_step1, *cloud_final, transform);
+    pcl::transformPointCloud(*cloud_axisaligned, *cloud_final, transform);
 
     FSG_LOG_VAR(cloud_final->points.size());
 
