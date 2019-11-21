@@ -43,6 +43,7 @@
 #pragma GCC diagnostic warning "-Wconversion"
 
 static constexpr FNUM_TYPE sg_pi = (FNUM_TYPE) M_PI;
+static constexpr FNUM_TYPE sg_pi_two = FNUM_LITERAL(6.283185307179586476925286766558);
 static constexpr FNUM_TYPE sg_pi_2 = (FNUM_TYPE) M_PI_2;
 static constexpr FNUM_TYPE sg_pi_4 = (FNUM_TYPE) M_PI_4;
 static constexpr FNUM_TYPE sg_0 = FNUM_LITERAL(0.0);
