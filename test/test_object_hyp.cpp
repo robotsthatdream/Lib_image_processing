@@ -288,7 +288,7 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
 
     // x^2e / a + y^2e / b = 1
 
-    static const FNUM_TYPE iy_cutoffpoint =
+    static const FNUM_TYPE sin_cutoffpoint =
         WITH_SUFFIX_fx(sqrt)(FNUM_TYPE(1.0) / FNUM_TYPE(2.0));
 
     // Example : we want 3 points. Let's define them as the middle of segments.
@@ -297,30 +297,31 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     // Each time we advance one step = 2 halfsegment.
     // We're sure that we never get close to the cutoff point.
 
-    const FNUM_TYPE iy_halfsegment =
-        iy_cutoffpoint / (steps_on_one_eighth * FNUM_TYPE(2.0));
-    const FNUM_TYPE iy_initialValue = iy_halfsegment;
-    const FNUM_TYPE iy_step = FNUM_TYPE(2.0) * iy_halfsegment;
+    const FNUM_TYPE sin_halfsegment =
+        sin_cutoffpoint / (steps_on_one_eighth * FNUM_TYPE(2.0));
+    const FNUM_TYPE sin_initialValue = sin_halfsegment;
+    const FNUM_TYPE sin_step = FNUM_TYPE(2.0) * sin_halfsegment;
 
-    for (FNUM_TYPE iy = iy_initialValue; iy < iy_cutoffpoint; iy += iy_step)
+    for (FNUM_TYPE sin_ = sin_initialValue; sin_ < sin_cutoffpoint;
+         sin_ += sin_step)
     {
-        FNUM_TYPE sin_ = sym_pow(iy, FNUM_TYPE(1.0) / exponent);
-
         // cos = sqrt(1 - sin^2)
 
         FNUM_TYPE cos_ = WITH_SUFFIX_fx(sqrt)(sg_1 - (sin_ * sin_));
 
         FNUM_TYPE cos_power_epsilon = sym_pow(cos_, exponent);
+        FNUM_TYPE sin_power_epsilon = sym_pow(sin_, exponent);
         FNUM_TYPE x = radius_a * cos_power_epsilon;
-        FNUM_TYPE y = radius_b * iy;
+        FNUM_TYPE y = radius_b * sin_power_epsilon;
 
         std::complex<FNUM_TYPE> point(x, y);
         points.push_back(point);
 
-        FSG_LOG_MSG(FSG_OSTREAM_VAR(iy) << "\t" << FSG_OSTREAM_VAR(sin_) << "\t"
-                                        << FSG_OSTREAM_VAR(cos_) << "\t"
-                                        << FSG_OSTREAM_VAR(y) << "\t"
-                                        << FSG_OSTREAM_VAR(x));
+        FSG_LOG_MSG(FSG_OSTREAM_VAR(sin_)
+                    << "\t" << FSG_OSTREAM_VAR(cos_) << "\t"
+                    << FSG_OSTREAM_VAR(sin_power_epsilon) << "\t"
+                    << FSG_OSTREAM_VAR(cos_power_epsilon) << "\t"
+                    << FSG_OSTREAM_VAR(y) << "\t" << FSG_OSTREAM_VAR(x));
     }
 
     FSG_LOG_MSG("finishing, added point count: " << points.size());
