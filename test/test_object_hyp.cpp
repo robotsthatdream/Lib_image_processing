@@ -272,6 +272,7 @@ superEllipseParametersToPointEighth(FNUM_TYPE radius_a, FNUM_TYPE radius_b,
     FSG_LOG_VAR(radius_a);
     FSG_LOG_VAR(radius_b);
     FSG_LOG_VAR(exponent);
+    FSG_LOG_VAR(steps_on_one_eighth);
     FNUM_TYPE diagonal = WITH_SUFFIX_fx(hypot)(radius_a, radius_b);
     FSG_LOG_VAR(diagonal);
 
