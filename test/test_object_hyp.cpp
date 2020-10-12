@@ -11,6 +11,8 @@
 
 #include "../include/image_processing/SurfaceOfInterest.h"
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread/thread.hpp>
 #include <cmm/gmm.hpp>
 
 namespace ip = image_processing;
