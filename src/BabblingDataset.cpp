@@ -1,7 +1,7 @@
 #include "image_processing/BabblingDataset.h"
 
 #if CV_MAJOR_VERSION == 4
-#include "opencv2/imgcodecs/imgcodecs_c.h" // for CV_LOAD_IMAGE_COLOR and others, since OpenCV 4 alpha.
+#include "opencv2/imgcodecs/legacy/constants_c.h" // for CV_LOAD_IMAGE_COLOR and others, since OpenCV 4 alpha.
 #endif
 
 
