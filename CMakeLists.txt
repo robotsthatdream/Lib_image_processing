@@ -14,7 +14,7 @@ set(SOURCE_FILES
 FILE(GLOB_RECURSE HEADFILES "include/*.hpp" "include/*.h")
 add_custom_target(headers_image_processing SOURCES ${HEADFILES})
 
-set(OpenCVRequiredComponents core features2d video)
+set(OpenCVRequiredComponents core features2d imgcodecs video)
 
 option(WITH_CVNONFREE "Include parts requiring non-free dependencies (currently, OpenCV Sift)." FALSE)
 if(WITH_CVNONFREE)
