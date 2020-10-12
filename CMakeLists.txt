@@ -23,11 +23,11 @@ if(WITH_CVNONFREE)
 endif(WITH_CVNONFREE)
 
 #Libraries
+find_package(PCL 1.7 REQUIRED)
 #set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.54 COMPONENTS filesystem system thread iostreams chrono REQUIRED)
+find_package(Boost 1.54 COMPONENTS filesystem serialization system thread iostreams chrono REQUIRED)
 # OpenCV: at least 2.4? Anyway, formally requiring OpenCV 2.4 rejects 3.2 in practice.
 find_package(OpenCV REQUIRED COMPONENTS ${OpenCVRequiredComponents}) 
-find_package(PCL 1.7 REQUIRED)
 find_package(VTK REQUIRED)
 
 include(CMake/FindTBB.cmake)
