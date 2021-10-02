@@ -201,17 +201,17 @@ else
         then
             git clone -b feature_implement_pcl__SampleConsensusModelSphere_PointT___projectPoints https://github.com/fidergo-stephane-gourichon/pcl
             #https://github.com/PointCloudLibrary/pcl
-            (
-                # Workaround failure to build PCL on recent flann.
-                #
-                # bug
-                # https://github.com/PointCloudLibrary/pcl/issues/804
-                # fix
-                # https://github.com/PointCloudLibrary/pcl/pull/3317
-                # fix does not apply cleanly, just overwriting file.
-                cd pcl
-                curl https://raw.githubusercontent.com/PointCloudLibrary/pcl/ee0d8ce5fc644480e4cd5672cb440a731c6f3758/cmake/Modules/FindFLANN.cmake >| cmake/Modules/FindFLANN.cmake 
-            )
+            # (
+            #     # Workaround failure to build PCL on recent flann (1.9.1).
+            #     #
+            #     # bug
+            #     # https://github.com/PointCloudLibrary/pcl/issues/804
+            #     # fix
+            #     # https://github.com/PointCloudLibrary/pcl/pull/3317
+            #     # fix does not apply cleanly, just overwriting file.
+            #     cd pcl
+            #     curl https://raw.githubusercontent.com/PointCloudLibrary/pcl/ee0d8ce5fc644480e4cd5672cb440a731c6f3758/cmake/Modules/FindFLANN.cmake >| cmake/Modules/FindFLANN.cmake 
+            # )
         fi
 
         cd pcl
