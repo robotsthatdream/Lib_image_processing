@@ -8,11 +8,11 @@ TOOLS="cmake:cmake
 /usr/include/eigen3:libeigen3-dev
 git:git
 /usr/include/boost/version.hpp:libboost-all-dev
-/usr/include/flann/flann.h:libflann-dev
 /usr/include/vtk*:libvtk6-dev
 /usr/include/tbb/tbb.h:libtbb-dev
 /usr/include/yaml-cpp/yaml.h:libyaml-cpp-dev
 /usr/include/qhull/qhull.h:libqhull-dev
+/usr/include/lz4.h:liblz4-dev
 "
 
 # On Ubuntu 16.04, libproj-dev is an implicit dependency of vtk*.
@@ -152,6 +152,45 @@ fi
 export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${OPENCV_IT}"
 # echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH"
 
+FLANN_IT=${IMAGE_PROCESSING_BUILD_ROOT}/flann.OSID_${OS_ID}.installtree.Release
+if [[ -d "${FLANN_IT}" ]]
+then
+    echo "FLANN already in $FLANN_IT"
+else
+    echo "We don't use Ubuntu's flann library because on Ubuntu 20.04+ it causes this bug when building PCL: https://github.com/PointCloudLibrary/pcl/issues/804"
+    (
+        if [[ ! -d flann ]]
+        then
+            git clone https://github.com/flann-lib/flann
+
+            # Workaround https://github.com/flann-lib/flann/issues/369
+            (
+                cd flann
+                touch src/cpp/empty.cpp
+                sed -e '/add_library(flann_cpp SHARED/ s/""/empty.cpp/' \
+                    -e '/add_library(flann SHARED/ s/""/empty.cpp/' \
+                    -i src/cpp/CMakeLists.txt
+            )
+        fi
+
+        cd flann
+        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=1900000
+        "$IMAGE_PROCESSING_SOURCE_ROOT"/cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
+                                       -DCMAKE_BUILD_TYPE:STRING=Release \
+                                       -DBUILD_CUDA_LIB:BOOL=OFF \
+                                       -DBUILD_DOC:BOOL=OFF \
+                                       -DBUILD_EXAMPLES:BOOL=OFF \
+                                       -DBUILD_MATLAB_BINDINGS:BOOL=OFF \
+                                       -DBUILD_PYTHON_BINDINGS:BOOL=OFF \
+                                       -DBUILD_TESTS:BOOL=OFF \
+
+        cd ${IMAGE_PROCESSING_BUILD_ROOT}/flann.OSID_${OS_ID}.buildtree.Release
+        time cmake --build . -- install
+    )
+fi
+export CMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH:-}${CMAKE_PREFIX_PATH:+:}${FLANN_IT}"
+# echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH"
+
 PCL_IT=${IMAGE_PROCESSING_BUILD_ROOT}/pcl.OSID_${OS_ID}.installtree.Release
 if [[ -d "${PCL_IT}" ]]
 then
@@ -162,6 +201,17 @@ else
         then
             git clone -b feature_implement_pcl__SampleConsensusModelSphere_PointT___projectPoints https://github.com/fidergo-stephane-gourichon/pcl
             #https://github.com/PointCloudLibrary/pcl
+            (
+                # Workaround failure to build PCL on recent flann.
+                #
+                # bug
+                # https://github.com/PointCloudLibrary/pcl/issues/804
+                # fix
+                # https://github.com/PointCloudLibrary/pcl/pull/3317
+                # fix does not apply cleanly, just overwriting file.
+                cd pcl
+                curl https://raw.githubusercontent.com/PointCloudLibrary/pcl/ee0d8ce5fc644480e4cd5672cb440a731c6f3758/cmake/Modules/FindFLANN.cmake >| cmake/Modules/FindFLANN.cmake 
+            )
         fi
 
         cd pcl
