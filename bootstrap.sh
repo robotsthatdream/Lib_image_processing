@@ -25,14 +25,23 @@ then
 /usr/include/proj_api.h:libproj-dev"
 fi
 
+# Don't quote $FNAME like this "$FNAME" because it is sometimes a wildcard pattern.
+
 MISSING=""
 for TOOLNP in ${TOOLS}
 do IFS=: read FNAME PNAME <<< "$TOOLNP"
    echo -ne "Checking for $FNAME \011of $PNAME...  \0011"
-   { which $FNAME || stat --format="%n" $( ls -1bd $FNAME || echo >&2 "$FNAME not found" )
-   } || { MISSING="$MISSING $TOOLNP"
-          echo "not found"
-   }
+   if which $FNAME
+   then
+       true
+   elif
+       find $FNAME -maxdepth 0
+   then
+       true
+   else
+       MISSING="$MISSING $TOOLNP"
+       echo "not found"
+   fi
 done
 if [[ -n "$MISSING" ]]
 then echo
