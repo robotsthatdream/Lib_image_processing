@@ -159,7 +159,7 @@ function error_block()
 #
 # find /mystorage -iname "*.OSID_myoldOS.*tree" -print0 | xargs -0 rm -rf
 
-trap "echo See messages above for hints about what happened. | error_block" ERR
+trap "set +xv ; echo See messages above for hints about what happened. | error_block" ERR
 
 
 if [[ "$#" == 0 ]]
