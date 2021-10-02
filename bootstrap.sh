@@ -161,7 +161,7 @@ else
     (
         if [[ ! -d flann ]]
         then
-            git clone https://github.com/flann-lib/flann
+            git clone -b 1.8.4 https://github.com/flann-lib/flann
 
             # Workaround https://github.com/flann-lib/flann/issues/369
             (
