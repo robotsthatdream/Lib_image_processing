@@ -122,7 +122,7 @@ else
         fi
 
         cd opencv
-        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=600000
+        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=500000
         "$IMAGE_PROCESSING_SOURCE_ROOT"/cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                    -D CMAKE_BUILD_TYPE:STRING=Release \
                                    -D BUILD_JAVA:BOOL=OFF \
@@ -164,7 +164,7 @@ else
         fi
 
         cd pcl
-        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
+        export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=1200000
         "$IMAGE_PROCESSING_SOURCE_ROOT"/cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                    -DCMAKE_BUILD_TYPE:STRING=Release \
                                    -DCMAKE_CXX_STANDARD=11 \
@@ -189,7 +189,7 @@ else(
     fi
 
     cd CMM_Lib
-    export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=2000000
+    export EXPECTED_KILOBYTES_OCCUPATION_PER_CORE=1100000
     "$IMAGE_PROCESSING_SOURCE_ROOT"/cmake_project_bootstrap.sh . ${MY_CMAKE_GENERATOR_OPTIONS:-} \
                                -DCMAKE_BUILD_TYPE=Release \
 
