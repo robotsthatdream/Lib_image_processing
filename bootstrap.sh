@@ -16,8 +16,10 @@ git:git
 "
 
 # On Ubuntu 16.04, libproj-dev is an implicit dependency of vtk*.
+# FIXME this has correct behavior when vtk already installed.
+# As a result you may have to run this script twice.
 if
-    find /usr/lib/ -iname "libvtk*geovis*.so" | xargs ldd | grep -q libproj
+    find /usr/lib/ -iname "libvtk*geovis*.so" | xargs --no-run-if-empty ldd | grep -q libproj
 then
     TOOLS="$TOOLS
 /usr/include/proj_api.h:libproj-dev"
