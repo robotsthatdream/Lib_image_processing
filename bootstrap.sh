@@ -239,7 +239,7 @@ then
 else(
     if [[ ! -d IAGMM_Lib ]]
     then
-        git clone https://github.com/robotsthatdream/IAGMM_Lib
+        git clone -b 61fb7e4f2700418286b2b8293e3ad4eef67abca3 https://github.com/robotsthatdream/IAGMM_Lib
     fi
 
     cd IAGMM_Lib
