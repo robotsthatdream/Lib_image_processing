@@ -13,6 +13,7 @@ git:git
 /usr/include/yaml-cpp/yaml.h:libyaml-cpp-dev
 /usr/include/qhull/qhull.h:libqhull-dev
 /usr/include/lz4.h:liblz4-dev
+/usr/include/gtest/gtest.h:libgtest-dev
 "
 
 # On Ubuntu 16.04, libproj-dev is an implicit dependency of vtk*.
